@@ -1,0 +1,36 @@
+# === FRONTEND GITIGNORE ===
+
+# Logs de error de empaquetadores
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencias y compilados (NUNCA SE SUBEN)
+node_modules
+dist
+dist-ssr
+
+# Configuración de entornos y variables secretas
+*.local
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor directories and files (VS Code / JetBrains)
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Archivos basura del Sistema Operativo
+.DS_Store
+Thumbs.db

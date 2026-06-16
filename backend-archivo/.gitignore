@@ -1,0 +1,48 @@
+# === BACKEND GITIGNORE ===
+
+# Logs globales
+*.log
+
+# Variables de entorno y llaves de seguridad
+.env
+.env.backup
+.env.production
+/storage/*.key
+/auth.json
+
+# Caché y sesiones temporales de Laravel (Evita conflictos)
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+/storage/pail
+.phpunit.result.cache
+/.phpunit.cache
+
+# Copias de seguridad de Base de Datos locales (Laragon/HeidiSQL)
+*.sql
+*.sqlite
+
+# Dependencias de PHP y Node
+/vendor
+/node_modules
+
+# Compilados de Laravel y enlace simbólico de PDFs
+/public/build
+/public/hot
+/public/storage
+
+# Configuración de Entornos Virtuales y Editores
+Homestead.json
+Homestead.yaml
+.phpactor.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# Archivos basura del Sistema Operativo
+.DS_Store
+Thumbs.db

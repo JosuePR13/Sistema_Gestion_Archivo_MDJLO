@@ -1,0 +1,9 @@
+# Dependencias de Node (Frontend)
+**/node_modules/
+**/dist/
+
+# Dependencias de PHP / Laravel (Backend)
+**/vendor/
+**/.env
+**/storage/*.key
+**/bootstrap/cache/

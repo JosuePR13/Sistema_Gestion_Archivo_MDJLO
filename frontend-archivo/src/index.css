@@ -1,0 +1,36 @@
+/* 🚀 1. Importamos la fuente premium Plus Jakarta Sans */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    /* Forzamos la nueva tipografía en TODO el sistema */
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    /* Fondo gris perla ultra premium, fuentes nítidas (antialiased) y color de selección de texto */
+    @apply bg-[#F8FAFC] text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900;
+  }
+}
+
+/* 🚀 2. Scrollbar minimalista y profesional (Adiós a la barra fea de Windows) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
