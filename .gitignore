@@ -1,9 +1,36 @@
-# Dependencias de Node (Frontend)
+# ===================================================================
+# ARCHIVO .GITIGNORE GLOBAL (RAÍZ DEL PROYECTO)
+# Sistema de Gestión Archivística - Municipalidad JLO
+# ===================================================================
+
+# 📦 Dependencias y Entornos de Compilación (Ignorados)
 **/node_modules/
 **/dist/
-
-# Dependencias de PHP / Laravel (Backend)
 **/vendor/
 **/.env
 **/storage/*.key
-**/bootstrap/cache/
+
+# 📁 Temporales de Frameworks e IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# 🚀 Control Específico de Carpetas Laravel (bootstrap/cache)
+# Ignoramos todo el contenido temporal de la caché...
+/backend-archivo/bootstrap/cache/*
+
+# ...¡PERO NO IGNORAMOS el archivo .gitkeep! (Esto blinda tu clonación)
+!/backend-archivo/bootstrap/cache/.gitkeep
+
+# 📥 Temporales del Almacenamiento de Laravel (Framework & Logs)
+/backend-archivo/storage/framework/cache/data/*
+/backend-archivo/storage/framework/sessions/*
+/backend-archivo/storage/framework/views/*
+/backend-archivo/storage/logs/*.log
+
+# Si deseas ignorar los PDFs reales subidos por los operadores para no llenar tu GitHub:
+# /backend-archivo/storage/app/public/*
