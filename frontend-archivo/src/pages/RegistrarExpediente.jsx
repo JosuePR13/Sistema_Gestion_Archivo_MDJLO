@@ -19,7 +19,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
     tiempo_conservacion: '',
     fecha_revision: '',
     digitalizado: 0,
-    // Campos dinámicos para cuando es comprobante
     razon_social: '',
     monto: '',
     registro_siaf: ''
@@ -37,7 +36,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [duplicateMessage, setDuplicateMessage] = useState('');
 
-  // 🚀 Estado único para encender la validación visual en toda la pantalla
   const [validated, setValidated] = useState(false);
 
   const editorRef = useRef(null);
@@ -214,12 +212,13 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900">
-      <div className="max-w-4xl mx-auto animate-fade-in">
+      {/* 🚀 NUEVO CONTENEDOR AMPLIO: max-w-[1200px] aprovecha el ancho extra elegantemente */}
+      <div className="max-w-[1200px] w-full mx-auto animate-fade-in">
 
         <div className="flex items-center gap-2 mb-6">
           <button type="button" onClick={handleTryExit} className="text-[13px] text-slate-500 hover:text-[#0F4C81] transition-colors font-extrabold flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-200">
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-            Volver al inicio
+            Volver
           </button>
         </div>
 
@@ -233,11 +232,12 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 🚀 NUEVO SISTEMA DE 12 COLUMNAS PARA DISTRIBUCIÓN ESTÉTICA */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
 
-              {/* SELECT: TIPO DOCUMENTAL */}
-              <div className="md:col-span-1">
-                <label htmlFor="tipo_documento_id" className={labelStyles}>Tipo Documental *</label>
+              {/* TIPO DOCUMENTAL (4 de 12 columnas) */}
+              <div className="md:col-span-6 lg:col-span-4">
+                <label htmlFor="tipo_documento_id" className={labelStyles}>Tipo de documento *</label>
                 <div className={`rounded-2xl transition-all ${validated && !formData.tipo_documento_id ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
                   <CustomDropdown
                     id="tipo_documento_id"
@@ -255,8 +255,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
 
               {esComprobante ? (
                 <>
-                  {/* INPUT: N° COMPROBANTE */}
-                  <div>
+                  {/* COMPROBANTE: 4 de 12 columnas */}
+                  <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="numero_comprobante" className={labelStyles}>N° Comprobante de Pago *</label>
                     <input
                       id="numero_comprobante"
@@ -270,8 +270,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el número</p>
                     )}
                   </div>
-                  {/* INPUT: FECHA */}
-                  <div>
+                  {/* FECHA COMPROBANTE: 4 de 12 columnas */}
+                  <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="fecha_comprobante" className={labelStyles}>Fecha *</label>
                     <input
                       id="fecha_comprobante"
@@ -285,8 +285,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese la fecha</p>
                     )}
                   </div>
-                  {/* INPUT: RAZÓN SOCIAL */}
-                  <div className="md:col-span-3">
+                  {/* RAZÓN SOCIAL: 6 de 12 columnas (mitad de pantalla) */}
+                  <div className="md:col-span-12 lg:col-span-6">
                     <label htmlFor="razon_social" className={labelStyles}>Nombre y Apellidos / RAZÓN SOCIAL *</label>
                     <input
                       id="razon_social"
@@ -300,8 +300,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el interesado / razón social</p>
                     )}
                   </div>
-                  {/* INPUT: MONTO */}
-                  <div>
+                  {/* MONTO: 3 de 12 columnas */}
+                  <div className="md:col-span-6 lg:col-span-3">
                     <label htmlFor="monto" className={labelStyles}>Monto (S/.) *</label>
                     <input
                       id="monto"
@@ -317,8 +317,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el monto total</p>
                     )}
                   </div>
-                  {/* INPUT: SIAF */}
-                  <div>
+                  {/* SIAF: 3 de 12 columnas */}
+                  <div className="md:col-span-6 lg:col-span-3">
                     <label htmlFor="registro_siaf" className={labelStyles}>Registro SIAF / CIAF *</label>
                     <input
                       id="registro_siaf"
@@ -335,8 +335,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                 </>
               ) : (
                 <>
-                  {/* INPUT: N° EXPEDIENTE */}
-                  <div>
+                  {/* EXPEDIENTE NORMAL: 4 de 12 columnas */}
+                  <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="numero_expediente" className={labelStyles}>Número de Expediente *</label>
                     <input
                       id="numero_expediente"
@@ -350,8 +350,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el código</p>
                     )}
                   </div>
-                  {/* INPUT: FECHA INGRESO */}
-                  <div>
+                  {/* FECHA: 4 de 12 columnas */}
+                  <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="fecha_ingreso" className={labelStyles}>Fecha de Ingreso *</label>
                     <input
                       id="fecha_ingreso"
@@ -365,8 +365,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Seleccione una fecha</p>
                     )}
                   </div>
-                  {/* INPUT: TÍTULO EXPEDIENTE */}
-                  <div className="md:col-span-3">
+                  {/* TÍTULO: 12 de 12 columnas (TODO EL ANCHO) */}
+                  <div className="md:col-span-12">
                     <label htmlFor="titulo" className={labelStyles}>Título del Expediente *</label>
                     <input
                       id="titulo"
@@ -381,7 +381,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     )}
                   </div>
 
-                  <div className="md:col-span-3">
+                  {/* DESCRIPCIÓN: 12 de 12 columnas (TODO EL ANCHO) */}
+                  <div className="md:col-span-12">
                     <label htmlFor="editor_descripcion" className={labelStyles}>Descripción / Asunto</label>
                     <div className="w-full border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden focus-within:ring-4 focus-within:ring-slate-500/10 focus-within:border-slate-400 focus-within:bg-white transition-all duration-300 shadow-inner shadow-slate-100/50">
                       <div className="bg-slate-100/60 border-b border-slate-200 px-3 py-2 flex gap-2 select-none">
@@ -399,9 +400,10 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     </div>
                   </div>
 
-                  {/* SELECT: ÁREA DE ORIGEN */}
-                  <div>
-                    <label htmlFor="area_origen_id" className={labelStyles}>Area de Origen *</label>
+                  {/* 🚀 EL TOQUE MAESTRO: CÁLCULO DE 12 COLUMNAS PARA LA FILA FINAL */}
+                  {/* ÁREA DE ORIGEN: 5 de 12 columnas (Espacio amplio para nombres largos) */}
+                  <div className="md:col-span-12 lg:col-span-6">
+                    <label htmlFor="area_origen_id" className={labelStyles}>Área de origen *</label>
                     <div className={`rounded-2xl transition-all ${validated && !formData.area_origen_id ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
                       <CustomDropdown
                         id="area_origen_id"
@@ -419,19 +421,21 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                 </>
               )}
 
-              <div>
+              {/* ÁREA ACTUAL: 2 de 12 columnas (Acortado al tamaño perfecto) */}
+              <div className="md:col-span-4 lg:col-span-2">
                 <label htmlFor="area_actual" className={labelStyles}>Área Actual</label>
                 <input id="area_actual" name="area_actual" type="text" value="Archivo Central" readOnly className={readOnlyStyles} />
               </div>
 
-              <div>
+              {/* ESTADO DOCUMENTAL: 2 de 12 columnas */}
+              <div className="md:col-span-4 lg:col-span-2">
                 <label htmlFor="estado_documental" className={labelStyles}>Estado Documental</label>
                 <input id="estado_documental" name="estado_documental" type="text" value="Activo" readOnly className={readOnlyStyles} />
               </div>
 
-              {/* INPUT: FOLIOS */}
-              <div>
-                <label htmlFor="numero_folios" className={labelStyles}>Número de Folios *</label>
+              {/* FOLIOS: 2 de 12 columnas */}
+              <div className="md:col-span-4 lg:col-span-2">
+                <label htmlFor="numero_folios" className={labelStyles}>N° Folios *</label>
                 <input
                   id="numero_folios"
                   name="numero_folios"
@@ -443,7 +447,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                   onChange={e => handleInputChange('numero_folios', e.target.value)}
                 />
                 {validated && !formData.numero_folios && (
-                  <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese folios (mínimo 1)</p>
+                  <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Mín 1</p>
                 )}
               </div>
             </div>
@@ -467,8 +471,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* SELECT: TIEMPO DE CONSERVACIÓN */}
               <div>
                 <label htmlFor="tiempo_conservacion" className={labelStyles}>Tiempo de Conservación *</label>
                 {esPermanente ? (
@@ -493,7 +495,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
               </div>
 
               <div>
-                <label htmlFor="fecha_revision" className={labelStyles}>Fecha de Revisión Documental</label>
+                <label htmlFor="fecha_revision" className={labelStyles}>Fecha de revisión</label>
                 <input
                   id="fecha_revision"
                   name="fecha_revision"
