@@ -87,7 +87,7 @@ export default function ReportesScreen() {
       t: 'Expedientes Registrados',
       d: 'Ingresos al sistema en el período',
       c: '#0F4C81',
-      cols: ['N° Expediente', 'Título', 'Área Origen', 'Folios', 'Fecha Registro'],
+      cols: ['N° Expediente', 'Título', 'Área Origen', 'Folios', 'Fecha'],
       stats: [
         { l: 'Total registrados', v: expedientesFiltrados.length, sub: 'documentos' },
         { l: 'Volumen Físico', v: totalFolios, sub: 'folios totales' },
