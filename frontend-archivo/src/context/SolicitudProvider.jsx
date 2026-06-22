@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import SolicitudContext from './SolicitudContext';
 
 export function SolicitudProvider({ children }) {
     const [solicitudes, setSolicitudes] = useState([]);
-    // 🚀 Optimización React 19: Nace directamente en true para evitar el setState síncrono inicial
     const [loadingSolicitudes, setLoadingSolicitudes] = useState(true);
 
-    const cargarSolicitudes = async () => {
+    const cargarSolicitudes = useCallback(async () => {
         try {
             const res = await api.get('/solicitudes');
             setSolicitudes(res.data);
@@ -16,13 +15,28 @@ export function SolicitudProvider({ children }) {
         } finally {
             setLoadingSolicitudes(false);
         }
-    };
+    }, []);
 
-    // 🚀 CORRECCIÓN: Llamada asíncrona limpia compatible con las directrices de React 19
     useEffect(() => {
         let activo = true;
 
         const ejecutarCarga = async () => {
+            const tokenActivo = localStorage.getItem('token');
+
+            const tokenEsValido =
+                typeof tokenActivo === 'string' &&
+                tokenActivo.trim() !== '' &&
+                tokenActivo !== 'undefined' &&
+                tokenActivo !== 'null';
+
+            if (!tokenEsValido) {
+                if (activo) {
+                    setLoadingSolicitudes(false);
+                }
+
+                return;
+            }
+
             if (activo) {
                 await cargarSolicitudes();
             }
@@ -33,10 +47,16 @@ export function SolicitudProvider({ children }) {
         return () => {
             activo = false;
         };
-    }, []);
+    }, [cargarSolicitudes]);
 
     return (
-        <SolicitudContext.Provider value={{ solicitudes, loadingSolicitudes, refrescarSolicitudes: cargarSolicitudes }}>
+        <SolicitudContext.Provider
+            value={{
+                solicitudes,
+                loadingSolicitudes,
+                refrescarSolicitudes: cargarSolicitudes
+            }}
+        >
             {children}
         </SolicitudContext.Provider>
     );

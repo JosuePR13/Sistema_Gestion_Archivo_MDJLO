@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Login from './pages/Login';
-import Sidebar from './components/Sidebar'; // 🚀 Aquí entra tu nuevo Sidebar
+import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Expedientes from './pages/Expedientes';
 import DetalleExpediente from './pages/DetalleExpediente';
@@ -11,11 +11,25 @@ import ReportesScreen from './pages/Reportes';
 import RegistrarSolicitud from './pages/RegistrarSolicitud';
 import BandejaSolicitudes from './pages/BandejaSolicitudes';
 
+// 💰 NUEVAS PANTALLAS DEL MÓDULO DE LIQUIDACIÓN Y RECAUDACIÓN
+import HistorialCaja from './pages/HistorialCaja';
+import ReporteCostos from './pages/ReporteCostos';
+
+// Context Providers
 import { ExpedienteProvider } from './context/ExpedienteProvider';
 import { SolicitudProvider } from './context/SolicitudProvider';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem('token');
+
+    return Boolean(
+      token &&
+      token !== 'undefined' &&
+      token !== 'null'
+    );
+  });
+
   const [currentScreen, setCurrentScreen] = useState({ name: 'dashboard', id: null });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,22 +46,16 @@ export default function App() {
       }
     };
 
-    const limpiarRastroToken = () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    };
-
     window.addEventListener('beforeunload', restringirSalidaInsegura);
-    window.addEventListener('unload', limpiarRastroToken);
 
     return () => {
       window.removeEventListener('beforeunload', restringirSalidaInsegura);
-      window.removeEventListener('unload', limpiarRastroToken);
     };
   }, [isAuthenticated]);
 
   const triggerGlobalToast = (msg) => {
     setGlobalToast({ show: true, message: msg });
+
     setTimeout(() => {
       setGlobalToast({ show: false, message: '' });
     }, 2500);
@@ -68,13 +76,13 @@ export default function App() {
     setCurrentScreen({ name: 'dashboard', id: null });
   };
 
-  if (!isAuthenticated) return <Login onLoginSuccess={handleLoginSuccess} />
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
 
   return (
     <ExpedienteProvider>
-      {/* 🚀 ARQUITECTURA GLOBAL: Envueltos en el proveedor de solicitudes para carga asíncrona inmediata */}
       <SolicitudProvider>
-        {/* 🚀 NUEVO LAYOUT: Flexbox horizontal en vez de vertical */}
         <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
 
           {/* Notificaciones */}
@@ -85,26 +93,31 @@ export default function App() {
             </div>
           )}
 
-          {/* 🚀 PARTE IZQUIERDA: Tu nuevo Menú Lateral */}
+          {/* PARTE IZQUIERDA: Menú Lateral */}
           <Sidebar currentScreen={currentScreen.name} setScreen={setCurrentScreen} />
 
-          {/* 🚀 PARTE DERECHA: Contenedor Principal */}
+          {/* PARTE DERECHA: Contenedor Principal */}
           <div className="flex-1 flex flex-col overflow-hidden relative">
 
-            {/* Barra superior minimalista para el botón de Cerrar Sesión */}
+            {/* Barra superior minimalista */}
             <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-end px-8 shrink-0">
               <button
+                type="button"
                 onClick={handleLogout}
                 className="flex items-center gap-2 text-[12px] font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
                 CERRAR SESIÓN
               </button>
             </header>
 
-            {/* Tus pantallas dinámicas */}
+            {/* Pantallas dinámicas */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-8">
-              {currentScreen.name === 'dashboard' && <Dashboard setScreen={setCurrentScreen} />}
+              {currentScreen.name === 'dashboard' && (
+                <Dashboard setScreen={setCurrentScreen} />
+              )}
 
               {currentScreen.name === 'expedientes' && (
                 <Expedientes
@@ -151,7 +164,7 @@ export default function App() {
                 <ReportesScreen setScreen={setCurrentScreen} />
               )}
 
-              {/* 🚀 MÓDULO: MESA DE PARTES */}
+              {/* MÓDULO: MESA DE PARTES */}
               {currentScreen.name === 'nueva-solicitud' && (
                 <RegistrarSolicitud
                   setScreen={setCurrentScreen}
@@ -159,12 +172,19 @@ export default function App() {
                 />
               )}
 
-              {/* 🚀 BANDEJA DE GESTIÓN DE SOLICITUDES */}
               {currentScreen.name === 'bandeja-solicitudes' && (
                 <BandejaSolicitudes
-                  // Se retiró 'setScreen' para cumplir con las directrices del linter
                   triggerToast={triggerGlobalToast}
                 />
+              )}
+
+              {/* 💰 NUEVOS TRÁMITES ENRUTADOS: CONTROL DE LIQUIDACIÓN Y COSTOS */}
+              {currentScreen.name === 'historial-caja' && (
+                <HistorialCaja setScreen={setCurrentScreen} />
+              )}
+
+              {currentScreen.name === 'reporte-costos' && (
+                <ReporteCostos setScreen={setCurrentScreen} />
               )}
             </main>
           </div>

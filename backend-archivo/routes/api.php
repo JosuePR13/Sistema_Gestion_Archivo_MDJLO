@@ -6,6 +6,7 @@ use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\ArchivoDigitalController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\SolicitudController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/expedientes/{id}/archivos/{archivo_id}', [ArchivoDigitalController::class, 'descargar']);
@@ -48,4 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reportes/digitalizacion', [ReporteController::class, 'digitalizacion']);
     Route::get('/reportes/por-fecha', [ReporteController::class, 'porFecha']);
 
+    // ── Sprint 6 — Mesa de Partes ─────────────
+    Route::apiResource('solicitudes', SolicitudController::class);
 });

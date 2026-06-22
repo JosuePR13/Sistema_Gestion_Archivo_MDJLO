@@ -209,8 +209,10 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 ) : solicitudesFiltradas.length === 0 ? (
                                     <tr><td colSpan="5" className="py-12 text-center text-sm font-bold text-slate-400">No hay solicitudes pendientes en este momento.</td></tr>
                                 ) : (
-                                    solicitudesFiltradas.map((sol) => (
-                                        <tr key={sol.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                    // 1. Agrega el index al map
+                                    solicitudesFiltradas.map((sol, index) => (
+                                        // 2. Ponle este seguro a la key para evitar errores si el ID no es único o no existe
+                                        <tr key={sol.id || sol.id_solicitud || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                                             <td className="py-4 px-6">
                                                 <div className="flex flex-col">
                                                     <span className="text-[13px] font-bold text-slate-700">{sol.fecha_solicitud}</span>

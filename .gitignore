@@ -3,14 +3,14 @@
 # Sistema de Gestión Archivística - Municipalidad JLO
 # ===================================================================
 
-# 📦 Dependencias y Entornos de Compilación (Ignorados)
+# 📦 Dependencias y entornos de compilación
 **/node_modules/
 **/dist/
 **/vendor/
 **/.env
 **/storage/*.key
 
-# 📁 Temporales de Frameworks e IDEs
+# 📁 Temporales de frameworks e IDEs
 .idea/
 .vscode/
 *.suo
@@ -19,18 +19,32 @@
 *.sln
 *.swp
 
-# 🚀 Control Específico de Carpetas Laravel (bootstrap/cache)
-# Ignoramos todo el contenido temporal de la caché...
+# 🚀 Caché de Laravel
 /backend-archivo/bootstrap/cache/*
 
-# ...¡PERO NO IGNORAMOS el archivo .gitkeep! (Esto blinda tu clonación)
+# Conservar archivos que mantienen la carpeta en Git
+!/backend-archivo/bootstrap/cache/.gitignore
 !/backend-archivo/bootstrap/cache/.gitkeep
 
-# 📥 Temporales del Almacenamiento de Laravel (Framework & Logs)
+# 📥 Datos temporales de caché
 /backend-archivo/storage/framework/cache/data/*
-/backend-archivo/storage/framework/sessions/*
-/backend-archivo/storage/framework/views/*
-/backend-archivo/storage/logs/*.log
+!/backend-archivo/storage/framework/cache/data/.gitignore
 
-# Si deseas ignorar los PDFs reales subidos por los operadores para no llenar tu GitHub:
+# 📥 Sesiones temporales
+/backend-archivo/storage/framework/sessions/*
+!/backend-archivo/storage/framework/sessions/.gitignore
+
+# 📥 Vistas compiladas
+/backend-archivo/storage/framework/views/*
+!/backend-archivo/storage/framework/views/.gitignore
+
+# 📥 Archivos temporales de testing
+/backend-archivo/storage/framework/testing/*
+!/backend-archivo/storage/framework/testing/.gitignore
+
+# 📄 Logs de Laravel
+/backend-archivo/storage/logs/*
+!/backend-archivo/storage/logs/.gitignore
+
+# Archivos reales cargados por los operadores
 # /backend-archivo/storage/app/public/*
