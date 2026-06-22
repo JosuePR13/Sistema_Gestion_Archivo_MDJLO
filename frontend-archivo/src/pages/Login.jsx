@@ -18,12 +18,26 @@ const Login = ({ onLoginSuccess }) => {
       const response = await api.post('/login', { email, password });
       const { token, user } = response.data;
 
-      localStorage.setItem('token', token);
+      const tokenEsValido =
+        typeof token === 'string' &&
+        token.trim() !== '' &&
+        token !== 'undefined' &&
+        token !== 'null';
+
+      if (!tokenEsValido) {
+        throw new Error('El servidor no devolvió un token de autenticación válido.');
+      }
+
+      localStorage.setItem('token', token.trim());
       localStorage.setItem('user', JSON.stringify(user));
 
       onLoginSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al conectar con el servidor');
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        'Error al conectar con el servidor'
+      );
       setPassword('');
     } finally {
       setLoading(false);
@@ -82,7 +96,6 @@ const Login = ({ onLoginSuccess }) => {
         {/* Pie de página de la columna izquierda */}
         <p className="text-blue-100/40 text-xs font-semibold tracking-wider relative z-10">MDJLO © 2026</p>
       </div>
-
 
       {/* ==========================================
           COLUMNA DERECHA: FORMULARIO ELEVADO

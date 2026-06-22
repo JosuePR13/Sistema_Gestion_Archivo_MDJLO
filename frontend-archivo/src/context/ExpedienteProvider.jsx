@@ -11,17 +11,27 @@ export function ExpedienteProvider({ children }) {
     const cargarDatosGlobales = useCallback(async () => {
         try {
             setLoading(true);
+
             const [resExp, resTipos] = await Promise.all([
                 api.get('/expedientes'),
                 api.get('/tipos-documento')
             ]);
 
-            const dataReal = resExp.data.data ? resExp.data.data : resExp.data;
+            const dataReal = resExp.data.data
+                ? resExp.data.data
+                : resExp.data;
+
             const expedientesLista = dataReal || [];
 
             const ordenados = expedientesLista.sort((a, b) => {
-                const tiempoB = new Date(b.updated_at || b.created_at).getTime();
-                const tiempoA = new Date(a.updated_at || a.created_at).getTime();
+                const tiempoB = new Date(
+                    b.updated_at || b.created_at
+                ).getTime();
+
+                const tiempoA = new Date(
+                    a.updated_at || a.created_at
+                ).getTime();
+
                 return tiempoB - tiempoA;
             });
 
@@ -38,7 +48,13 @@ export function ExpedienteProvider({ children }) {
         const iniciarCarga = async () => {
             const tokenActivo = localStorage.getItem('token');
 
-            if (!tokenActivo) {
+            const tokenEsValido =
+                typeof tokenActivo === 'string' &&
+                tokenActivo.trim() !== '' &&
+                tokenActivo !== 'undefined' &&
+                tokenActivo !== 'null';
+
+            if (!tokenEsValido) {
                 setLoading(false);
                 return;
             }
@@ -54,7 +70,14 @@ export function ExpedienteProvider({ children }) {
     };
 
     return (
-        <ExpedienteContext.Provider value={{ expedientes, tipos, loading, refrescarData }}>
+        <ExpedienteContext.Provider
+            value={{
+                expedientes,
+                tipos,
+                loading,
+                refrescarData
+            }}
+        >
             {children}
         </ExpedienteContext.Provider>
     );

@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,8 +17,26 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*'
         ]);
 
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->append(
+            \Illuminate\Http\Middleware\HandleCors::class
+        );
+
+        $middleware->redirectGuestsTo(
+            function (Request $request) {
+                if ($request->is('api/*')) {
+                    return null;
+                }
+
+                return '/';
+            }
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
-    })->create();
+        $exceptions->shouldRenderJsonWhen(
+            function (Request $request, Throwable $exception) {
+                return $request->is('api/*')
+                    || $request->expectsJson();
+            }
+        );
+    })
+    ->create();
