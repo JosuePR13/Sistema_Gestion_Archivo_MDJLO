@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 
 class SolicitudController extends Controller
 {
-    // 📁 GET /api/solicitudes -> Cargar la Bandeja
     public function index()
     {
         return response()->json(
@@ -16,7 +15,6 @@ class SolicitudController extends Controller
         );
     }
 
-    // 📝 POST /api/solicitudes -> Registrar nueva solicitud en Mesa de Partes
     public function store(Request $request)
     {
         $camposValidados = $request->validate([
@@ -37,7 +35,6 @@ class SolicitudController extends Controller
         return response()->json($solicitud, 201);
     }
 
-    // 💰 PUT /api/solicitudes/{solicitude}
     public function update(Request $request, int $solicitude)
     {
         $solicitud = Solicitud::findOrFail($solicitude);
@@ -58,7 +55,6 @@ class SolicitudController extends Controller
         return response()->json($solicitud, 200);
     }
 
-    // GET /api/solicitudes/{solicitude}
     public function show(int $solicitude)
     {
         return response()->json(
@@ -67,7 +63,6 @@ class SolicitudController extends Controller
         );
     }
 
-    // DELETE /api/solicitudes/{solicitude}
     public function destroy(int $solicitude)
     {
         Solicitud::findOrFail($solicitude)->delete();

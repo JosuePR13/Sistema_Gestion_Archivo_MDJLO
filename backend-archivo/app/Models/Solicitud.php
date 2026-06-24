@@ -9,10 +9,8 @@ class Solicitud extends Model
 {
     use HasFactory;
 
-    // 🚀 OBLIGATORIO: Definimos el nombre exacto de la tabla en la base de datos
     protected $table = 'solicitudes';
 
-    // 💰 MASSA ASSIGNMENT BLINDADO: Autorizamos a Laravel a escribir en estos campos desde el controlador
     protected $fillable = [
         'dni',
         'nombres',
@@ -23,8 +21,6 @@ class Solicitud extends Model
         'descripcion',
         'fecha_solicitud',
         'estado',
-        
-        // Campos nuevos para el Wizard de Liquidación y Reporte de Costos (TUPA)
         'motivo_rechazo',
         'costo_tupa',
         'tipo_formato_tupa',

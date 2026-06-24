@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useExpedientes } from '../context/useExpedientes';
-import api from '../services/api';
-// 🚀 NUEVA IMPORTACIÓN: Librería para leer los PDFs en el navegador sin consumir el servidor
+import { useExpedientes } from '../../context/useExpedientes';
+import api from '../../services/api';
 import { PDFDocument } from 'pdf-lib';
 
 export default function DigitalizacionScreen({ triggerToast }) {
@@ -25,7 +24,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [pendingExpId, setPendingExpId] = useState(null);
 
-  // 🚀 NUEVOS ESTADOS: Modal para desajuste de páginas vs folios
   const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [mismatchData, setMismatchData] = useState({ filename: '', expected: 0, actual: 0 });
 
@@ -137,7 +135,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
     setPendingExpId(null);
   };
 
-  // 🚀 FUNCIÓN ASÍNCRONA: Validación de peso y de páginas PDF
   const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length === 0) return;
@@ -159,18 +156,15 @@ export default function DigitalizacionScreen({ triggerToast }) {
       return;
     }
 
-    // 🚀 LECTURA INTERNA DEL PDF PARA VALIDAR PÁGINAS VS FOLIOS
     const expedienteSeleccionado = expedientes.find(exp => exp.id === selectedExpId);
     const foliosRegistrados = parseInt(expedienteSeleccionado?.numero_folios) || 0;
 
     for (const file of validPdfs) {
       try {
         const arrayBuffer = await file.arrayBuffer();
-        // Cargamos el PDF en memoria sin renderizarlo (Ultra rápido)
         const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
         const numPages = pdfDoc.getPageCount();
 
-        // Si la cantidad de páginas físicas difiere de lo registrado en la base de datos...
         if (numPages !== foliosRegistrados) {
           setMismatchData({
             filename: file.name,
@@ -179,7 +173,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
           });
           setShowMismatchModal(true);
           if (fileInputRef.current) fileInputRef.current.value = '';
-          return; // Abortamos la carga por completo
+          return;
         }
       } catch (error) {
         console.error("Error al auditar el PDF:", error);
@@ -188,8 +182,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
         return;
       }
     }
-
-    // Si pasó todas las validaciones de peso y folios, se adjunta al estado
     setFiles(prev => [...prev, ...validPdfs]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -311,15 +303,12 @@ export default function DigitalizacionScreen({ triggerToast }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-          {/* CARGAR ARCHIVO */}
           <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
               <div className="w-1.5 h-5 bg-[#0F4C81] rounded-full shadow-sm"></div>
               <h3 className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Cargar Archivo Digital</h3>
             </div>
 
-            {/* COMBOBOX SEARCHABLE PREMIUM */}
             <div className="mb-6 relative z-30" ref={selectContainerRef}>
               <label className="block text-[11px] font-extrabold text-slate-500 mb-2 tracking-widest uppercase">
                 Expediente Físico a Digitalizar *
@@ -392,7 +381,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
               )}
             </div>
 
-            {/* 🚀 ZONA DE DROPZONE PROTEGIDA */}
             <div className={`relative p-8 rounded-3xl border-2 transition-all duration-300 ${!selectedExpId ? 'border-dashed border-slate-200 bg-slate-50/40 opacity-80' : (files.length > 0 ? 'border-solid border-emerald-400 bg-emerald-50/50' : 'border-dashed border-slate-300 bg-slate-50/50 hover:bg-white hover:border-[#0F4C81] z-10')}`}>
               <input
                 type="file"
@@ -406,7 +394,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
               />
 
               {!selectedExpId ? (
-                // DISEÑO BLOQUEADO (Candado)
                 <div className="flex flex-col items-center justify-center w-full h-full min-h-[140px] select-none">
                   <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center shadow-sm mb-4">
                     <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -415,7 +402,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
                   <p className="text-[11px] font-semibold text-slate-400 text-center px-4">Seleccione primero un expediente en el buscador superior para habilitar la digitalización.</p>
                 </div>
               ) : files.length === 0 ? (
-                // DISEÑO HABILITADO
                 <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full min-h-[140px]">
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_2px_15px_rgba(15,76,129,0.08)] mb-4 group-hover:scale-110 transition-transform">
                     <svg className="w-8 h-8 text-[#0F4C81]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
@@ -424,7 +410,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
                   <p className="text-[11px] font-semibold text-slate-400">Auditoría automática de folios activa. Límite: 5.00 MB</p>
                 </label>
               ) : (
-                // LISTADO DE ARCHIVOS PREPARADOS
                 <div className="flex flex-col w-full animate-fade-in">
                   <div className="w-full max-h-[180px] overflow-y-auto space-y-3 pr-2 mb-4 scrollbar-hide">
                     {files.map((f, i) => (
@@ -462,7 +447,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
             </div>
           </div>
 
-          {/* RESUMEN DEL SISTEMA (Derecha) */}
           <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
@@ -501,7 +485,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         </div>
 
-        {/* TABLA DE EXPEDIENTES DIGITALIZADOS */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col relative z-0">
           <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">{tablaFiltrada.length} registro(s) digitalizado(s)</p>
@@ -561,7 +544,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         </div>
 
-        {/* PAGINACIÓN FLOTANTE PREMIUM */}
         {totalPages > 1 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 p-2 px-6 flex justify-between items-center bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-all z-40 w-max min-w-[320px]">
             <span className="text-[12px] text-slate-500 font-extrabold tracking-widest uppercase mr-8">
@@ -578,7 +560,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
-        {/* 🚀 NUEVO: MODAL ALERTA PÁGINAS PDF VS FOLIOS REGISTRADOS */}
         {showMismatchModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -611,11 +592,9 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
-        {/* MODAL GESTOR DE ARCHIVOS PREMIUM */}
         {gestorModal.isOpen && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
-              {/* ... (El resto del modal se mantiene intacto) ... */}
               <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
                 <div>
                   <h3 className="text-lg font-black text-slate-800 tracking-tight">Documentos del Expediente</h3>
@@ -673,7 +652,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
-        {/* MODAL LÍMITE DE TAMAÑO */}
         {showSizeLimitModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -692,7 +670,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
-        {/* MODAL ELIMINAR PDF */}
         {showDeleteModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -712,7 +689,6 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
-        {/* MODAL ADVERTENCIA DE CAMBIO */}
         {showWarningModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">

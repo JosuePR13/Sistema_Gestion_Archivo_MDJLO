@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
-import { useSolicitudes } from '../context/useSolicitudes';
+import api from '../../services/api';
+import { useSolicitudes } from '../../context/useSolicitudes';
 
 export default function RegistrarSolicitud({ setScreen, triggerToast }) {
-    // 🚀 EXTRAEMOS LA FUNCIÓN DEL CONTEXTO GLOBAL
     const { refrescarSolicitudes } = useSolicitudes();
 
     const obtenerFechaLocal = () => {
@@ -75,7 +74,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
 
         const formElement = e.currentTarget;
         const dataFromForm = new FormData(formElement);
-        
+
         const payload = {
             dni: dataFromForm.get('dni'),
             nombres: dataFromForm.get('nombres'),
@@ -179,7 +178,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                     id="apellidos"
                                     name="apellidos"
                                     type="text"
-                                    placeholder="Apellidos completos"                                    
+                                    placeholder="Apellidos completos"
                                     className={getInputStyles(formData.apellidos)}
                                     value={formData.apellidos}
                                     onChange={e => handleInputChange('apellidos', e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}

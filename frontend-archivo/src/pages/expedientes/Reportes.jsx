@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useExpedientes } from '../context/useExpedientes';
-import CustomDropdown from '../components/CustomDropdown';
+import { useExpedientes } from '../../context/useExpedientes';
+import CustomDropdown from '../../components/CustomDropdown';
 
 export default function ReportesScreen() {
   const { expedientes: dataGlobal, loading } = useExpedientes();
@@ -137,7 +137,6 @@ export default function ReportesScreen() {
   const optsAnios = aniosDisponibles.map(a => ({ id: a, nombre: a }));
   const optsAreas = [{ id: 'Todas', nombre: 'Todas las áreas' }, ...areasDisponibles.map(a => ({ id: a, nombre: a }))];
 
-  // 🚀 Lógica premium de Pastillas (Badges) para la tabla
   const badgeColor = (estado) => {
     if (!estado) return '';
     const e = estado.toLowerCase();
@@ -165,8 +164,6 @@ export default function ReportesScreen() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
       <div className="max-w-screen-xl mx-auto animate-fade-in text-left">
-
-        {/* ENCABEZADO PREMIUM */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-1.5 h-8 bg-[#FFC107] rounded-full shadow-sm"></div>
           <div>
@@ -175,7 +172,6 @@ export default function ReportesScreen() {
           </div>
         </div>
 
-        {/* SELECCIÓN DE REPORTE (Tarjetas Horizontales Premium) */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
           {tiposReporte.map((t, i) => (
             <button
@@ -197,8 +193,6 @@ export default function ReportesScreen() {
         </div>
 
         <div className="space-y-8 w-full">
-
-          {/* ====== CAJA DE FILTROS ALINEADA ====== */}
           <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative z-30">
             <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
@@ -246,7 +240,6 @@ export default function ReportesScreen() {
             </div>
           </div>
 
-          {/* ====== TARJETAS KPI (Dashboard Style) ====== */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-20">
             {sel.stats.map((s, i) => (
               <div key={i} className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-100 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
@@ -259,7 +252,6 @@ export default function ReportesScreen() {
             ))}
           </div>
 
-          {/* ====== TABLA DE DETALLES PREMIUM ====== */}
           <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col relative z-10">
             <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <p className="text-[14px] font-black text-slate-800 tracking-tight">{sel.t}</p>
@@ -321,8 +313,6 @@ export default function ReportesScreen() {
           </div>
 
         </div>
-
-        {/* ====== ISLA FLOTANTE DE PAGINACIÓN ====== */}
         {totalPages > 1 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 p-2 px-6 flex justify-between items-center bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-all z-40 w-max min-w-[320px]">
             <span className="text-[12px] text-slate-500 font-extrabold tracking-widest uppercase mr-8">

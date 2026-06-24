@@ -16,7 +16,6 @@ export default function CustomDropdown({
     (opt.id !== undefined ? opt.id.toString() : opt.value?.toString()) === selectedValue?.toString()
   );
 
-  // Texto que se mostrará en el botón (seleccionado o placeholder)
   const textoBoton = optionSeleccionada ? (optionSeleccionada.nombre || optionSeleccionada.label) : placeholder;
 
   useEffect(() => {
@@ -42,7 +41,6 @@ export default function CustomDropdown({
           : 'bg-white border-slate-200 text-slate-700 shadow-[0_2px_15px_rgba(0,0,0,0.02)] hover:border-blue-300 hover:shadow-[0_4px_20_rgba(15,76,129,0.06)] focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10'
           }`}
       >
-        {/* 🚀 title={textoBoton} muestra el nombre completo al pasar el mouse sobre el botón */}
         <span 
           title={textoBoton} 
           className={`truncate block mt-0.5 ${uppercase ? 'uppercase tracking-wide' : ''} ${!optionSeleccionada ? 'text-slate-400 font-semibold' : 'text-slate-700 font-extrabold'}`}
@@ -81,7 +79,6 @@ export default function CustomDropdown({
                         : 'text-slate-600 font-bold hover:bg-slate-50 hover:text-[#0F4C81]'
                       }`}
                   >
-                    {/* 🚀 title={nombrePintar} permite ver el nombre completo de cada opción de la lista al pasar el cursor */}
                     <span className="truncate relative z-10" title={nombrePintar}>{nombrePintar}</span>
                     {isSelected && (
                       <svg className="w-4 h-4 text-white relative z-10 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>

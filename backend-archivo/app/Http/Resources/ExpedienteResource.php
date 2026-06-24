@@ -4,15 +4,13 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\DB; // 🚀 Importamos la fachada DB de Laravel
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ExpedienteResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        // 🚀 SOLUCIÓN MAESTRA: Buscamos la fecha directo en la tabla con Query Builder 
-        // para no depender de si la relación en el modelo se llama archivos o archivoDigital.
         $ultimoArchivo = DB::table('archivos_digitales')
             ->where('expediente_id', $this->id)
             ->orderBy('uploaded_at', 'desc')
@@ -36,7 +34,6 @@ class ExpedienteResource extends JsonResource
             'fecha_revision' => $this->fecha_revision ? Carbon::parse($this->fecha_revision)->format('Y-m-d') : 'PERMANENTE',
             'digitalizado' => (int) $this->digitalizado,
 
-            // Forzamos salida en ISO-8601 en la hora estricta de Lima
             'created_at' => Carbon::parse($this->created_at)->timezone('America/Lima')->toIso8601String(),
             'updated_at' => Carbon::parse($this->updated_at)->timezone('America/Lima')->toIso8601String(),
             'ultimo_pdf_at' => $ultimoArchivo ? Carbon::parse($ultimoArchivo->uploaded_at)->timezone('America/Lima')->toIso8601String() : null,

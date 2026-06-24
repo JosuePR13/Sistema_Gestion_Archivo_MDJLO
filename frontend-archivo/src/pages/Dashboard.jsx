@@ -20,7 +20,6 @@ export default function Dashboard({ setScreen }) {
     return String(val);
   };
 
-  // 🚀 FUNCIÓN DE TIEMPO RELATIVO COMPACTA
   const tiempoRelativo = (fechaTarget) => {
     const f = new Date(fechaTarget);
     const ahora = new Date();
@@ -37,7 +36,6 @@ export default function Dashboard({ setScreen }) {
     return f.toLocaleDateString('es-PE');
   };
 
-  // 🚀 MÉTRICA DE INGRESOS DE HOY
   const ingresosHoy = expedientes.filter(exp => {
     if (!exp.created_at) return false;
     const fechaDocLimpia = exp.created_at.substring(0, 10);
@@ -78,7 +76,6 @@ export default function Dashboard({ setScreen }) {
 
   const areaLider = areasData.length > 0 ? areasData[0] : null;
 
-  // 🚀 CONSTRUCCIÓN DEL TIMELINE CON COEXISTENCIA SENSITIVA DE EVENTOS
   const historialTimeline = [];
 
   expedientes.forEach(e => {
@@ -90,7 +87,6 @@ export default function Dashboard({ setScreen }) {
     const numExp = safeText(e.numero_expediente);
     const isDigi = e.digitalizado === 1 || e.digitalizado === true;
 
-    // 1️⃣ EVENTO CONSTANTE: REGISTRADO
     historialTimeline.push({
       id: `reg-${e.id}`,
       num: numExp,
@@ -101,26 +97,20 @@ export default function Dashboard({ setScreen }) {
       color: P
     });
 
-    // 2️⃣ EVENTO DINÁMICO: DIGITALIZADO
     if (isDigi) {
-      // Si el PDF se subió hoy, priorizamos su estampa de tiempo real (timePdf) o el update de cabecera
       const fechaFinalPdf = timePdf || timeActualizacion;
       historialTimeline.push({
         id: `digi-${e.id}`,
         num: numExp,
         accion: 'Digitalizado',
-        fechaReal: fechaFinalPdf + 10, // Pequeño desfase de orden para asegurar que quede arriba en empates
+        fechaReal: fechaFinalPdf + 10,
         tiempo: tiempoRelativo(fechaFinalPdf),
         area: areaOrig,
-        color: '#10B981' // Verde
+        color: '#10B981'
       });
     }
 
-    // 3️⃣ EVENTO DINÁMICA: ACTUALIZADO (EDICIÓN DE TEXTO CORREGIDA)
     if (timeActualizacion > timeCreacion + 3000) {
-      // PERMITIMOS LA COEXISTENCIA: El morado aparecerá SIEMPRE que haya un desfase con la creación.
-      // Si el expediente también está digitalizado, le restamos un par de milisegundos en el ordenamiento 
-      // interno para obligar al Morado a quedarse abajo del Verde si ambos ocurrieron en la simulación de hoy.
       const margenPrioridad = isDigi ? -10 : 0;
 
       historialTimeline.push({
@@ -130,12 +120,11 @@ export default function Dashboard({ setScreen }) {
         fechaReal: timeActualizacion + margenPrioridad,
         tiempo: tiempoRelativo(timeActualizacion),
         area: areaOrig,
-        color: '#8B5CF6' // Morado
+        color: '#8B5CF6'
       });
     }
   });
 
-  // Ordenamiento y remoción de duplicados estrictos
   const uniqueTimeline = [];
   const seenKeys = new Set();
 
@@ -174,7 +163,6 @@ export default function Dashboard({ setScreen }) {
 
   return (
     <div className="p-4 sm:p-8 max-w-screen-xl mx-auto min-h-screen animate-fade-in">
-      {/* (El resto de tu excelente diseño JSX de KPIs, Accesos Directos, Actividad Reciente y Barras se mantiene idéntico e intacto) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
         {kpis.map(k => (
           <div key={k.l} className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-100 p-6 relative overflow-hidden transition-all hover:-translate-y-1 duration-300 group">

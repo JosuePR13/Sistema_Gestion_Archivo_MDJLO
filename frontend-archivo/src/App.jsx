@@ -1,21 +1,17 @@
 import { useState, useEffect } from 'react';
-import Login from './pages/Login';
+import Login from './pages/auth/Login';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
-import Expedientes from './pages/Expedientes';
-import DetalleExpediente from './pages/DetalleExpediente';
-import RegistrarExpediente from './pages/RegistrarExpediente';
-import DigitalizacionScreen from './pages/Digitalizacion';
-import SeguimientoScreen from './pages/Seguimiento';
-import ReportesScreen from './pages/Reportes';
-import RegistrarSolicitud from './pages/RegistrarSolicitud';
-import BandejaSolicitudes from './pages/BandejaSolicitudes';
-
-// 💰 NUEVAS PANTALLAS DEL MÓDULO DE LIQUIDACIÓN Y RECAUDACIÓN
-import HistorialCaja from './pages/HistorialCaja';
-import ReporteCostos from './pages/ReporteCostos';
-
-// Context Providers
+import Expedientes from './pages/expedientes/Expedientes';
+import DetalleExpediente from './pages/expedientes/DetalleExpediente';
+import RegistrarExpediente from './pages/expedientes/RegistrarExpediente';
+import DigitalizacionScreen from './pages/expedientes/Digitalizacion';
+import SeguimientoScreen from './pages/expedientes/Seguimiento';
+import ReportesScreen from './pages/expedientes/Reportes';
+import RegistrarSolicitud from './pages/solicitudes/RegistrarSolicitud';
+import BandejaSolicitudes from './pages/solicitudes/BandejaSolicitudes';
+import HistorialCaja from './pages/caja/HistorialCaja';
+import ReporteCostos from './pages/caja/ReporteCostos';
 import { ExpedienteProvider } from './context/ExpedienteProvider';
 import { SolicitudProvider } from './context/SolicitudProvider';
 
@@ -84,22 +80,14 @@ export default function App() {
     <ExpedienteProvider>
       <SolicitudProvider>
         <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
-
-          {/* Notificaciones */}
           {globalToast.show && (
             <div className="fixed top-5 right-5 z-50 flex items-center gap-3 bg-emerald-600 text-white px-5 py-3.5 rounded-xl shadow-[0_10px_30px_rgba(16,185,129,0.3)] border border-emerald-500/30 animate-slide-in font-semibold text-sm backdrop-blur-md">
               <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</div>
               <span>{globalToast.message}</span>
             </div>
           )}
-
-          {/* PARTE IZQUIERDA: Menú Lateral */}
           <Sidebar currentScreen={currentScreen.name} setScreen={setCurrentScreen} />
-
-          {/* PARTE DERECHA: Contenedor Principal */}
           <div className="flex-1 flex flex-col overflow-hidden relative">
-
-            {/* Barra superior minimalista */}
             <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-end px-8 shrink-0">
               <button
                 type="button"
@@ -112,13 +100,10 @@ export default function App() {
                 CERRAR SESIÓN
               </button>
             </header>
-
-            {/* Pantallas dinámicas */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-8">
               {currentScreen.name === 'dashboard' && (
                 <Dashboard setScreen={setCurrentScreen} />
               )}
-
               {currentScreen.name === 'expedientes' && (
                 <Expedientes
                   setScreen={setCurrentScreen}
@@ -130,14 +115,12 @@ export default function App() {
                   setFilterFechaDesde={setFilterFechaDesde}
                 />
               )}
-
               {currentScreen.name === 'nuevo-expediente' && (
                 <RegistrarExpediente
                   setScreen={setCurrentScreen}
                   triggerToast={triggerGlobalToast}
                 />
               )}
-
               {currentScreen.name === 'detalle' && (
                 <DetalleExpediente
                   id={currentScreen.id}
@@ -148,41 +131,32 @@ export default function App() {
                   setFilterFechaDesde={setFilterFechaDesde}
                 />
               )}
-
               {currentScreen.name === 'digitalizacion' && (
                 <DigitalizacionScreen
                   setScreen={setCurrentScreen}
                   triggerToast={triggerGlobalToast}
                 />
               )}
-
               {currentScreen.name === 'seguimiento' && (
                 <SeguimientoScreen setScreen={setCurrentScreen} />
               )}
-
               {currentScreen.name === 'reportes' && (
                 <ReportesScreen setScreen={setCurrentScreen} />
               )}
-
-              {/* MÓDULO: MESA DE PARTES */}
               {currentScreen.name === 'nueva-solicitud' && (
                 <RegistrarSolicitud
                   setScreen={setCurrentScreen}
                   triggerToast={triggerGlobalToast}
                 />
               )}
-
               {currentScreen.name === 'bandeja-solicitudes' && (
                 <BandejaSolicitudes
                   triggerToast={triggerGlobalToast}
                 />
               )}
-
-              {/* 💰 NUEVOS TRÁMITES ENRUTADOS: CONTROL DE LIQUIDACIÓN Y COSTOS */}
               {currentScreen.name === 'historial-caja' && (
                 <HistorialCaja setScreen={setCurrentScreen} />
               )}
-
               {currentScreen.name === 'reporte-costos' && (
                 <ReporteCostos setScreen={setCurrentScreen} />
               )}

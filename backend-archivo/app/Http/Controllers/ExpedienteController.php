@@ -7,24 +7,22 @@ use App\Models\Expediente;
 use App\Models\Area;
 use App\Models\TipoDocumento;
 use App\Models\HistorialEdicion;
-use App\Http\Resources\ExpedienteResource; // 🚀 Importamos el recurso
+use App\Http\Resources\ExpedienteResource;
 use Carbon\Carbon;
 
 class ExpedienteController extends Controller
 {
-    // ─── Helper: calcular estado según fecha_revision ─────────
     private function calcularEstado(?string $fechaRevision): string
     {
         if (!$fechaRevision) {
-            return 'Activo'; // Permanente
+            return 'Activo';
         }
 
         return Carbon::today()->diffInDays(Carbon::parse($fechaRevision), false) <= 30
-            ? 'Para revision' // PROXIMO o ATRASADO
-            : 'Activo'; // VIGENTE
+            ? 'Para revision'
+            : 'Activo';
     }
 
-    // ─── Store ────────────────────────────────────────────────
     public function store(Request $request)
     {
         $request->validate([
@@ -64,14 +62,12 @@ class ExpedienteController extends Controller
 
         return response()->json([
             'message' => 'Expediente registrado correctamente',
-            'expediente' => new ExpedienteResource($expediente), // 🚀 Usamos el recurso
+            'expediente' => new ExpedienteResource($expediente),
         ], 201);
     }
 
-    // ─── Index REPARADO Y BLINDADO AL 100% ────────────────────
     public function index()
     {
-        // Cargamos únicamente las relaciones seguras que tu controlador ya usa con éxito
         $expedientes = Expediente::with(['areaActual', 'tipoDocumento', 'areaOrigen'])
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -79,15 +75,11 @@ class ExpedienteController extends Controller
         $expedientes->each(function ($exp) {
             $exp->estado = $this->calcularEstado($exp->fecha_revision);
         });
-
-        // Retornamos la colección procesada de forma segura por el recurso
         return ExpedienteResource::collection($expedientes);
     }
 
-    // ─── Show REPARADO ────────────────────────────────────────
     public function show($id)
     {
-        // 🚀 CORREGIDO: Quitamos 'archivos' para evitar error 500
         $expediente = Expediente::with(['tipoDocumento', 'areaOrigen', 'areaActual'])->find($id);
 
         if (!$expediente) {
@@ -98,7 +90,6 @@ class ExpedienteController extends Controller
         return response()->json(new ExpedienteResource($expediente), 200);
     }
 
-    // ─── Update REPARADO ──────────────────────────────────────
     public function update(Request $request, $id)
     {
         $expediente = Expediente::find($id);
@@ -175,19 +166,16 @@ class ExpedienteController extends Controller
 
         $expediente->update($data);
         $expediente->refresh();
-        // 🚀 CORREGIDO: Quitamos 'archivos' del load de éxito final
         $expediente->load(['tipoDocumento', 'areaOrigen', 'areaActual']);
 
         return response()->json([
             'message' => 'Expediente actualizado correctamente',
-            'expediente' => new ExpedienteResource($expediente), // 🚀 Usamos el recurso
+            'expediente' => new ExpedienteResource($expediente),
         ], 200);
     }
 
-    // ─── Search REPARADO ──────────────────────────────────────
     public function search(Request $request)
     {
-        // 🚀 CORREGIDO: Quitamos 'archivos' del with inicial
         $query = Expediente::with(['tipoDocumento', 'areaOrigen', 'areaActual']);
 
         if ($request->numero_expediente) {
@@ -216,7 +204,6 @@ class ExpedienteController extends Controller
         }
 
         return response()->json([
-            // 🚀 CORRECTO: Pasamos la colección limpia paginada por el recurso
             'data' => ExpedienteResource::collection($expedientes->getCollection()),
             'current_page' => $expedientes->currentPage(),
             'last_page' => $expedientes->lastPage(),
@@ -225,13 +212,11 @@ class ExpedienteController extends Controller
         ], 200);
     }
 
-    // ─── Listas para formulario ───────────────────────────────
     public function areas()
     {
         return response()->json(Area::where('activo', 1)->orderBy('nombre')->get(['id', 'nombre']), 200);
     }
 
-    // ─── Historial de ediciones ───────────────────────────────
     public function tiposDocumento()
     {
         return response()->json(TipoDocumento::orderBy('nombre')->get(['id', 'nombre']), 200);

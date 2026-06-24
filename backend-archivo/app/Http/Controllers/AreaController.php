@@ -7,7 +7,6 @@ use App\Models\Area;
 
 class AreaController extends Controller
 {
-    // HU11 - Registrar nueva área
     public function store(Request $request)
     {
         $request->validate([
@@ -27,7 +26,6 @@ class AreaController extends Controller
         ], 201);
     }
 
-    // HU12 - Listar todas las áreas
     public function index()
     {
         $areas = Area::orderBy('nombre')->get();
@@ -42,7 +40,6 @@ class AreaController extends Controller
         return response()->json($areas, 200);
     }
 
-    // HU12 - Ver detalle de un área
     public function show($id)
     {
         $area = Area::find($id);
@@ -56,7 +53,6 @@ class AreaController extends Controller
         return response()->json($area, 200);
     }
 
-    // HU12 - Modificar área
     public function update(Request $request, $id)
     {
         $area = Area::find($id);
@@ -83,7 +79,6 @@ class AreaController extends Controller
         ], 200);
     }
 
-    // HU12 - Desactivar área
     public function destroy($id)
     {
         $area = Area::find($id);

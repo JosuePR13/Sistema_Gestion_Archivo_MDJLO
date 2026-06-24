@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import api from '../services/api';
-import CustomDropdown from '../components/CustomDropdown';
-import { useExpedientes } from '../context/useExpedientes';
+import api from '../../services/api';
+import CustomDropdown from '../../components/CustomDropdown';
+import { useExpedientes } from '../../context/useExpedientes';
 
 export default function RegistrarExpediente({ setScreen, triggerToast }) {
   const { refrescarData } = useExpedientes();
@@ -212,9 +212,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900">
-      {/* 🚀 NUEVO CONTENEDOR AMPLIO: max-w-[1200px] aprovecha el ancho extra elegantemente */}
       <div className="max-w-[1200px] w-full mx-auto animate-fade-in">
-
         <div className="flex items-center gap-2 mb-6">
           <button type="button" onClick={handleTryExit} className="text-[13px] text-slate-500 hover:text-[#0F4C81] transition-colors font-extrabold flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-200">
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
@@ -223,7 +221,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8" noValidate>
-          {/* TARJETA 1: INFORMACIÓN GENERAL */}
           <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
               <div className="w-1.5 h-5 bg-[#FFC107] rounded-full shadow-sm"></div>
@@ -232,10 +229,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
               </span>
             </div>
 
-            {/* 🚀 NUEVO SISTEMA DE 12 COLUMNAS PARA DISTRIBUCIÓN ESTÉTICA */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
-
-              {/* TIPO DOCUMENTAL (4 de 12 columnas) */}
               <div className="md:col-span-6 lg:col-span-4">
                 <label htmlFor="tipo_documento_id" className={labelStyles}>Tipo de documento *</label>
                 <div className={`rounded-2xl transition-all ${validated && !formData.tipo_documento_id ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
@@ -255,7 +249,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
 
               {esComprobante ? (
                 <>
-                  {/* COMPROBANTE: 4 de 12 columnas */}
                   <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="numero_comprobante" className={labelStyles}>N° Comprobante de Pago *</label>
                     <input
@@ -270,7 +263,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el número</p>
                     )}
                   </div>
-                  {/* FECHA COMPROBANTE: 4 de 12 columnas */}
+
                   <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="fecha_comprobante" className={labelStyles}>Fecha *</label>
                     <input
@@ -285,7 +278,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese la fecha</p>
                     )}
                   </div>
-                  {/* RAZÓN SOCIAL: 6 de 12 columnas (mitad de pantalla) */}
+
                   <div className="md:col-span-12 lg:col-span-6">
                     <label htmlFor="razon_social" className={labelStyles}>Nombre y Apellidos / RAZÓN SOCIAL *</label>
                     <input
@@ -300,7 +293,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el interesado / razón social</p>
                     )}
                   </div>
-                  {/* MONTO: 3 de 12 columnas */}
+
                   <div className="md:col-span-6 lg:col-span-3">
                     <label htmlFor="monto" className={labelStyles}>Monto (S/.) *</label>
                     <input
@@ -317,7 +310,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el monto total</p>
                     )}
                   </div>
-                  {/* SIAF: 3 de 12 columnas */}
+
                   <div className="md:col-span-6 lg:col-span-3">
                     <label htmlFor="registro_siaf" className={labelStyles}>Registro SIAF / CIAF *</label>
                     <input
@@ -335,7 +328,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                 </>
               ) : (
                 <>
-                  {/* EXPEDIENTE NORMAL: 4 de 12 columnas */}
+
                   <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="numero_expediente" className={labelStyles}>Número de Expediente *</label>
                     <input
@@ -350,7 +343,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Ingrese el código</p>
                     )}
                   </div>
-                  {/* FECHA: 4 de 12 columnas */}
+
                   <div className="md:col-span-3 lg:col-span-4">
                     <label htmlFor="fecha_ingreso" className={labelStyles}>Fecha de Ingreso *</label>
                     <input
@@ -365,7 +358,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2 animate-pulse">⚠️ Seleccione una fecha</p>
                     )}
                   </div>
-                  {/* TÍTULO: 12 de 12 columnas (TODO EL ANCHO) */}
+
                   <div className="md:col-span-12">
                     <label htmlFor="titulo" className={labelStyles}>Título del Expediente *</label>
                     <input
@@ -381,7 +374,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     )}
                   </div>
 
-                  {/* DESCRIPCIÓN: 12 de 12 columnas (TODO EL ANCHO) */}
                   <div className="md:col-span-12">
                     <label htmlFor="editor_descripcion" className={labelStyles}>Descripción / Asunto</label>
                     <div className="w-full border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden focus-within:ring-4 focus-within:ring-slate-500/10 focus-within:border-slate-400 focus-within:bg-white transition-all duration-300 shadow-inner shadow-slate-100/50">
@@ -400,8 +392,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     </div>
                   </div>
 
-                  {/* 🚀 EL TOQUE MAESTRO: CÁLCULO DE 12 COLUMNAS PARA LA FILA FINAL */}
-                  {/* ÁREA DE ORIGEN: 5 de 12 columnas (Espacio amplio para nombres largos) */}
                   <div className="md:col-span-12 lg:col-span-6">
                     <label htmlFor="area_origen_id" className={labelStyles}>Área de origen *</label>
                     <div className={`rounded-2xl transition-all ${validated && !formData.area_origen_id ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
@@ -421,19 +411,16 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                 </>
               )}
 
-              {/* ÁREA ACTUAL: 2 de 12 columnas (Acortado al tamaño perfecto) */}
               <div className="md:col-span-4 lg:col-span-2">
                 <label htmlFor="area_actual" className={labelStyles}>Área Actual</label>
                 <input id="area_actual" name="area_actual" type="text" value="Archivo Central" readOnly className={readOnlyStyles} />
               </div>
 
-              {/* ESTADO DOCUMENTAL: 2 de 12 columnas */}
               <div className="md:col-span-4 lg:col-span-2">
                 <label htmlFor="estado_documental" className={labelStyles}>Estado Documental</label>
                 <input id="estado_documental" name="estado_documental" type="text" value="Activo" readOnly className={readOnlyStyles} />
               </div>
 
-              {/* FOLIOS: 2 de 12 columnas */}
               <div className="md:col-span-4 lg:col-span-2">
                 <label htmlFor="numero_folios" className={labelStyles}>N° Folios *</label>
                 <input
@@ -453,7 +440,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
             </div>
           </div>
 
-          {/* TARJETA 2: CLASIFICACIÓN Y CONSERVACIÓN */}
           <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
@@ -508,7 +494,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
             </div>
           </div>
 
-          {/* BOTONERA INFERIOR */}
           <div className="flex justify-end gap-4 pt-4 pb-8">
             <button type="button" onClick={handleTryExit} className="px-8 py-3.5 rounded-2xl border-2 border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
               Cancelar
@@ -520,7 +505,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
         </form>
       </div>
 
-      {/* MODAL SALIDA */}
       {showExitModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -545,8 +529,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
           </div>
         </div>
       )}
-
-      {/* MODAL DUPLICADO */}
+      
       {showDuplicateModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useExpedientes } from '../context/useExpedientes';
-import api from '../services/api';
+import { useExpedientes } from '../../context/useExpedientes';
+import api from '../../services/api';
 
 export default function DetalleExpediente({
   id,
@@ -280,8 +280,6 @@ export default function DetalleExpediente({
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
-
-        {/* CABECERA DE NAVEGACIÓN PREMIUM */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={handleVolverAListado} className="text-[13px] text-slate-500 hover:text-[#0F4C81] transition-colors font-extrabold flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-200 mr-2">
@@ -344,7 +342,6 @@ export default function DetalleExpediente({
           </div>
         </div>
 
-        {/* REJILLA DE INFORMACIÓN */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
@@ -410,7 +407,6 @@ export default function DetalleExpediente({
           </div>
         </div>
 
-        {/* PESTAÑAS DE INFORMACIÓN */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
           <div className="flex border-b border-slate-100 bg-slate-50/50 px-6 overflow-x-auto scrollbar-hide">
             {[
@@ -452,13 +448,12 @@ export default function DetalleExpediente({
                     {archivosPDF.map((file) => {
                       const tamanoKB = (file.tamano_bytes / 1024).toFixed(1);
                       const tamanoReal = tamanoKB > 1024 ? (tamanoKB / 1024).toFixed(1) + ' MB' : tamanoKB + ' KB';
-                      
-                      // 🚀 MODIFICADO EN EXCLUSIVO: Previsualizador con iframe dinámico para forzar título
+
                       const abrirVisualizadorPDF = async () => {
                         try {
                           const response = await api.get(`/expedientes/${id}/archivos/${file.id}`, { responseType: 'blob' });
                           const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-                          
+
                           const nuevaVentana = window.open('', '_blank');
                           if (nuevaVentana) {
                             nuevaVentana.document.write(`
@@ -477,8 +472,8 @@ export default function DetalleExpediente({
                             `);
                             nuevaVentana.document.close();
                           }
-                        } catch { 
-                          alert("No se pudo previsualizar el PDF."); 
+                        } catch {
+                          alert("No se pudo previsualizar el PDF.");
                         }
                       };
 
@@ -575,7 +570,6 @@ export default function DetalleExpediente({
           </div>
         </div>
 
-        {/* MODALES GLASSMORPHISM */}
         {showExitModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">

@@ -2,7 +2,6 @@ import logoMunicipalidad from '../assets/Logo_2.png';
 
 export default function Sidebar({ currentScreen, setScreen }) {
 
-    // 📁 Módulo 1: Gestión de Archivo
     const menuArchivo = [
         { name: 'nuevo-expediente', label: 'Registrar Nuevo', d: "M12 4v16m8-8H4" },
         { name: 'expedientes', label: 'Búsqueda', d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
@@ -11,13 +10,11 @@ export default function Sidebar({ currentScreen, setScreen }) {
         { name: 'reportes', label: 'Métricas', d: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
     ];
 
-    // 📝 Módulo 2: Mesa de Partes
     const menuMesaPartes = [
         { name: 'nueva-solicitud', label: 'Registrar Solicitud', d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
         { name: 'bandeja-solicitudes', label: 'Bandeja de Gestión', d: "M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" },
     ];
 
-    // 💰 Módulo 3: Caja y Liquidación
     const menuCaja = [
         { name: 'historial-caja', label: 'Historial de Caja', d: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
         { name: 'reporte-costos', label: 'Reporte de Costos', d: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
@@ -44,7 +41,6 @@ export default function Sidebar({ currentScreen, setScreen }) {
 
     return (
         <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative z-20">
-            {/* Cabecera del Sidebar */}
             <div className="h-20 flex items-center px-6 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                     <img
@@ -60,9 +56,7 @@ export default function Sidebar({ currentScreen, setScreen }) {
                 </div>
             </div>
 
-            {/* Menú de Navegación continuo */}
             <div className="flex-1 overflow-y-auto py-6 px-4 space-y-7">
-                {/* BOTÓN DE INICIO */}
                 <div>
                     <button
                         type="button"
@@ -79,7 +73,6 @@ export default function Sidebar({ currentScreen, setScreen }) {
                     </button>
                 </div>
 
-                {/* Bloque 1: Gestión Documental */}
                 <div>
                     <h3 className="px-4 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">
                         Gestión Documental
@@ -91,7 +84,6 @@ export default function Sidebar({ currentScreen, setScreen }) {
                     </div>
                 </div>
 
-                {/* Bloque 2: Mesa de Partes */}
                 <div>
                     <h3 className="px-4 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">
                         Mesa de Partes
@@ -103,7 +95,6 @@ export default function Sidebar({ currentScreen, setScreen }) {
                     </div>
                 </div>
 
-                {/* Bloque 3: Caja y Liquidación */}
                 <div>
                     <h3 className="px-4 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">
                         Caja y Reportes
@@ -116,7 +107,6 @@ export default function Sidebar({ currentScreen, setScreen }) {
                 </div>
             </div>
 
-            {/* Footer */}
             <div className="p-4 border-t border-slate-100 shrink-0">
                 <div className="flex items-center gap-3 px-2 py-2">
                     <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">

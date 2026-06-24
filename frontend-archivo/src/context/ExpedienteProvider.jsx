@@ -7,7 +7,6 @@ export function ExpedienteProvider({ children }) {
     const [tipos, setTipos] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // 🚀 Encapsulamos la descarga con useCallback para que esté disponible de forma estable
     const cargarDatosGlobales = useCallback(async () => {
         try {
             setLoading(true);

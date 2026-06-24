@@ -7,7 +7,6 @@ use App\Models\Expediente;
 
 class ReporteController extends Controller
 {
-    // HU13 - Panel de control estadístico
     public function stats()
     {
         $totalExpedientes = Expediente::count();
@@ -25,7 +24,6 @@ class ReporteController extends Controller
         ], 200);
     }
 
-    // HU15 - Reporte de expedientes por área
     public function porArea()
     {
         $areas = Expediente::with(['areaActual'])
@@ -44,17 +42,14 @@ class ReporteController extends Controller
         ], 200);
     }
 
-    // HU16 - Reporte de digitalización
     public function digitalizacion(Request $request)
     {
         $query = Expediente::query();
 
-        // Filtrar por área si se proporciona
         if ($request->area_id) {
             $query->where('area_actual_id', $request->area_id);
         }
 
-        // Filtrar por rango de fechas si se proporciona
         if ($request->fecha_inicio && $request->fecha_fin) {
             $query->whereBetween('fecha_ingreso', [
                 $request->fecha_inicio,
@@ -77,7 +72,6 @@ class ReporteController extends Controller
         ], 200);
     }
 
-    // HU17 - Reporte por rango de fechas
     public function porFecha(Request $request)
     {
         $request->validate([

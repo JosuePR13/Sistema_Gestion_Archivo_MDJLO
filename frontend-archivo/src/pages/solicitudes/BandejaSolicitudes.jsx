@@ -1,41 +1,36 @@
 import { useState } from 'react';
-import api from '../services/api';
-import CustomDropdown from '../components/CustomDropdown';
-import StatusBadge from '../components/StatusBadge';
-import { useSolicitudes } from '../context/useSolicitudes';
+import api from '../../services/api';
+import CustomDropdown from '../../components/CustomDropdown';
+import StatusBadge from '../../components/StatusBadge';
+import { useSolicitudes } from '../../context/useSolicitudes';
 
 export default function BandejaSolicitudes({ triggerToast }) {
     const { solicitudes, loadingSolicitudes, refrescarSolicitudes } = useSolicitudes();
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Estado del Modal Wizard Principal
     const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
 
-    // Variables de decisión
     const [nuevoEstado, setNuevoEstado] = useState('');
     const [motivoRechazo, setMotivoRechazo] = useState('');
     const [isUpdating, setIsSubmitting] = useState(false);
 
-    // Variables de Liquidación TUPA
     const [tipoFormatotupa, setTipoFormatotupa] = useState('');
     const [paginasRequeridas, setPaginasRequeridas] = useState('');
     const [numHojas, setNumHojas] = useState(1);
     const [cantCopias, setCantCopias] = useState(1);
 
-    // Estados independientes para el formato mixto
     const [paginasSimples, setPaginasSimples] = useState('');
     const [paginasFedateadas, setPaginasFedateadas] = useState('');
 
-    // 🚀 NUEVOS ESTADOS PARA EL MODAL DE ADVERTENCIA PROPIO
     const [showConfirmExitModal, setShowConfirmExitModal] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null); // 'CLOSE' o 'BACK'
+    const [pendingAction, setPendingAction] = useState(null);
 
     const costoCalculado = ((parseInt(numHojas) || 0) * (parseInt(cantCopias) || 0) * 0.10).toFixed(2);
 
     const opcionesDecision = [
-        { id: 'Aceptada', nombre: '✅ Aprobación (Aceptada)' },
-        { id: 'Rechazada', nombre: '❌ Denegación (Rechazada)' }
+        { id: 'Aceptada', nombre: '✅ Aprobada' },
+        { id: 'Rechazada', nombre: '❌ Denegada' }
     ];
 
     const opcionesFormatosTupa = [
@@ -44,7 +39,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         { id: 'Mixto', nombre: '📑 Formato Mixto (Simple y Fedateado)' }
     ];
 
-    // Evalúa si el usuario ha escrito información en el paso final
     const tieneProgresoEnPasoFinal = () => {
         if (currentStep !== 3) return false;
         if (nuevoEstado === 'Rechazada' && motivoRechazo.trim().length > 0) return true;
@@ -55,7 +49,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         return false;
     };
 
-    // Interceptor para la "X" y el botón Cancelar del Paso 1
     const intentarCerrarModal = () => {
         if (tieneProgresoEnPasoFinal()) {
             setPendingAction('CLOSE');
@@ -65,7 +58,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         }
     };
 
-    // Interceptor para el botón "Atrás"
     const intentarIrAtras = () => {
         if (currentStep === 3 && tieneProgresoEnPasoFinal()) {
             setPendingAction('BACK');
@@ -75,7 +67,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         }
     };
 
-    // Ejecuta la acción aprobada por el usuario desde el modal corporativo de advertencia
     const confirmarAccionPendiente = () => {
         setShowConfirmExitModal(false);
         if (pendingAction === 'CLOSE') {
@@ -167,8 +158,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
     return (
         <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900">
             <div className="max-w-[1200px] w-full mx-auto animate-fade-in">
-
-                {/* Filtros superiores */}
                 <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-8 bg-[#FFC107] rounded-full shadow-sm"></div>
@@ -190,7 +179,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 </div>
 
-                {/* Tabla */}
                 <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
@@ -209,9 +197,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 ) : solicitudesFiltradas.length === 0 ? (
                                     <tr><td colSpan="5" className="py-12 text-center text-sm font-bold text-slate-400">No hay solicitudes pendientes en este momento.</td></tr>
                                 ) : (
-                                    // 1. Agrega el index al map
                                     solicitudesFiltradas.map((sol, index) => (
-                                        // 2. Ponle este seguro a la key para evitar errores si el ID no es único o no existe
                                         <tr key={sol.id || sol.id_solicitud || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                                             <td className="py-4 px-6">
                                                 <div className="flex flex-col">
@@ -247,12 +233,9 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 </div>
 
-                {/* MODAL SISTEMA WIZARD */}
                 {solicitudSeleccionada && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
                         <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 flex flex-col overflow-visible h-auto max-h-[90vh]">
-
-                            {/* Cabecera */}
                             <div className="p-6 border-b border-slate-100 bg-slate-50/50 rounded-t-3xl shrink-0">
                                 <div className="flex justify-between items-center mb-4">
                                     <div className="flex flex-col">
@@ -268,10 +251,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 </div>
                             </div>
 
-                            {/* Contenido Dinámico */}
                             <div className="p-6 overflow-visible flex-1">
-
-                                {/* 📋 PASO 1 */}
                                 {currentStep === 1 && (
                                     <div className="animate-fade-in space-y-4">
                                         <div className="p-1 flex items-center gap-2">
@@ -297,7 +277,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                     </div>
                                 )}
 
-                                {/* ⚖️ PASO 2 */}
                                 {currentStep === 2 && (
                                     <div className="animate-fade-in space-y-4 min-h-[140px] overflow-visible">
                                         <div className="p-1 flex items-center gap-2">
@@ -318,7 +297,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                     </div>
                                 )}
 
-                                {/* 💰❌ PASO 3 */}
                                 {currentStep === 3 && (
                                     <div className="animate-fade-in space-y-4 overflow-visible">
                                         <div className="p-1 flex items-center gap-2">
@@ -400,7 +378,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 )}
                             </div>
 
-                            {/* Botonera */}
                             <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between rounded-b-3xl shrink-0 relative z-10">
                                 <button
                                     type="button"

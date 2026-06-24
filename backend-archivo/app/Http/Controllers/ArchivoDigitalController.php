@@ -38,7 +38,6 @@ class ArchivoDigitalController extends Controller
 
         $expediente->update(['digitalizado' => true]);
 
-        // Registrar en historial
         HistorialEdicion::create([
             'expediente_id' => $expediente->id,
             'campo_modificado' => 'archivo_digital',
@@ -106,7 +105,6 @@ class ArchivoDigitalController extends Controller
             ->where('expediente_id', $expediente->id)
             ->firstOrFail();
 
-        // Eliminar archivo físico
         $rutaCompleta = storage_path('app/public/' . $archivo->ruta_archivo);
         if (file_exists($rutaCompleta)) {
             unlink($rutaCompleta);
@@ -115,13 +113,11 @@ class ArchivoDigitalController extends Controller
         $nombreOriginal = $archivo->nombre_original;
         $archivo->delete();
 
-        // Si no quedan más archivos, desmarcar digitalizado
         $tieneArchivos = ArchivoDigital::where('expediente_id', $expediente->id)->exists();
         if (!$tieneArchivos) {
             $expediente->update(['digitalizado' => false]);
         }
 
-        // Registrar en historial con mensaje corregido para la UI
         HistorialEdicion::create([
             'expediente_id' => $expediente->id,
             'campo_modificado' => 'archivo_digital',

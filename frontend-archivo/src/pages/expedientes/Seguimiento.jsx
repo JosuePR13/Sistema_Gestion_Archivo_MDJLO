@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useExpedientes } from '../context/useExpedientes';
-import CustomDropdown from '../components/CustomDropdown';
+import { useExpedientes } from '../../context/useExpedientes';
+import CustomDropdown from '../../components/CustomDropdown';
 
 export default function SeguimientoScreen({ setScreen }) {
   const { expedientes: dataGlobal, loading } = useExpedientes();
@@ -9,7 +9,6 @@ export default function SeguimientoScreen({ setScreen }) {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 7;
 
-  // MOTOR DE CÁLCULO DE VIGENCIA ARCHIVÍSTICA
   const procesarVigencia = (data) => {
     return data.map(exp => {
       const fechaBase = exp.fecha_ingreso || exp.created_at || new Date().toISOString();
@@ -136,8 +135,6 @@ export default function SeguimientoScreen({ setScreen }) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
-
-        {/* ENCABEZADO PREMIUM */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-1.5 h-8 bg-[#FFC107] rounded-full shadow-sm"></div>
           <div>
@@ -146,7 +143,6 @@ export default function SeguimientoScreen({ setScreen }) {
           </div>
         </div>
 
-        {/* KPIs FLOTANTES */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
           {[
             { l: 'Para depurar', v: paraDepurar, sub: 'Plazo vencido', c: '#E11D48', bg: 'bg-white', badge: 'bg-rose-50 text-rose-600 border-rose-100' },
@@ -165,9 +161,7 @@ export default function SeguimientoScreen({ setScreen }) {
           ))}
         </div>
 
-        {/* TABLA PREMIUM */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col">
-
           <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">
               {tablaFiltrada.length} documentos analizados
@@ -254,7 +248,6 @@ export default function SeguimientoScreen({ setScreen }) {
           </div>
         </div>
 
-        {/* PAGINACIÓN FLOTANTE */}
         {totalPages > 1 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 p-2 px-6 flex justify-between items-center bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-all z-40 w-max min-w-[320px]">
             <span className="text-[12px] text-slate-500 font-extrabold tracking-widest uppercase mr-8">

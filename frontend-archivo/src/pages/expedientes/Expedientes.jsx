@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useExpedientes } from '../context/useExpedientes';
-import CustomDropdown from '../components/CustomDropdown';
+import { useExpedientes } from '../../context/useExpedientes';
+import CustomDropdown from '../../components/CustomDropdown';
 
 export default function Expedientes({
   setScreen,
@@ -72,18 +72,15 @@ export default function Expedientes({
     if (st.includes('depurar') || st.includes('vencido')) return 'bg-rose-100 text-rose-700 border-rose-200';
     if (st.includes('digitalizado')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
     if (st.includes('archivado')) return 'bg-slate-100 text-slate-700 border-slate-200';
-    return 'bg-emerald-100 text-emerald-700 border-emerald-200'; // Activo
+    return 'bg-emerald-100 text-emerald-700 border-emerald-200';
   };
 
-  // 🚀 Estilos base unificados para alineación perfecta a 48px
   const inputStyles = "w-full h-[48px] px-4 border border-slate-200 bg-slate-50 rounded-2xl text-[13px] focus:bg-white focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300 font-semibold text-slate-700 placeholder-slate-400";
   const labelStyles = "block text-[11px] font-extrabold text-slate-500 mb-2 tracking-widest uppercase";
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
-
-        {/* ENCABEZADO PREMIUM */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-8 bg-[#FFC107] rounded-full shadow-sm"></div>
@@ -103,7 +100,6 @@ export default function Expedientes({
           </button>
         </div>
 
-        {/* 🚀 CAJA DE FILTROS ALINEADA (Glassmorphism sutil) */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-8">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
@@ -156,7 +152,6 @@ export default function Expedientes({
           </div>
         </div>
 
-        {/* 🚀 TABLA MINIMALISTA PREMIUM */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col">
           <div className="px-8 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">{filteredExpedientes.length} Registros encontrados</p>
@@ -245,7 +240,6 @@ export default function Expedientes({
           )}
         </div>
 
-        {/* 🚀 PAGINACIÓN FLOTANTE PREMIUM */}
         {totalPages > 1 && !loading && currentItems.length > 0 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 p-2 px-6 flex justify-between items-center bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-all z-40 w-max min-w-[320px]">
             <span className="text-[12px] text-slate-500 font-extrabold tracking-widest uppercase mr-8">
