@@ -73,23 +73,37 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
         e.preventDefault();
         setValidated(true);
 
-        if (!formData.dni || !formData.nombres || !formData.apellidos || !formData.expediente_solicitado || !formData.descripcion) {
+        const formElement = e.currentTarget;
+        const dataFromForm = new FormData(formElement);
+        
+        const payload = {
+            dni: dataFromForm.get('dni'),
+            nombres: dataFromForm.get('nombres'),
+            apellidos: dataFromForm.get('apellidos'),
+            telefono: dataFromForm.get('telefono'),
+            direccion: dataFromForm.get('direccion'),
+            expediente_solicitado: dataFromForm.get('expediente_solicitado'),
+            descripcion: dataFromForm.get('descripcion'),
+            fecha_solicitud: formData.fecha_solicitud
+        };
+
+        if (!payload.dni || !payload.nombres || !payload.apellidos || !payload.expediente_solicitado || !payload.descripcion) {
+            return;
+        }
+
+        if (payload.telefono && payload.telefono.length !== 9) {
             return;
         }
 
         setIsSubmitting(true);
         try {
-            await api.post('/solicitudes', formData);
+            await api.post('/solicitudes', payload);
             setIsDirty(false);
             triggerToast('¡Solicitud de Mesa de Partes registrada con éxito!');
-
-            // 🚀 AVISAMOS A LA BANDEJA QUE DESCARGUE LA NUEVA DATA AL INSTANTE
             refrescarSolicitudes();
-
             setScreen({ name: 'dashboard', id: null });
         } catch (error) {
             console.error("Error al registrar solicitud:", error);
-            alert('Ocurrió un error al registrar la solicitud. Verifique los datos.');
         } finally {
             setIsSubmitting(false);
         }
@@ -134,6 +148,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 <label htmlFor="dni" className={labelStyles}>DNI Solicitante *</label>
                                 <input
                                     id="dni"
+                                    name="dni"
                                     type="text"
                                     maxLength="8"
                                     placeholder="DNI del solicitante"
@@ -148,6 +163,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 <label htmlFor="nombres" className={labelStyles}>Nombres *</label>
                                 <input
                                     id="nombres"
+                                    name="nombres"
                                     type="text"
                                     placeholder="Nombres completos"
                                     className={getInputStyles(formData.nombres)}
@@ -161,8 +177,9 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 <label htmlFor="apellidos" className={labelStyles}>Apellidos *</label>
                                 <input
                                     id="apellidos"
+                                    name="apellidos"
                                     type="text"
-                                    placeholder="Apellidos completos"
+                                    placeholder="Apellidos completos"                                    
                                     className={getInputStyles(formData.apellidos)}
                                     value={formData.apellidos}
                                     onChange={e => handleInputChange('apellidos', e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
@@ -174,19 +191,22 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 <label htmlFor="telefono" className={labelStyles}>Teléfono <span className="text-slate-400 normal-case tracking-normal">(Opcional)</span></label>
                                 <input
                                     id="telefono"
+                                    name="telefono"
                                     type="text"
-                                    maxLength="15"
+                                    maxLength="9"
                                     placeholder="Teléfono de contacto"
                                     className={getInputStyles(formData.telefono, true)}
                                     value={formData.telefono}
                                     onChange={e => handleInputChange('telefono', e.target.value.replace(/\D/g, ''))}
                                 />
+                                {validated && formData.telefono && formData.telefono.length !== 9 && <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Debe tener 9 dígitos</p>}
                             </div>
 
                             <div className="md:col-span-8 lg:col-span-8">
                                 <label htmlFor="direccion" className={labelStyles}>Dirección <span className="text-slate-400 normal-case tracking-normal">(Opcional)</span></label>
                                 <input
                                     id="direccion"
+                                    name="direccion"
                                     type="text"
                                     placeholder="Dirección del solicitante"
                                     className={getInputStyles(formData.direccion, true)}
@@ -201,8 +221,9 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 <label htmlFor="expediente_solicitado" className={labelStyles}>Documento / N° Expediente Solicitado *</label>
                                 <input
                                     id="expediente_solicitado"
+                                    name="expediente_solicitado"
                                     type="text"
-                                    placeholder="Ej. Copia de Resolución de Alcaldía N°..."
+                                    placeholder="Ej. EXP-2026-0011"
                                     className={getInputStyles(formData.expediente_solicitado)}
                                     value={formData.expediente_solicitado}
                                     onChange={e => handleInputChange('expediente_solicitado', e.target.value)}
@@ -214,6 +235,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 <label htmlFor="fecha_solicitud" className={labelStyles}>Fecha de Ingreso *</label>
                                 <input
                                     id="fecha_solicitud"
+                                    name="fecha_solicitud"
                                     type="date"
                                     className={readOnlyStyles}
                                     value={formData.fecha_solicitud}
@@ -225,6 +247,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 <label htmlFor="descripcion" className={labelStyles}>Descripción / Motivo de la Solicitud *</label>
                                 <textarea
                                     id="descripcion"
+                                    name="descripcion"
                                     rows="4"
                                     placeholder="Detalle exactamente para qué necesita el documento el ciudadano..."
                                     className={`${getInputStyles(formData.descripcion)} h-auto py-4 resize-none`}
