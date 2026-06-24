@@ -23,7 +23,7 @@ class SolicitudController extends Controller
             'dni' => 'required|string|max:8',
             'nombres' => 'required|string|max:100',
             'apellidos' => 'required|string|max:100',
-            'telefono' => 'nullable|string',
+            'telefono' => 'nullable|string|max:9',
             'direccion' => 'nullable|string',
             'expediente_solicitado' => 'required|string',
             'descripcion' => 'required|string',
