@@ -71,4 +71,13 @@ class SolicitudController extends Controller
             'message' => 'Eliminado'
         ], 200);
     }
+
+    public function ingresosCaja()
+    {
+        $registros = Solicitud::whereIn('estado', ['Aceptada', 'Rechazada'])
+            ->orderByDesc('updated_at')
+            ->get();
+
+        return response()->json($registros, 200);
+    }
 }

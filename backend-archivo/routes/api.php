@@ -43,5 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reportes/digitalizacion', [ReporteController::class, 'digitalizacion']);
     Route::get('/reportes/por-fecha', [ReporteController::class, 'porFecha']);
 
+    Route::get('/caja/ingresos', [SolicitudController::class, 'ingresosCaja']);
+    
     Route::apiResource('solicitudes', SolicitudController::class);
 });
