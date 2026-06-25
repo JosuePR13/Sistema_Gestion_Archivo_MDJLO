@@ -3,11 +3,13 @@ import api from '../../services/api';
 import CustomDropdown from '../../components/CustomDropdown';
 import StatusBadge from '../../components/StatusBadge';
 import { useSolicitudes } from '../../context/useSolicitudes';
+import { useCaja } from '../../context/CajaContext';
 
 export default function BandejaSolicitudes({ triggerToast }) {
     const { solicitudes, loadingSolicitudes, refrescarSolicitudes } = useSolicitudes();
-    const [searchTerm, setSearchTerm] = useState('');
+    const { refrescarCaja } = useCaja();
 
+    const [searchTerm, setSearchTerm] = useState('');
     const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
 
@@ -38,6 +40,13 @@ export default function BandejaSolicitudes({ triggerToast }) {
         { id: 'Fedateado', nombre: '📜 Formato Fedateado' },
         { id: 'Mixto', nombre: '📑 Formato Mixto (Simple y Fedateado)' }
     ];
+
+    // 🛡️ Filtro estricto: Solo permite números (0-9), comas (,) y guiones (-) y espacios
+    const handleValidacionFolios = (valorStr, setterFunction) => {
+        if (/^[0-9,\- ]*$/.test(valorStr)) {
+            setterFunction(valorStr);
+        }
+    };
 
     const tieneProgresoEnPasoFinal = () => {
         if (currentStep !== 3) return false;
@@ -140,6 +149,8 @@ export default function BandejaSolicitudes({ triggerToast }) {
                 numero_hojas: nuevoEstado === 'Aceptada' ? numHojas : null,
                 cantidad_copias: nuevoEstado === 'Aceptada' ? cantCopias : null
             });
+
+            await refrescarCaja();
 
             triggerToast('¡Decisión guardada con éxito!');
             setSolicitudSeleccionada(null);
@@ -324,18 +335,39 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in relative z-10">
                                                         <div>
                                                             <label className="block text-[11px] font-extrabold text-blue-600 mb-2 tracking-widest uppercase">Páginas Copia Simple *</label>
-                                                            <input type="text" required placeholder="Ej: 1-5" value={paginasSimples} onChange={(e) => setPaginasSimples(e.target.value)} className={inputStyles} />
+                                                            <input
+                                                                type="text"
+                                                                required
+                                                                placeholder="Ej: 1-5, 8"
+                                                                value={paginasSimples}
+                                                                onChange={(e) => handleValidacionFolios(e.target.value, setPaginasSimples)}
+                                                                className={inputStyles}
+                                                            />
                                                         </div>
                                                         <div>
                                                             <label className="block text-[11px] font-extrabold text-purple-600 mb-2 tracking-widest uppercase">Páginas Fedateadas *</label>
-                                                            <input type="text" required placeholder="Ej: 6-9" value={paginasFedateadas} onChange={(e) => setPaginasFedateadas(e.target.value)} className={inputStyles} />
+                                                            <input
+                                                                type="text"
+                                                                required
+                                                                placeholder="Ej: 6-9, 12"
+                                                                value={paginasFedateadas}
+                                                                onChange={(e) => handleValidacionFolios(e.target.value, setPaginasFedateadas)}
+                                                                className={inputStyles}
+                                                            />
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     <div className="grid grid-cols-1 relative z-10 animate-fade-in">
                                                         <div>
                                                             <label className={labelStyles}>¿Qué Páginas/Folios requiere del expediente? *</label>
-                                                            <input type="text" required placeholder="Ej: Todo, 1-15" value={paginasRequeridas} onChange={(e) => setPaginasRequeridas(e.target.value)} className={inputStyles} />
+                                                            <input
+                                                                type="text"
+                                                                required
+                                                                placeholder="Ej: 1-15, 20"
+                                                                value={paginasRequeridas}
+                                                                onChange={(e) => handleValidacionFolios(e.target.value, setPaginasRequeridas)}
+                                                                className={inputStyles}
+                                                            />
                                                         </div>
                                                     </div>
                                                 )}
