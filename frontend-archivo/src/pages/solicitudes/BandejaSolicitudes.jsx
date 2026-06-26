@@ -41,7 +41,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         { id: 'Mixto', nombre: '📑 Formato Mixto (Simple y Fedateado)' }
     ];
 
-    // 🛡️ Filtro estricto: Solo permite números (0-9), comas (,) y guiones (-) y espacios
     const handleValidacionFolios = (valorStr, setterFunction) => {
         if (/^[0-9,\- ]*$/.test(valorStr)) {
             setterFunction(valorStr);

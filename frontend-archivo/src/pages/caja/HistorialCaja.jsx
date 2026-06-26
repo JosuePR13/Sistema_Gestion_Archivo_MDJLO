@@ -7,7 +7,6 @@ export default function HistorialCaja() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
 
-    // 🏝️ Paginación Oficial del Sistema (8 registros por página)
     const [currentPage, setCurrentPage] = useState(1);
     const registrosPorPagina = 8;
 
@@ -45,7 +44,6 @@ export default function HistorialCaja() {
     return (
         <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-8 animate-fade-in select-none relative pb-24">
 
-            {/* CSS para el scrollbar interno de motivos de rechazo */}
             <style>{`
                 .custom-scroll::-webkit-scrollbar { width: 6px; }
                 .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
@@ -55,7 +53,6 @@ export default function HistorialCaja() {
 
             <div className="max-w-[1200px] w-full mx-auto space-y-6">
 
-                {/* Cabecera Principal */}
                 <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-8 bg-emerald-500 rounded-full shadow-sm"></div>
@@ -77,7 +74,6 @@ export default function HistorialCaja() {
                     </div>
                 </div>
 
-                {/* Switch de Pestañas */}
                 <div className="flex gap-2 p-1.5 bg-slate-200/60 max-w-sm rounded-2xl border border-slate-200/40">
                     <button
                         type="button"
@@ -95,10 +91,8 @@ export default function HistorialCaja() {
                     </button>
                 </div>
 
-                {/* Layout Principal Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-                    {/* Tabla de Contenido */}
                     <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 lg:col-span-8 flex flex-col">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
@@ -174,7 +168,6 @@ export default function HistorialCaja() {
                             </table>
                         </div>
 
-                        {/* 🏝️ SECCIÓN DE PAGINACIÓN COMPLETA UNIFICADA (Estilo image_761dbd.png) */}
                         {!loadingCaja && totalPaginas > 1 && (
                             <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30 rounded-b-3xl shrink-0">
                                 <span className="text-[12px] font-bold text-slate-400">
@@ -208,7 +201,6 @@ export default function HistorialCaja() {
                         )}
                     </div>
 
-                    {/* 🎨 Arqueo de Caja Institucional Claro (Unificado con el diseño del sistema) */}
                     <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 lg:col-span-4 space-y-6 relative overflow-hidden">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                             <div className="flex flex-col">
@@ -231,7 +223,6 @@ export default function HistorialCaja() {
                 </div>
             </div>
 
-            {/* 📋 MODAL DE DETALLE EXPLICITO TOTALMENTE REACTIVO */}
             {selectedItem && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden transform scale-100 transition-all flex flex-col max-h-[90vh]">
@@ -245,7 +236,6 @@ export default function HistorialCaja() {
                                 <p className="text-[13px] font-extrabold text-[#0F4C81] pt-1">Ficha de Sustento - Mesa de Partes</p>
                             </div>
 
-                            {/* Datos Básicos del Contribuyente */}
                             <div className="space-y-3 text-[13px] bg-slate-50 p-4 rounded-2xl border border-slate-100">
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
@@ -280,7 +270,6 @@ export default function HistorialCaja() {
                                 </div>
                             </div>
 
-                            {/* 📋 Mapeo de Folios Solicitados Corregido */}
                             {selectedItem.estado === 'Aceptada' && (
                                 <div className="p-4 rounded-2xl text-[12px] space-y-3 bg-slate-50 border border-slate-100">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estructura del Formato Solicitado</p>
@@ -330,7 +319,6 @@ export default function HistorialCaja() {
                                 </div>
                             )}
 
-                            {/* Finanzas o Motivo de Rechazo Anti-Desborde */}
                             {selectedItem.estado === 'Aceptada' ? (
                                 <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex justify-between items-center text-[14px] font-black text-emerald-800">
                                     <span className="uppercase tracking-wider text-[10px] font-black">Monto Recaudado TUPA:</span>
@@ -346,7 +334,6 @@ export default function HistorialCaja() {
                             )}
                         </div>
 
-                        {/* Footer fijo del modal */}
                         <div className="bg-slate-50 px-6 py-4 flex justify-end items-center border-t border-slate-100 shrink-0">
                             <button type="button" onClick={() => setSelectedItem(null)} className="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[12px] font-bold rounded-xl transition-all shadow-sm">
                                 Cerrar Ventana

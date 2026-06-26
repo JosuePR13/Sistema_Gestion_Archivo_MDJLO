@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api'; // Ajusta la ruta a tu api.js si es necesario
+import api from '../services/api';
 import { CajaContext } from './CajaContext';
 
 export const CajaProvider = ({ children }) => {
@@ -18,7 +18,6 @@ export const CajaProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        // 🔥 SOLUCIÓN AL CASCADING: Envolvemos la ejecución de forma aislada
         let activo = true;
 
         const inicializarCaja = async () => {
