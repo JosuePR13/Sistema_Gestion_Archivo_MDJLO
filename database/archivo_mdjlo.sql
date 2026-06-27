@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `archivos_digitales` (
   CONSTRAINT `archivos_digitales_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.archivos_digitales: ~2 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.archivos_digitales: ~0 rows (aproximadamente)
 
 -- Volcando estructura para tabla archivo_mdjlo.areas
 DROP TABLE IF EXISTS `areas`;
@@ -168,11 +168,11 @@ CREATE TABLE IF NOT EXISTS `expedientes` (
   CONSTRAINT `expedientes_ibfk_3` FOREIGN KEY (`area_actual_id`) REFERENCES `areas` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.expedientes: ~16 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.expedientes: ~15 rows (aproximadamente)
 INSERT INTO `expedientes` (`id`, `numero_expediente`, `titulo`, `descripcion`, `tipo_documento_id`, `area_origen_id`, `area_actual_id`, `numero_folios`, `estado`, `fecha_ingreso`, `tiempo_conservacion`, `fecha_revision`, `digitalizado`, `created_at`, `updated_at`) VALUES
-	(1, 'EXP-1985-0412', 'Plan de Catastro Urbano Distrital y Delimitación Territorial de José Leonardo Ortiz', 'Expediente histórico que contiene los primeros planos cartográficos, zonificación y actas de colindancia del distrito.', 8, 31, 1, 350, 'Activo', '1985-04-12', '10 años', '1995-04-12', 0, '2026-06-11 10:00:00', '2026-06-11 10:00:00'),
-	(2, 'EXP-1998-1104', 'Convenio de Cooperación con Epsel S.A. para Redes de Saneamiento en el Sector Moshoqueque', 'Documentación matriz sobre el tendido primario de redes de agua potable y alcantarillado en las zonas comerciales.', 6, 11, 1, 185, 'Activo', '1998-11-04', '5 años', '2003-11-04', 0, '2026-06-11 11:15:00', '2026-06-11 11:15:00'),
-	(3, 'EXP-2005-0722', 'Reglamento de Organización y Funciones (ROF) Histórico de la Policía Municipal y Serenazgo', 'Directiva municipal antigua que normaba las funciones de control de orden público y comercio ambulatorio.', 21, 35, 1, 95, 'Activo', '2005-07-22', '5 años', '2110-07-22', 0, '2026-06-11 12:30:00', '2026-06-11 12:30:00'),
+	(1, 'EXP-1985-0412', 'Plan de Catastro Urbano Distrital y Delimitación Territorial de José Leonardo Ortiz', 'Expediente histórico que contiene los primeros planos cartográficos, zonificación y actas de colindancia del distrito.', 8, 31, 1, 350, 'Para Depurar', '1985-04-12', '10 años', '1995-04-12', 0, '2026-06-11 10:00:00', '2026-06-27 00:00:00'),
+	(2, 'EXP-1998-1104', 'Convenio de Cooperación con Epsel S.A. para Redes de Saneamiento en el Sector Moshoqueque', 'Documentación matriz sobre el tendido primario de redes de agua potable y alcantarillado en las zonas comerciales.', 6, 11, 1, 185, 'Para Depurar', '1998-11-04', '5 años', '2003-11-04', 0, '2026-06-11 11:15:00', '2026-06-27 00:00:00'),
+	(3, 'EXP-2005-0722', 'Reglamento de Organización y Funciones (ROF) Histórico de la Policía Municipal y Serenazgo', 'Directiva municipal antigua que normaba las funciones de control de orden público y comercio ambulatorio.', 21, 35, 1, 95, 'Para Depurar', '2005-07-22', '5 años', '2110-07-22', 0, '2026-06-11 12:30:00', '2026-06-27 00:00:00'),
 	(4, 'EXP-2015-0914', 'Resolución de Alcaldía N° 412-2015 - Títulos de Propiedad de Adjudicación de Lotes en Sector San Carlos', 'Títulos de propiedad otorgados bajo el marco del programa de formalización de la propiedad informal.', 2, 11, 1, 540, 'Activo', '2015-09-14', 'PERMANENTE', NULL, 0, '2026-06-11 14:20:00', '2026-06-11 14:20:00'),
 	(5, 'EXP-2018-0320', 'Expediente Técnico de Construcción de la Infraestructura del Terminal Terrestre de JLO', 'Planos estructurales, presupuestos analíticos, estudios de suelos y memoria descriptiva del terminal de transportes.', 8, 21, 1, 820, 'Activo', '2018-03-20', 'PERMANENTE', NULL, 0, '2026-06-11 15:45:00', '2026-06-11 15:45:00'),
 	(6, 'EXP-2024-1005', 'Informe de Auditoría Financiera de Arbitrios Municipales - Ejercicio Fiscal 2023', 'Evaluación integral emitida por el Órgano de Control Interno (OCI) sobre la recaudación tributaria.', 12, 17, 1, 62, 'Activo', '2024-10-05', '3 años', '2027-10-05', 0, '2026-06-11 16:10:00', '2026-06-11 16:10:00'),
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `historial_ediciones` (
   CONSTRAINT `historial_ediciones_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.historial_ediciones: ~14 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.historial_ediciones: ~0 rows (aproximadamente)
 
 -- Volcando estructura para tabla archivo_mdjlo.historial_estados
 DROP TABLE IF EXISTS `historial_estados`;
@@ -248,14 +248,16 @@ CREATE TABLE IF NOT EXISTS `migrations` (
   `migration` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.migrations: ~4 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.migrations: ~6 rows (aproximadamente)
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 	(1, '0001_01_01_000000_create_users_table', 1),
 	(2, '0001_01_01_000001_create_cache_table', 1),
 	(3, '0001_01_01_000002_create_jobs_table', 1),
-	(4, '2026_05_18_185315_create_personal_access_tokens_table', 2);
+	(4, '2026_05_18_185315_create_personal_access_tokens_table', 2),
+	(5, '2026_06_22_101133_create_solicituds_table', 3),
+	(6, '2026_06_22_120641_ajustar_columnas_solicitudes', 4);
 
 -- Volcando estructura para tabla archivo_mdjlo.personal_access_tokens
 DROP TABLE IF EXISTS `personal_access_tokens`;
@@ -274,9 +276,9 @@ CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
   KEY `personal_access_tokens_expires_at_index` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=178 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.personal_access_tokens: ~123 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.personal_access_tokens: ~173 rows (aproximadamente)
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
 	(2, 'App\\Models\\User', 1, 'auth_token', 'd66d3a1059cd669b17d697cb8e26aa06f39298865ad58731614b3d155af0f904', '["*"]', '2026-05-19 02:46:04', NULL, '2026-05-19 02:40:21', '2026-05-19 02:46:04'),
 	(5, 'App\\Models\\User', 1, 'auth_token', 'e32b4f51c6298b75ff315c0e8c6ab43dee28f2e1c1df490bd23e95e2d9c87b84', '["*"]', '2026-05-21 20:58:46', NULL, '2026-05-19 18:42:59', '2026-05-21 20:58:46'),
@@ -404,7 +406,107 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 	(128, 'App\\Models\\User', 1, 'auth_token', 'd3c2abcc166e0e84dba14cb4168dba4fe40f130b60c1f91da5ec0af36f2764b6', '["*"]', '2026-06-15 14:45:57', NULL, '2026-06-15 14:32:24', '2026-06-15 14:45:57'),
 	(129, 'App\\Models\\User', 1, 'auth_token', 'bd81a83d9b2c0dd96f6c97bba7fcdd30796cfebcc84cea7985dd66b5f93e50e5', '["*"]', '2026-06-16 13:32:17', NULL, '2026-06-16 13:31:18', '2026-06-16 13:32:17'),
 	(130, 'App\\Models\\User', 1, 'auth_token', '68dd5463514548102689f3ff75e245c2e7cb75ff91196e33ec00f31b228e4731', '["*"]', '2026-06-16 13:32:47', NULL, '2026-06-16 13:32:43', '2026-06-16 13:32:47'),
-	(131, 'App\\Models\\User', 1, 'auth_token', 'd40be18c8844541a3981339a99c0bbc1b16758fe34682c764a36e9b8dfe1071c', '["*"]', '2026-06-16 13:35:02', NULL, '2026-06-16 13:34:59', '2026-06-16 13:35:02');
+	(131, 'App\\Models\\User', 1, 'auth_token', 'd40be18c8844541a3981339a99c0bbc1b16758fe34682c764a36e9b8dfe1071c', '["*"]', '2026-06-16 13:35:02', NULL, '2026-06-16 13:34:59', '2026-06-16 13:35:02'),
+	(132, 'App\\Models\\User', 1, 'auth_token', '7a6ba2422a184d7b6fa5c46eb0d105ff12bec6251058e4d1931d5a714bf065df', '["*"]', '2026-06-19 16:42:57', NULL, '2026-06-19 16:41:01', '2026-06-19 16:42:57'),
+	(133, 'App\\Models\\User', 1, 'auth_token', '41b1a8e56da1ae8c7bd9aa7b805af622541ca1f7911bb151f6ef27771d57af90', '["*"]', NULL, NULL, '2026-06-19 18:09:26', '2026-06-19 18:09:26'),
+	(134, 'App\\Models\\User', 1, 'auth_token', 'adb188b4b3c24823955c6c18a0fee81bc72dfd797b842f34b1a9d57268fb1a22', '["*"]', '2026-06-19 18:17:05', NULL, '2026-06-19 18:09:28', '2026-06-19 18:17:05'),
+	(135, 'App\\Models\\User', 1, 'auth_token', '0bcfeeb1e10a932bc9d820cb4e976f675fc0da883241ace30e4ca56a419f1e93', '["*"]', '2026-06-19 18:32:31', NULL, '2026-06-19 18:31:37', '2026-06-19 18:32:31'),
+	(136, 'App\\Models\\User', 1, 'auth_token', 'dcf432d8d02b412a541d73bca5b3c65db25925b4f442d45691ff34e887ca7a07', '["*"]', '2026-06-22 07:47:01', NULL, '2026-06-22 07:46:54', '2026-06-22 07:47:01'),
+	(137, 'App\\Models\\User', 1, 'auth_token', 'ecdced39baf3fe5e8da58c3f2243fc9e76a5a52434dc78d69ae34a854dc8898e', '["*"]', '2026-06-22 13:41:19', NULL, '2026-06-22 13:41:14', '2026-06-22 13:41:19'),
+	(138, 'App\\Models\\User', 1, 'auth_token', '04629eaaa1319bedc1fdf1867ce4ef7d272afca0f2a664f08354b3a544de18d2', '["*"]', '2026-06-22 13:48:30', NULL, '2026-06-22 13:48:25', '2026-06-22 13:48:30'),
+	(139, 'App\\Models\\User', 1, 'auth_token', '886a7550dd4d5a42ca5ab2ef973872c1f07ab221bb8070ec5259a973b6776db9', '["*"]', '2026-06-22 13:52:03', NULL, '2026-06-22 13:51:58', '2026-06-22 13:52:03'),
+	(140, 'App\\Models\\User', 1, 'auth_token', 'd4fb4216c4286ea9392ccd7b0715341c1726ce76765141acfac3d905b54eb5b2', '["*"]', '2026-06-22 14:38:13', NULL, '2026-06-22 14:37:32', '2026-06-22 14:38:13'),
+	(141, 'App\\Models\\User', 1, 'auth_token', '2d435a0adafa9dc46e6540a7bf3b77a716419c45be51804d389c9600bf689238', '["*"]', '2026-06-22 15:41:35', NULL, '2026-06-22 15:41:29', '2026-06-22 15:41:35'),
+	(142, 'App\\Models\\User', 1, 'auth_token', '0b6975aec5c8e7a20383a1a486cc0caa76a57a6e18af4c3fbfcddb5f3ca63627', '["*"]', NULL, NULL, '2026-06-22 17:17:33', '2026-06-22 17:17:33'),
+	(143, 'App\\Models\\User', 1, 'auth_token', 'a5b84ea92a1ecd2580ed6158c48550def427a23b25903dfa84e88fe991e5e8f6', '["*"]', NULL, NULL, '2026-06-22 17:41:02', '2026-06-22 17:41:02'),
+	(144, 'App\\Models\\User', 1, 'auth_token', '8c5fda0136241e96069844afec5ddd9afb64b1554c097b981cc46ead17b3c845', '["*"]', '2026-06-22 17:42:23', NULL, '2026-06-22 17:42:19', '2026-06-22 17:42:23'),
+	(145, 'App\\Models\\User', 1, 'auth_token', '5b794d060c26c0e242860bb08a2b16258864931579b9f198861c2906f0682a82', '["*"]', '2026-06-22 18:11:09', NULL, '2026-06-22 17:43:38', '2026-06-22 18:11:09'),
+	(146, 'App\\Models\\User', 1, 'auth_token', 'bda8b6e2f89c22e7e0bf101ad9b5a91a6c8a694811ba09fe74d7d84a01cbde80', '["*"]', '2026-06-22 18:26:22', NULL, '2026-06-22 18:11:10', '2026-06-22 18:26:22'),
+	(147, 'App\\Models\\User', 1, 'auth_token', '25a48e6153662c875d16bf7afce095b4ccc2a0a7082ef9994a3064ed7dc76161', '["*"]', '2026-06-23 18:50:27', NULL, '2026-06-23 18:49:31', '2026-06-23 18:50:27'),
+	(148, 'App\\Models\\User', 1, 'auth_token', 'c3d5496f498c47866c6a0790400ec01cf12f53a9cba7ef839f0acea95d0281be', '["*"]', '2026-06-24 13:36:44', NULL, '2026-06-24 13:36:23', '2026-06-24 13:36:44'),
+	(149, 'App\\Models\\User', 1, 'auth_token', 'e0ef9fde40f21dc2ec02b7f7421a6ee88e8575176d2a0c4ff5a8ae469fcf7ec9', '["*"]', '2026-06-24 16:34:06', NULL, '2026-06-24 16:33:55', '2026-06-24 16:34:06'),
+	(150, 'App\\Models\\User', 1, 'auth_token', 'dffa066d0ab8f9bdfdebd0a3286e0cab3ae5167dc0f3e0d038135bad5fe15511', '["*"]', '2026-06-24 16:44:12', NULL, '2026-06-24 16:43:59', '2026-06-24 16:44:12'),
+	(151, 'App\\Models\\User', 1, 'auth_token', '18fd5593b360a7756cf4951cce5360139424aa76bf2e4d68a928999e3e71d352', '["*"]', '2026-06-25 13:50:33', NULL, '2026-06-25 13:50:21', '2026-06-25 13:50:33'),
+	(152, 'App\\Models\\User', 1, 'auth_token', 'fb275282d7151b31039e50c007bce18b0a4ece56cb0ad6f976189e5b16d682c0', '["*"]', '2026-06-25 14:29:22', NULL, '2026-06-25 14:17:31', '2026-06-25 14:29:22'),
+	(153, 'App\\Models\\User', 1, 'auth_token', '288b0e8fcc88ae181121a6a859f7dc7abaf102f566e69e4becc918744b3bc263', '["*"]', '2026-06-25 14:31:44', NULL, '2026-06-25 14:29:26', '2026-06-25 14:31:44'),
+	(154, 'App\\Models\\User', 1, 'auth_token', '77d1c695fc410fbb1ce72162054f803d1baea9c9adcd50b99400f0e7a1e8d79c', '["*"]', '2026-06-25 15:18:14', NULL, '2026-06-25 14:43:05', '2026-06-25 15:18:14'),
+	(155, 'App\\Models\\User', 1, 'auth_token', '8388870e76f64099e5e85d6102f6e9bc803e763c55225285b1dcbe36c5e0a0af', '["*"]', '2026-06-25 15:20:02', NULL, '2026-06-25 15:18:24', '2026-06-25 15:20:02'),
+	(156, 'App\\Models\\User', 1, 'auth_token', '292786b67e0609e5a0a80490b8b43ea41ad46592be4e8d68e9fc9bc38cb4681a', '["*"]', '2026-06-25 15:23:56', NULL, '2026-06-25 15:20:19', '2026-06-25 15:23:56'),
+	(157, 'App\\Models\\User', 1, 'auth_token', 'aca64a53579858c2a06c2ee63a76225b523eff176ef14cbb9ba4f2063ddb71f4', '["*"]', '2026-06-25 15:47:18', NULL, '2026-06-25 15:23:57', '2026-06-25 15:47:18'),
+	(158, 'App\\Models\\User', 1, 'auth_token', '1042c527af93a1090d912ee31675e892ec488a5b0185ed82faa83b2d7ac11219', '["*"]', '2026-06-25 15:51:09', NULL, '2026-06-25 15:47:32', '2026-06-25 15:51:09'),
+	(159, 'App\\Models\\User', 1, 'auth_token', '88307e24c9c80cc9466c9b0eb3f10537be4a55710b5025e8610205aed9ac230b', '["*"]', '2026-06-25 15:57:32', NULL, '2026-06-25 15:51:16', '2026-06-25 15:57:32'),
+	(160, 'App\\Models\\User', 1, 'auth_token', '8b6d1d60e98db87faf0361c8115b82e3c040e96c8e7c1c6e328f9b32ef5b8ad6', '["*"]', '2026-06-25 15:57:52', NULL, '2026-06-25 15:57:39', '2026-06-25 15:57:52'),
+	(161, 'App\\Models\\User', 1, 'auth_token', 'dde5f5840d652f279b2e0da91280a595a58258a08993e8405bdc32d91899361c', '["*"]', '2026-06-25 16:51:08', NULL, '2026-06-25 16:34:20', '2026-06-25 16:51:08'),
+	(162, 'App\\Models\\User', 1, 'auth_token', '534ff1cfb34e05a852c3f32cbd7740f41acd2f44fc51390386457600cc7a742c', '["*"]', '2026-06-26 13:41:11', NULL, '2026-06-25 17:10:58', '2026-06-26 13:41:11'),
+	(163, 'App\\Models\\User', 1, 'auth_token', '19f8fa47a7801ac6b7d87c324764899ce7fa5a08c4d48dc9d176d0b5920a270a', '["*"]', '2026-06-26 14:18:50', NULL, '2026-06-26 13:41:13', '2026-06-26 14:18:50'),
+	(164, 'App\\Models\\User', 1, 'auth_token', '9fa9ff3dedc03a1a73cad3c319aab3f34f1bbc72118874623b03eca377f53a1d', '["*"]', '2026-06-26 14:19:46', NULL, '2026-06-26 14:19:39', '2026-06-26 14:19:46'),
+	(165, 'App\\Models\\User', 1, 'auth_token', 'b88c841809a31d24b2c140cf2bb7357cf8a34f93c975ccfb67816db62d7210c4', '["*"]', '2026-06-26 14:35:39', NULL, '2026-06-26 14:35:31', '2026-06-26 14:35:39'),
+	(166, 'App\\Models\\User', 1, 'auth_token', 'e765942c7a0c01299d0a893c87c80e3d4d9966b74dbd523c416d058836192e17', '["*"]', '2026-06-26 14:46:09', NULL, '2026-06-26 14:44:49', '2026-06-26 14:46:09'),
+	(167, 'App\\Models\\User', 1, 'auth_token', '62cf018266fbc32183aa3eb98272a071441d3bf05996898a8ad9fc7fd8fc56f3', '["*"]', '2026-06-26 15:42:32', NULL, '2026-06-26 14:47:11', '2026-06-26 15:42:32'),
+	(168, 'App\\Models\\User', 1, 'auth_token', '1a29f1a83b32c0f8353dd878d908f09fcdb064f325fb2a3414d3a3539f110a03', '["*"]', '2026-06-26 15:42:40', NULL, '2026-06-26 15:42:33', '2026-06-26 15:42:40'),
+	(169, 'App\\Models\\User', 1, 'auth_token', 'c886da5677979f45f0f312a3b628e22e08bcb6963cfe3c029e758b6fad38a1bb', '["*"]', '2026-06-26 17:35:56', NULL, '2026-06-26 16:27:11', '2026-06-26 17:35:56'),
+	(170, 'App\\Models\\User', 1, 'auth_token', 'eaa42101d1a5aa9f819a08b7cd179ef9e3d7ad1a1983b1dc0cde330985b5cb5c', '["*"]', '2026-06-26 17:36:24', NULL, '2026-06-26 17:35:58', '2026-06-26 17:36:24'),
+	(171, 'App\\Models\\User', 1, 'auth_token', 'aa7001e85c9cb3b3576ba6cd38ee6dc5f9bee16ec6337dcc51633a83bd0d5660', '["*"]', '2026-06-26 22:35:59', NULL, '2026-06-26 22:35:57', '2026-06-26 22:35:59'),
+	(172, 'App\\Models\\User', 1, 'auth_token', '762e899fa9ae7bd86fe8eec6cd2bdce60b0a25edfaa1550384230e3313807296', '["*"]', '2026-06-27 01:27:41', NULL, '2026-06-26 23:05:41', '2026-06-27 01:27:41'),
+	(173, 'App\\Models\\User', 1, 'auth_token', '7a9477f9504dd9244b656bd6e95970137f144509c0a8f8792e161c6e36ef68a2', '["*"]', '2026-06-27 08:16:08', NULL, '2026-06-27 08:16:06', '2026-06-27 08:16:08'),
+	(174, 'App\\Models\\User', 1, 'auth_token', 'df66965e54eff1034003f0db820b5157af4f6f82bdbb3f729f321bb40f42d563', '["*"]', '2026-06-27 08:55:31', NULL, '2026-06-27 08:55:29', '2026-06-27 08:55:31'),
+	(175, 'App\\Models\\User', 1, 'auth_token', '84082f58f3709e3fd13db1bb9695bf405f8b88456c20c85b1c691e303364be51', '["*"]', '2026-06-27 08:58:59', NULL, '2026-06-27 08:58:57', '2026-06-27 08:58:59'),
+	(176, 'App\\Models\\User', 1, 'auth_token', '025be5559f31c610fb8dfe537852e37adafb857a21edca9bcd5cbf0b3f884115', '["*"]', '2026-06-27 17:15:04', NULL, '2026-06-27 09:00:19', '2026-06-27 17:15:04'),
+	(177, 'App\\Models\\User', 1, 'auth_token', 'ea6a168290e5e227a0ce5a7699f04d8956be5cee965cf76ee935323f18a7e986', '["*"]', '2026-06-27 17:25:06', NULL, '2026-06-27 17:15:26', '2026-06-27 17:25:06');
+
+-- Volcando estructura para tabla archivo_mdjlo.solicitudes
+DROP TABLE IF EXISTS `solicitudes`;
+CREATE TABLE IF NOT EXISTS `solicitudes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `dni` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nombres` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `apellidos` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `telefono` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `direccion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `expediente_solicitado` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `fecha_solicitud` date NOT NULL,
+  `estado` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Pendiente',
+  `motivo_rechazo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `costo_tupa` decimal(8,2) DEFAULT NULL,
+  `tipo_formato_tupa` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `paginas_simples` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `paginas_fedateadas` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero_hojas` int DEFAULT NULL,
+  `cantidad_copias` int DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Volcando datos para la tabla archivo_mdjlo.solicitudes: ~26 rows (aproximadamente)
+INSERT INTO `solicitudes` (`id`, `dni`, `nombres`, `apellidos`, `telefono`, `direccion`, `expediente_solicitado`, `descripcion`, `fecha_solicitud`, `estado`, `motivo_rechazo`, `costo_tupa`, `tipo_formato_tupa`, `paginas_simples`, `paginas_fedateadas`, `numero_hojas`, `cantidad_copias`, `created_at`, `updated_at`) VALUES
+	(31, '72145689', 'Juan Carlos', 'Pérez Ramos', NULL, NULL, 'EXP-2026-001', 'Solicitud de copias de actas de sesión de consejo', '2026-01-10', 'Aceptada', NULL, 3.00, 'Copia Simple A4', '15', '0', 15, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(32, '45871236', 'María Fe', 'Ruiz Gonzales', NULL, NULL, 'EXP-2026-002', 'Copia fiel del original de resolución de alcaldía', '2026-01-15', 'Aceptada', NULL, 5.00, 'Copia Fedateada', '0', '10', 10, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(33, '10254789', 'Jorge Luis', 'Chávez Palacios', NULL, NULL, 'EXP-2026-003', 'Expediente técnico compuesto acumulado', '2026-02-05', 'Aceptada', NULL, 12.50, 'Mixto', '15', '15', 30, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(34, '09632514', 'Ana Lucía', 'Mendoza Castro', NULL, NULL, 'EXP-2026-004', 'Planos antiguos de zonificación JLO', '2026-02-20', 'Rechazada', NULL, 0.00, 'Copia Simple A4', '5', '0', 5, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(35, '41257896', 'Pedro Alcántara', 'Gómez Tello', NULL, NULL, 'EXP-2026-005', 'Copias simples de constancia de posesión', '2026-03-12', 'Aceptada', NULL, 1.60, 'Copia Simple A4', '8', '0', 8, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(36, '70214536', 'Diana Carolina', 'Sánchez Díaz', NULL, NULL, 'EXP-2026-006', 'Fedateado de partida de defunción archivo central', '2026-03-25', 'Aceptada', NULL, 10.00, 'Copia Fedateada', '0', '20', 20, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(37, '25841369', 'Carlos Augusto', 'Vargas Llosa', NULL, NULL, 'EXP-2026-007', 'Compendio mixto de licencias de edificación', '2026-04-02', 'Aceptada', NULL, 22.00, 'Mixto', '30', '20', 50, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(38, '48751296', 'Sofía Antonieta', 'Flores Torres', NULL, NULL, 'EXP-2026-008', 'Revisión de planos de catastro urbano', '2026-04-18', 'Rechazada', NULL, 0.00, 'Mixto', '6', '6', 12, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(39, '07412589', 'Miguel Ángel', 'Benites Rivas', NULL, NULL, 'EXP-2026-009', 'Acervo documentario masivo de la gerencia de rentas', '2026-05-14', 'Aceptada', NULL, 20.00, 'Copia Simple A4', '100', '0', 100, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(40, '15926348', 'Elena Beatriz', 'Sovero Marín', NULL, NULL, 'EXP-2026-010', 'Copia legalizada interna de adjudicación de lote', '2026-05-22', 'Aceptada', NULL, 2.50, 'Copia Fedateada', '0', '5', 5, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(41, '60124578', 'Roberto Carlos', 'Ganoza Vega', NULL, NULL, 'EXP-2026-011', 'Expediente administrativo integrado de transportes', '2026-06-01', 'Aceptada', NULL, 8.40, 'Mixto', '10', '8', 18, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(42, '42153698', 'Julio César', 'Tello Rojas', NULL, NULL, 'EXP-2026-012', 'Documentación sustentatoria de trámite de baja', '2026-06-10', 'Aceptada', NULL, 5.00, 'Copia Simple A4', '25', '0', 25, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(43, '33251478', 'Rosa Mercedes', 'Ayala Prado', NULL, NULL, 'EXP-2026-013', 'Copia de actas de matrimonio antiguas', '2026-06-18', 'Rechazada', NULL, 0.00, 'Copia Fedateada', '0', '4', 4, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(44, '71254836', 'Luis Fernando', 'Murrugarra Sáenz', NULL, NULL, 'EXP-2026-014', 'Resoluciones gerenciales completas año 2022', '2026-07-04', 'Aceptada', NULL, 20.00, 'Copia Fedateada', '0', '40', 40, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(45, '08521436', 'Gisela Paola', 'Ortiz Pinedo', NULL, NULL, 'EXP-2026-015', 'Reporte consolidado mixto de deudas coactivas', '2026-08-19', 'Aceptada', NULL, 6.20, 'Mixto', '7', '7', 14, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(46, '44512369', 'Humberto', 'Solis Quiroga', NULL, NULL, 'EXP-2026-016', 'Copia de Boucher y registros de caja antiguos', '2026-09-21', 'Aceptada', NULL, 2.40, 'Copia Simple A4', '12', '0', 12, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(47, '12547839', 'David Salomón', 'Vera Tudela', NULL, NULL, 'EXP-2026-017', 'Certificado de parámetros urbanísticos', '2026-10-05', 'Rechazada', NULL, 0.00, 'Copia Simple A4', '2', '0', 2, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(48, '70362514', 'Walter Alfonso', 'Guevara Arévalo', NULL, NULL, 'EXP-2026-018', 'Paquete compuesto de fiscalización tributaria', '2026-10-31', 'Aceptada', NULL, 19.50, 'Mixto', '25', '20', 45, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(49, '41526378', 'Carmen Julia', 'Delgado Neyra', NULL, NULL, 'EXP-2026-019', 'Duplicado de planos visados por obras públicas', '2026-11-12', 'Aceptada', NULL, 7.50, 'Copia Fedateada', '0', '15', 15, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(50, '80214536', 'Francisco', 'Bolognesi Cervantes', NULL, NULL, 'EXP-2026-020', 'Hojas informativas de mesa de partes', '2026-12-23', 'Aceptada', NULL, 10.00, 'Copia Simple A4', '50', '0', 50, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
+	(51, '70788512', 'Josue Joal', 'Pedraza Rivadeneira', '934402822', 'Los Inkas #453', 'EXP-2026-0014', 'Requiere de la pág 20-30', '2026-06-26', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '20-30', NULL, 10, 1, '2026-06-27 00:28:40', '2026-06-27 00:29:28'),
+	(52, '56456468', 'Roxana Alejandra', 'Mendoza Castillo', NULL, NULL, 'EXP-2026-0100', 'Requiere de la 1-10 copia simple y de la 20-30 fedateada', '2026-06-26', 'Aceptada', NULL, 2.00, 'Mixto', '1-10', '20-30', 20, 1, '2026-06-27 00:30:38', '2026-06-27 00:31:51'),
+	(53, '45245345', 'José Luis', 'Rivera Castillo', NULL, NULL, 'EXP-2026-0101', 'Fedateados de la 50-80', '2026-06-26', 'Aceptada', NULL, 3.00, 'Fedateado', NULL, '50-80', 30, 1, '2026-06-27 00:38:00', '2026-06-27 00:38:36'),
+	(54, '54645645', 'Joal', 'Rivadeneira', NULL, NULL, 'EXP-2026-0017', 'Requiere folios de la 1-50', '2026-06-26', 'Rechazada', 'Este expediente EXP-2026-0017 no se registra en el sistema, por lo tanto no se le puede entregar lo que solicita', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 01:26:58', '2026-06-27 01:27:41'),
+	(55, '45645354', 'Juan Carlos Esteban', 'Chuquihuanca Flores', NULL, NULL, 'EXP-2026-0018', 'EXP-2026-0018', '2026-06-27', 'Rechazada', 'No se encuentra el expediente', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 17:23:29', '2026-06-27 17:25:05'),
+	(56, '54345345', 'Roxy Aleja', 'Condorhuamán Rivera', NULL, NULL, 'EXP-2026-0017', 'EXP-2026-0017', '2026-06-27', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '1-10', NULL, 10, 1, '2026-06-27 17:24:39', '2026-06-27 17:24:51');
 
 -- Volcando estructura para tabla archivo_mdjlo.tipos_documento
 DROP TABLE IF EXISTS `tipos_documento`;
