@@ -28,17 +28,19 @@ export default function BandejaSolicitudes({ triggerToast }) {
     const [showConfirmExitModal, setShowConfirmExitModal] = useState(false);
     const [pendingAction, setPendingAction] = useState(null);
 
+    // Liquidación automática bajo la tasa del TUPA Distrital
     const costoCalculado = ((parseInt(numHojas) || 0) * (parseInt(cantCopias) || 0) * 0.10).toFixed(2);
 
+    // CAMBIO OPERATIVO: Opciones con nombres profesionales e institucionales
     const opcionesDecision = [
-        { id: 'Aceptada', nombre: '✅ Aprobada' },
-        { id: 'Rechazada', nombre: '❌ Denegada' }
+        { id: 'Aceptada', nombre: 'Aprobada / Procedente' },
+        { id: 'Rechazada', nombre: 'Denegada / Improcedente' }
     ];
 
     const opcionesFormatosTupa = [
-        { id: 'Copia Simple A4', nombre: '📄 Copia Simple Formato A4' },
-        { id: 'Fedateado', nombre: '📜 Formato Fedateado' },
-        { id: 'Mixto', nombre: '📑 Formato Mixto (Simple y Fedateado)' }
+        { id: 'Copia Simple A4', nombre: 'Copia Simple Formato A4' },
+        { id: 'Fedateado', nombre: 'Formato Fedateado' },
+        { id: 'Mixto', nombre: 'Formato Mixto (Simple y Fedateado)' }
     ];
 
     const handleValidacionFolios = (valorStr, setterFunction) => {
@@ -162,43 +164,55 @@ export default function BandejaSolicitudes({ triggerToast }) {
         }
     };
 
-    const labelStyles = "block text-[11px] font-extrabold text-slate-500 mb-2 tracking-widest uppercase";
-    const inputStyles = "w-full h-[48px] px-4 border border-slate-200 bg-slate-50 rounded-2xl text-[13px] font-semibold text-slate-700 focus:bg-white focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/10 outline-none transition-all";
+    const labelStyles = "block text-[11px] font-black text-slate-400 mb-2 tracking-widest uppercase";
+    const inputStyles = "w-full h-[48px] px-4 border border-slate-200 bg-slate-50/50 rounded-2xl text-[13px] font-semibold text-slate-700 focus:bg-white focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300";
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900">
-            <div className="max-w-[1200px] w-full mx-auto animate-fade-in">
-                <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-8 bg-[#FFC107] rounded-full shadow-sm"></div>
-                        <div className="flex flex-col">
+        <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900">
+            <div className="max-w-[1200px] w-full mx-auto space-y-6 animate-fade-in">
+
+                {/* --- CABECERA PRINCIPAL UNIFICADA: BANDEJA DE ENTRANTES (CELESTE OCEÁNICO CON INBOX 3D) --- */}
+                <div className="relative overflow-hidden bg-gradient-to-r from-sky-50/90 to-white/10 p-6 sm:px-8 sm:py-6 rounded-3xl border border-sky-100 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex flex-col md:flex-row md:items-center justify-between gap-4 z-40">
+                    {/* Efecto difuminado premium de fondo */}
+                    <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-sky-200 pointer-events-none"></div>
+                    
+                    <div className="flex items-center gap-4">
+                        {/* Contenedor del Icono Elegido (Inbox 3D) */}
+                        <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-200/40 flex items-center justify-center text-sky-600 relative z-10 shadow-sm shrink-0">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" />
+                            </svg>
+                        </div>
+                        <div className="flex flex-col relative z-10">
                             <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Bandeja de Entrantes</h1>
-                            <span className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Mesa de Partes - Pendientes de Revisión</span>
+                            <span className="text-[11px] font-bold text-sky-600 mt-1 uppercase tracking-wider">Mesa de Partes - Pendientes de Revisión</span>
                         </div>
                     </div>
 
-                    <div className="relative w-full md:w-96">
+                    {/* Input de búsqueda integrado */}
+                    <div className="relative w-full md:w-96 z-10">
                         <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input
                             type="text"
                             placeholder="Buscar por DNI, Nombre o Expediente..."
-                            className="w-full h-[48px] pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-[13px] font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#0F4C81]/10 outline-none transition-all"
+                            className="w-full h-[48px] pl-12 pr-4 bg-white border border-slate-200/80 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-[#0F4C81]/10 outline-none transition-all shadow-sm"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                 </div>
 
-                <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+                {/* Tabla de Gestión Principal */}
+                <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/80 border-b border-slate-100">
-                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">Fecha / DNI</th>
-                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">Solicitante</th>
+                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest w-40">Fecha / DNI</th>
+                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest w-64">Solicitante</th>
                                     <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">Documento Requerido</th>
-                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
-                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Acción</th>
+                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-32">Estado</th>
+                                    <th className="py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-28">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -209,28 +223,28 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 ) : (
                                     solicitudesFiltradas.map((sol, index) => (
                                         <tr key={sol.id || sol.id_solicitud || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                            <td className="py-4 px-6">
+                                            <td className="py-4 px-6 w-40">
                                                 <div className="flex flex-col">
                                                     <span className="text-[13px] font-bold text-slate-700">{sol.fecha_solicitud}</span>
-                                                    <span className="text-[11px] font-semibold text-slate-400 mt-0.5">DNI: {sol.dni}</span>
+                                                    <span className="text-[11px] font-mono font-bold text-slate-400 mt-0.5 tracking-wide">DNI {sol.dni}</span>
                                                 </div>
                                             </td>
-                                            <td className="py-4 px-6">
-                                                <span className="text-[13px] font-bold text-[#0F4C81]">{sol.nombres} {sol.apellidos}</span>
+                                            <td className="py-4 px-6 w-64">
+                                                <span className="text-[13px] font-bold text-slate-700 block truncate" title={`${sol.nombres} ${sol.apellidos}`}>{sol.nombres} {sol.apellidos}</span>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <div className="text-[13px] font-bold text-slate-700 line-clamp-2 max-w-xs" title={sol.expediente_solicitado}>
+                                                <div className="text-[13px] font-bold text-[#0F4C81] truncate max-w-xs" title={sol.expediente_solicitado}>
                                                     {sol.expediente_solicitado}
                                                 </div>
                                             </td>
-                                            <td className="py-4 px-6 text-center">
+                                            <td className="py-4 px-6 text-center w-32">
                                                 <StatusBadge estado={sol.estado} />
                                             </td>
-                                            <td className="py-4 px-6 text-center">
+                                            <td className="py-4 px-6 text-center w-28">
                                                 <button
                                                     type="button"
                                                     onClick={() => abrirModalGestion(sol)}
-                                                    className="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-[#0F4C81] hover:text-white rounded-xl text-[11px] font-extrabold uppercase tracking-wide transition-all shadow-sm"
+                                                    className="px-3.5 py-1.5 bg-slate-100 text-[#0F4C81] hover:bg-[#0F4C81] hover:text-white rounded-xl text-[11px] font-extrabold uppercase tracking-wide transition-all shadow-sm"
                                                 >
                                                     Gestionar
                                                 </button>
@@ -243,6 +257,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 </div>
 
+                {/* Modal Dinámico por Pasos */}
                 {solicitudSeleccionada && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
                         <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 flex flex-col overflow-visible h-auto max-h-[90vh]">
@@ -274,7 +289,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                 <p className="font-bold text-[#0F4C81] text-[14px]">{solicitudSeleccionada.nombres} {solicitudSeleccionada.apellidos}</p>
                                             </div>
                                             <div className="grid grid-cols-2 gap-3 border-t border-slate-200/60 pt-3 text-[12px]">
-                                                <p className="text-slate-500 font-semibold">🪪 DNI: <strong className="text-slate-700 font-bold">{solicitudSeleccionada.dni}</strong></p>
+                                                <p className="text-slate-500 font-semibold">🪪 DNI: <strong className="text-slate-700 font-bold font-mono">{solicitudSeleccionada.dni}</strong></p>
                                                 <p className="text-slate-500 font-semibold">📞 Tel: <strong className="text-slate-700 font-bold">{solicitudSeleccionada.telefono || 'Ninguno'}</strong></p>
                                                 <p className="text-slate-500 font-semibold col-span-2">📍 Dirección: <strong className="text-slate-700 font-bold">{solicitudSeleccionada.direccion || 'No especificada'}</strong></p>
                                             </div>
@@ -298,7 +313,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                             <CustomDropdown
                                                 id="estado_gestion"
                                                 name="estado_gestion"
-                                                placeholder="¿Se aprueba el trámite?"
+                                                placeholder="¿Se aprueba el trámite documental?"
                                                 options={opcionesDecision}
                                                 selectedValue={nuevoEstado}
                                                 onSelect={(val) => setNuevoEstado(val)}
@@ -336,7 +351,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                             <label className="block text-[11px] font-extrabold text-blue-600 mb-2 tracking-widest uppercase">Páginas Copia Simple *</label>
                                                             <input
                                                                 type="text"
-                                                                required
                                                                 placeholder="Ej: 1-5, 8"
                                                                 value={paginasSimples}
                                                                 onChange={(e) => handleValidacionFolios(e.target.value, setPaginasSimples)}
@@ -347,7 +361,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                             <label className="block text-[11px] font-extrabold text-purple-600 mb-2 tracking-widest uppercase">Páginas Fedateadas *</label>
                                                             <input
                                                                 type="text"
-                                                                required
                                                                 placeholder="Ej: 6-9, 12"
                                                                 value={paginasFedateadas}
                                                                 onChange={(e) => handleValidacionFolios(e.target.value, setPaginasFedateadas)}
@@ -361,7 +374,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                             <label className={labelStyles}>¿Qué Páginas/Folios requiere del expediente? *</label>
                                                             <input
                                                                 type="text"
-                                                                required
                                                                 placeholder="Ej: 1-15, 20"
                                                                 value={paginasRequeridas}
                                                                 onChange={(e) => handleValidacionFolios(e.target.value, setPaginasRequeridas)}
@@ -374,11 +386,11 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
                                                     <div>
                                                         <label className={labelStyles}>N° Total de Hojas *</label>
-                                                        <input type="number" min="1" required value={numHojas} onChange={(e) => setNumHojas(e.target.value)} className={inputStyles} />
+                                                        <input type="number" min="1" value={numHojas} onChange={(e) => setNumHojas(e.target.value)} className={inputStyles} />
                                                     </div>
                                                     <div>
                                                         <label className={labelStyles}>Cantidad de Copias *</label>
-                                                        <input type="number" min="1" required value={cantCopias} onChange={(e) => setCantCopias(e.target.value)} className={inputStyles} />
+                                                        <input type="number" min="1" value={cantCopias} onChange={(e) => setCantCopias(e.target.value)} className={inputStyles} />
                                                     </div>
                                                 </div>
 
@@ -396,7 +408,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                             <div className="animate-fade-in relative z-10">
                                                 <label className="block text-[11px] font-extrabold text-rose-600 mb-2 tracking-widest uppercase">Especifique Motivo de Rechazo *</label>
                                                 <textarea
-                                                    required
                                                     rows="4"
                                                     placeholder="Escriba el motivo técnico por el cual se rechaza el trámite..."
                                                     value={motivoRechazo}
@@ -443,6 +454,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 )}
 
+                {/* Modal Confirmación de salida preventiva */}
                 {showConfirmExitModal && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
                         <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -457,7 +469,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 <p className="text-[13px] text-slate-500 px-2 leading-relaxed font-medium">Tienes datos rellenados en la liquidación de este trámite. Si sales ahora, perderás todos los cambios realizados.</p>
                             </div>
                             <div className="bg-slate-50/50 px-6 py-5 flex flex-col sm:flex-row justify-center gap-3 border-t border-slate-100">
-                                <button type="button" onClick={() => { setShowConfirmExitModal(false); setPendingAction(null); }} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 hover:shadow-sm transition-all order-2 sm:order-1">
+                                <button type="button" onClick={() => { setShowConfirmExitModal(false); setPendingAction(null); }} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50/50 transition-all order-2 sm:order-1">
                                     No, continuar
                                 </button>
                                 <button type="button" onClick={confirmarAccionPendiente} className="w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[13px] font-bold bg-[#0F4C81] shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all order-1 sm:order-2">
