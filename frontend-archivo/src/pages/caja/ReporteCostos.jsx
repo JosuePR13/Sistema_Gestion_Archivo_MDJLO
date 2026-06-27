@@ -272,8 +272,8 @@ export default function ReporteCostos() {
                         </svg>
                     </div>
                     <div className="flex flex-col relative z-10">
-                        <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Reporte de costos</h1>
-                        <span className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Auditoría histórica de caja</span>
+                        <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Reporte de Costos</h1>
+                        <span className="text-[11px] font-bold text-purple-600 mt-1 uppercase tracking-wider">Auditoría histórica de caja</span>
                     </div>
                 </div>
 
