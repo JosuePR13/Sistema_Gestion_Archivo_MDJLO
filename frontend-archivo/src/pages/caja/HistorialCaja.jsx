@@ -20,19 +20,19 @@ export default function HistorialCaja() {
     const datosFiltradosGlobales = movimientos.filter(item => {
         // 1. Discriminación primaria por pestaña activa
         if (item.estado !== activeTab) return false;
-        
-        // Sanatización de la entrada del usuario (Remoción de espacios en extremos)
+
+        // Sanitización de la entrada del usuario (Remoción de espacios en extremos)
         const search = searchTerm.toLowerCase().trim();
         if (!search) return true; // Si no hay criterio de búsqueda, retorna el registro
 
         // 2. Coincidencia exacta posicional para el documento de identidad (DNI)
         const coincideDni = item.dni && item.dni.startsWith(search);
 
-        // 3. Coincidencia posicional por tokens nominales (Nombres o Apellidos por separado)
-        const nombreCompleto = `${item.nombres || ''} ${item.apellidos || ''}`.toLowerCase();
-        
-        // Segmentación en palabras para evaluar individualmente el inicio de cada una (evita falsos positivos en el medio)
-        const coincideNombreOApellido = nombreCompleto.split(' ').some(palabra => palabra.startsWith(search));
+        // 3. Coincidencia flexible por cualquier token nominal o bloque completo (Nombres o Apellidos)
+        const nombreCompleto = `${item.nombres || ''} ${item.apellidos || ''}`.toLowerCase().trim();
+
+        // Al usar .includes() permites que encuentre coincidencias completas en cualquier parte del nombre
+        const coincideNombreOApellido = nombreCompleto.includes(search);
 
         return coincideDni || coincideNombreOApellido;
     });
@@ -41,7 +41,7 @@ export default function HistorialCaja() {
     // ALGORITMO MATEMÁTICO DE PAGINACIÓN Y CONTROL DE DESBORDAMIENTOS
     // =========================================================================
     const totalPaginas = Math.ceil(datosFiltradosGlobales.length / registrosPorPagina) || 1;
-    
+
     // Reset preventivo automático si los filtros reducen el dataset mientras el usuario está en una página avanzada
     const paginaActualVerificada = currentPage > totalPaginas ? 1 : currentPage;
 
@@ -82,38 +82,35 @@ export default function HistorialCaja() {
 
                 {/* --- SECCIÓN DE ACCIONES Y CONTROL DE BÚSQUEDA --- */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
-                    
+
                     {/* Contenedor Adaptativo de Pestañas (Intercambia colores dinámicamente según el contexto) */}
-                    <div className={`flex gap-2 p-1.5 backdrop-blur-md w-full md:max-w-sm rounded-2xl border transition-all duration-300 shrink-0 shadow-sm ${
-                        activeTab === 'Aceptada' 
-                            ? 'bg-emerald-50/70 border-emerald-200/50' 
+                    <div className={`flex gap-2 p-1.5 backdrop-blur-md w-full md:max-w-sm rounded-2xl border transition-all duration-300 shrink-0 shadow-sm ${activeTab === 'Aceptada'
+                            ? 'bg-emerald-50/70 border-emerald-200/50'
                             : 'bg-rose-50/70 border-rose-200/50'
-                    }`}>
+                        }`}>
                         {/* Botón Pestaña Aprobadas */}
                         <button
                             type="button"
                             onClick={() => { setActiveTab('Aceptada'); setCurrentPage(1); }}
-                            className={`w-full py-2.5 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'Aceptada' 
-                                    ? 'bg-white text-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.15)] border border-emerald-100' 
+                            className={`w-full py-2.5 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === 'Aceptada'
+                                    ? 'bg-white text-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.15)] border border-emerald-100'
                                     : 'text-emerald-700/60 hover:text-emerald-800 hover:bg-white/30'
-                            }`}
+                                }`}
                         >
                             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                             Aprobadas
                         </button>
-                        
+
                         {/* Botón Pestaña Denegadas */}
                         <button
                             type="button"
                             onClick={() => { setActiveTab('Rechazada'); setCurrentPage(1); }}
-                            className={`w-full py-2.5 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'Rechazada' 
-                                    ? 'bg-white text-rose-600 shadow-[0_4px_12px_rgba(244,63,94,0.15)] border border-rose-100' 
+                            className={`w-full py-2.5 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === 'Rechazada'
+                                    ? 'bg-white text-rose-600 shadow-[0_4px_12px_rgba(244,63,94,0.15)] border border-rose-100'
                                     : 'text-rose-700/60 hover:text-rose-800 hover:bg-white/30'
-                            }`}
+                                }`}
                         >
                             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -178,9 +175,9 @@ export default function HistorialCaja() {
                                                 </span>
                                             </td>
 
-                                            {/* Celda 2: Identificador de Identidad (Monoespaciado para legibilidad en auditorías) */}
+                                            {/* Celda 2: Identificador de Identidad */}
                                             <td className="py-4 px-6 text-center w-28">
-                                                <span className="text-[13px] font-mono font-bold text-slate-600 tracking-wide">
+                                                <span className="text-[13px] font-bold text-slate-600 tracking-wide">
                                                     {item.dni}
                                                 </span>
                                             </td>
@@ -280,36 +277,37 @@ export default function HistorialCaja() {
                                 <p className="text-[13px] font-extrabold text-[#0F4C81] pt-1">Ficha de Sustento - Mesa de Partes</p>
                             </div>
 
-                            {/* Ficha Técnica: Datos del Contribuyente */}
+                            {/* Ficha Técnica: Datos del Contribuyente (Distribución Asimétrica Equilibrada) */}
                             <div className="space-y-3 text-[13px] bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
+                                {/* Cambiado a grid-cols-3 para empujar la segunda columna más a la derecha */}
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="col-span-2">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contribuyente</p>
                                         <p className="font-bold text-slate-800">{selectedItem.nombres} {selectedItem.apellidos}</p>
                                     </div>
-                                    <div>
+                                    <div className="col-span-1">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">DNI</p>
                                         <p className="font-bold text-slate-800">{selectedItem.dni}</p>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 border-t border-slate-200/60 pt-2">
-                                    <div className="col-span-2">
+                                <div className="grid grid-cols-3 gap-2 border-t border-slate-200/60 pt-2">
+                                    <div className="col-span-3">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dirección de Residencia</p>
                                         <p className="font-bold text-slate-800">{selectedItem.direccion || 'No registrada'}</p>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 border-t border-slate-200/60 pt-2">
-                                    <div>
+                                <div className="grid grid-cols-3 gap-2 border-t border-slate-200/60 pt-2">
+                                    <div className="col-span-2">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Teléfono</p>
                                         <p className="font-bold text-slate-800">{selectedItem.telefono || 'No registrado'}</p>
                                     </div>
-                                    <div>
+                                    <div className="col-span-1">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha de Registro</p>
-                                        <p className="font-bold text-slate-800">{selectedItem.fecha_solicitud}</p>
+                                        <p className="font-bold text-slate-800 ">{selectedItem.fecha_solicitud}</p>
                                     </div>
                                 </div>
                                 <div className="border-t border-slate-200/60 pt-2">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expediente Físico Requerido</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expediente/Documento Requerido</p>
                                     <p className="font-bold text-[#0F4C81]">{selectedItem.expediente_solicitado}</p>
                                     <p className="text-slate-500 italic text-[12px] mt-1 leading-relaxed">"{selectedItem.descripcion}"</p>
                                 </div>
