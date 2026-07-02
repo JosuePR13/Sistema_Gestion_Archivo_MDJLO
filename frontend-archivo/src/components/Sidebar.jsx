@@ -6,8 +6,8 @@ export default function Sidebar({ currentScreen, setScreen }) {
         { name: 'nuevo-expediente', label: 'Registrar Documento', d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
         { name: 'expedientes', label: 'Búsqueda', d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
         { name: 'digitalizacion', label: 'Digitalización', d: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
-        { name: 'seguimiento', label: 'Seguimiento', d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
-        { name: 'reportes', label: 'Reporte Documental', d: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+        { name: 'seguimiento', label: 'Control de Plazos', d: "M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" },
+        { name: 'reportes', label: 'Reporte Documental', d: "M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" },
     ];
 
     const menuMesaPartes = [
@@ -17,7 +17,7 @@ export default function Sidebar({ currentScreen, setScreen }) {
 
     const menuCaja = [
         { name: 'historial-caja', label: 'Historial de Caja', d: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
-        { name: 'reporte-costos', label: 'Reporte de Costos', d: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+        { name: 'reporte-costos', label: 'Reporte de Costos', d: "M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" },
     ];
 
     const MenuItem = ({ item }) => {
