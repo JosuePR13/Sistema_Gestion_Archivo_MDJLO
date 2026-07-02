@@ -246,8 +246,8 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 <tr className="bg-slate-50/70 border-b border-slate-100">
                                     <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[120px]">Fecha</th>
                                     <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[110px]">DNI</th>
-                                    <th className="py-4 px-5 text-[11px] font-black text-slate-400 uppercase tracking-widest w-[280px]">Contribuyente</th>
-                                    <th className="py-4 px-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Documento / Descripción</th>
+                                    <th className="py-4 px-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[280px]">Contribuyente</th>
+                                    <th className="py-4 px-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Documento / Descripción</th>
                                     <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[120px]">Estado</th>
                                     <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[120px]">Acción</th>
                                 </tr>
