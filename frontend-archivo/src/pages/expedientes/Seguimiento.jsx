@@ -10,7 +10,7 @@ export default function SeguimientoScreen({ setScreen }) {
     // --- ESTADOS LOCALES DE CONTROL Y FILTRADO ---
     const [filterEstado, setFilterEstado] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 7;
+    const ITEMS_PER_PAGE = 12;
 
     // --- REFERENCIAS REACTIVAS PARA RENDERS E INSTANCIAS DE CHART.JS ---
     const chartDonaRef = useRef(null);
@@ -219,16 +219,16 @@ export default function SeguimientoScreen({ setScreen }) {
             <div className="max-w-[1200px] w-full mx-auto space-y-6">
 
                 {/* --- CABECERA PRINCIPAL --- */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-emerald-200/50 to-zinc-50/40 p-6 sm:px-8 sm:py-6 rounded-3xl border border-emerald-300/60 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
+                <div className="relative overflow-hidden bg-gradient-to-r from-emerald-500/20 via-emerald-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-emerald-300/80 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
                     <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-40 blur-xl bg-emerald-300 pointer-events-none"></div>
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-300/50 flex items-center justify-center text-emerald-700 relative z-10 shadow-sm shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/25 border border-emerald-300/60 flex items-center justify-center text-emerald-700 relative z-10 shadow-sm shrink-0">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" />
                         </svg>
                     </div>
                     <div className="flex flex-col relative z-10 text-left">
                         <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Control de Plazos</h1>
-                        <span className="text-[11px] font-bold text-emerald-700 mt-1 uppercase tracking-wider">Vigencia Documental</span>
+                        <span className="text-[11px] font-black text-emerald-800 mt-1.5 uppercase tracking-wider">Vigencia Documental</span>
                     </div>
                 </div>
 
@@ -268,7 +268,7 @@ export default function SeguimientoScreen({ setScreen }) {
                                 {tablaFiltrada.length} REGISTROS
                             </span>
                         </div>
-                        <div className="relative w-full sm:w-72 z-30">
+                        <div className="relative w-full sm:w-56 z-30">
                             <CustomDropdown
                                 placeholder="Filtrar por Auditoría"
                                 options={[
@@ -287,7 +287,7 @@ export default function SeguimientoScreen({ setScreen }) {
                         <table className="w-full text-left border-collapse table-fixed min-w-[900px]">
                             <thead>
                                 <tr className="bg-white border-b border-slate-100 select-none">
-                                    <th className="py-4 px-6 w-[20%] text-[11px] font-black text-slate-400 uppercase tracking-widest text-left pl-8">N° Exp / Doc</th>
+                                    <th className="py-4 px-6 w-[20%] text-[11px] font-black text-slate-400 uppercase tracking-widest text-center pl-8">N° Exp / Doc</th>
                                     <th className="py-4 px-4 w-[32%] text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Título</th>
                                     <th className="py-4 px-4 w-[18%] text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Clasificación</th>
                                     <th className="py-4 px-4 w-[12%] text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Vigencia Documental</th>
@@ -300,7 +300,7 @@ export default function SeguimientoScreen({ setScreen }) {
                                     currentData.map((d) => (
                                         <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors h-[76px]">
                                             {/* N° Identificador Único */}
-                                            <td className="py-4 px-8 font-black text-[#0F4C81] truncate tracking-wide text-left pl-8">
+                                            <td className="py-4 px-8 font-black text-[#0F4C81] truncate tracking-wide text-center pl-8">
                                                 {safeText(d.numero_expediente)}
                                             </td>
 

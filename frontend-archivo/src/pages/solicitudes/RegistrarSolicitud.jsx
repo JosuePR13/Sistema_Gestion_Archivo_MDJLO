@@ -169,16 +169,16 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                 </div>
 
                 {/* Banner de Cabecera del Módulo */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-indigo-100/70 to-white/10 p-6 sm:px-8 sm:py-6 rounded-3xl border border-indigo-200/60 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
+                <div className="relative overflow-hidden bg-gradient-to-r from-indigo-500/20 via-indigo-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-indigo-200/80 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
                     <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-40 blur-xl bg-indigo-300 pointer-events-none"></div>
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-200/50 flex items-center justify-center text-indigo-600 relative z-10 shadow-sm shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600/15 border border-indigo-200/60 flex items-center justify-center text-indigo-600 relative z-10 shadow-sm shrink-0">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>
                     </div>
-                    <div className="flex flex-col relative z-10">
+                    <div className="flex flex-col relative z-10 text-left">
                         <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Registrar Solicitud</h1>
-                        <span className="text-[11px] font-bold text-indigo-600 mt-1 uppercase tracking-wider">Trámite Documentario</span>
+                        <span className="text-[11px] font-black text-indigo-700 mt-1.5 uppercase tracking-wider">Trámite de Mesa de Partes</span>
                     </div>
                 </div>
 

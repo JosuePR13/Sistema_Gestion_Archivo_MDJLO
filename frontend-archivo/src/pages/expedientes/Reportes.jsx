@@ -10,7 +10,7 @@ export default function ReportesScreen() {
   // --- ESTADOS DE CONTROL DE NAVEGACIÓN Y PAGINACIÓN ---
   const [tipoRep, setTipoRep] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 12;
 
   // --- ESTADOS INDEPENDIENTES PARA FILTROS REACTIVOS ---
   const [anio, setAnio] = useState(new Date().getFullYear().toString());
@@ -323,16 +323,16 @@ export default function ReportesScreen() {
       <div className="max-w-screen-xl mx-auto animate-fade-in">
 
         {/* --- CABECERA PRINCIPAL --- */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-rose-100/80 to-indigo-50/60 p-6 sm:px-8 sm:py-6 rounded-3xl border border-rose-200/50 shadow-[0_4px_25px_rgb(0,0,0,0.02)] flex items-center gap-4 mb-8 z-40">
-          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-50 blur-xl bg-rose-200 pointer-events-none"></div>
-          <div className="w-10 h-10 rounded-xl bg-rose-600/10 border border-rose-200/40 flex items-center justify-center text-rose-600 relative z-10 shadow-sm shrink-0">
+        <div className="relative overflow-hidden bg-gradient-to-r from-rose-500/20 via-rose-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-rose-200/80 shadow-[0_4px_25px_rgb(0,0,0,0.02)] flex items-center gap-4 mb-8 z-40">
+          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-50 blur-xl bg-rose-300 pointer-events-none"></div>
+          <div className="w-10 h-10 rounded-xl bg-rose-600/15 border border-rose-200/60 flex items-center justify-center text-rose-600 relative z-10 shadow-sm shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" />
             </svg>
           </div>
-          <div className="flex flex-col relative z-10">
+          <div className="flex flex-col relative z-10 text-left">
             <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Reporte Documental</h1>
-            <span className="text-[11px] font-bold text-rose-600 mt-1 uppercase tracking-wider">Auditoría histórica de documentos</span>
+            <span className="text-[11px] font-black text-rose-700 mt-1.5 uppercase tracking-wider">Auditoría histórica de documentos</span>
           </div>
         </div>
 
