@@ -4,7 +4,7 @@ export default function Sidebar({ currentScreen, setScreen }) {
 
     const menuArchivo = [
         { name: 'nuevo-expediente', label: 'Registrar Documento', d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
-        { name: 'expedientes', label: 'Búsqueda', d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
+        { name: 'expedientes', label: 'Búsqueda Documental', d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
         { name: 'digitalizacion', label: 'Digitalización', d: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
         { name: 'seguimiento', label: 'Control de Plazos', d: "M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" },
         { name: 'reportes', label: 'Reporte Documental', d: "M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" },

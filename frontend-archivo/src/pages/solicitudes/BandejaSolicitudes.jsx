@@ -207,17 +207,17 @@ export default function BandejaSolicitudes({ triggerToast }) {
             <div className="max-w-[1200px] w-full mx-auto space-y-6 animate-fade-in">
 
                 {/* --- CABECERA PRINCIPAL --- */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-sky-100/70 to-white/10 p-6 sm:px-8 sm:py-6 rounded-3xl border border-sky-200/60 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center justify-between gap-4 z-40">
+                <div className="relative overflow-hidden bg-gradient-to-r from-sky-500/20 via-sky-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-sky-200/80 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center justify-between gap-4 z-40">
                     <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-40 blur-xl bg-sky-300 pointer-events-none"></div>
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-200/50 flex items-center justify-center text-sky-600 relative z-10 shadow-sm shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-200/60 flex items-center justify-center text-sky-600 relative z-10 shadow-sm shrink-0">
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" />
                             </svg>
                         </div>
-                        <div className="flex flex-col relative z-10">
+                        <div className="flex flex-col relative z-10 text-left">
                             <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Bandeja de Solicitudes</h1>
-                            <span className="text-[11px] font-bold text-sky-600 mt-1 uppercase tracking-wider">Control y Seguimiento</span>
+                            <span className="text-[11px] font-black text-sky-700 mt-1.5 uppercase tracking-wider">Control y Seguimiento</span>
                         </div>
                     </div>
                 </div>
@@ -230,7 +230,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                         </svg>
                         <input
                             type="text"
-                            placeholder="Buscar por DNI o Contribuyente"
+                            placeholder="Buscar por Contribuyente o DNI..."
                             className="w-full h-[46px] pl-12 pr-4 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-[#0F4C81]/10 outline-none transition-all shadow-sm"
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
@@ -244,15 +244,15 @@ export default function BandejaSolicitudes({ triggerToast }) {
                         <table className="w-full text-left border-collapse table-fixed">
                             <thead>
                                 <tr className="bg-slate-50/70 border-b border-slate-100">
-                                    <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[120px]">Fecha</th>
-                                    <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[110px]">DNI</th>
                                     <th className="py-4 px-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[280px]">Contribuyente</th>
+                                    <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[110px]">DNI</th>
+                                    <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[120px]">Fecha</th>
                                     <th className="py-4 px-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Documento / Descripción</th>
                                     <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[120px]">Estado</th>
                                     <th className="py-4 px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center w-[120px]">Acción</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-slate-50 text-[13px]">
                                 {loadingSolicitudes ? (
                                     <tr><td colSpan="6" className="py-12 text-center text-sm font-bold text-slate-400">Cargando bandeja...</td></tr>
                                 ) : currentItems.length === 0 ? (
@@ -260,17 +260,21 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 ) : (
                                     currentItems.map((sol, index) => (
                                         <tr key={sol.id || sol.id_solicitud || index} className="border-b border-slate-50 hover:bg-slate-50/40 transition-colors">
-                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-600 text-center whitespace-nowrap w-[120px]">
-                                                {sol.fecha_solicitud}
-                                            </td>
-                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-700 text-center whitespace-nowrap w-[110px]">
-                                                {sol.dni}
-                                            </td>
+
                                             <td className="py-4 px-5 w-[280px]">
-                                                <span className="text-[13px] font-bold text-slate-800 block truncate" title={`${sol.nombres} ${sol.apellidos}`}>
+                                                <span className="text-[13px] font-bold text-slate-800 block truncate text-center" title={`${sol.nombres} ${sol.apellidos}`}>
                                                     {sol.nombres} {sol.apellidos}
                                                 </span>
                                             </td>
+
+                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-700 text-center whitespace-nowrap w-[110px]">
+                                                {sol.dni}
+                                            </td>
+
+                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-600 text-center whitespace-nowrap w-[120px]">
+                                                {sol.fecha_solicitud}
+                                            </td>
+
                                             <td className="py-4 px-5 overflow-hidden">
                                                 <div className="flex flex-col w-full max-w-[260px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px]">
                                                     <span className="text-[13px] font-bold text-[#0F4C81] truncate" title={sol.expediente_solicitado}>

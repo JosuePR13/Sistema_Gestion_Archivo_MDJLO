@@ -67,16 +67,16 @@ export default function HistorialCaja() {
             <div className="max-w-[1200px] w-full mx-auto space-y-6">
 
                 {/* --- CABECERA PRINCIPAL --- */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-amber-50/90 to-white/10 p-6 sm:px-8 sm:py-6 rounded-3xl border border-amber-200/40 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
-                    <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-amber-200 pointer-events-none"></div>
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-200/40 flex items-center justify-center text-orange-600 relative z-10 shadow-sm shrink-0">
+                <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/20 via-amber-50/50 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-amber-200/70 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
+                    <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-amber-300 pointer-events-none"></div>
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-200/60 flex items-center justify-center text-orange-600 relative z-10 shadow-sm shrink-0">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <div className="flex flex-col relative z-10">
+                    <div className="flex flex-col relative z-10 text-left">
                         <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Historial de Caja</h1>
-                        <span className="text-[11px] font-bold text-orange-500 mt-1 uppercase tracking-wider">Control de Recaudación</span>
+                        <span className="text-[11px] font-black text-orange-600 mt-1.5 uppercase tracking-wider">Control de Recaudación</span>
                     </div>
                 </div>
 
@@ -124,7 +124,7 @@ export default function HistorialCaja() {
                         <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input
                             type="text"
-                            placeholder="Buscar por DNI o Contribuyente"
+                            placeholder="Buscar por Contribuyente o DNI..."
                             className="w-full h-[48px] pl-12 pr-4 bg-white border border-slate-200/80 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-[#0F4C81]/10 focus:border-[#0F4C81] outline-none transition-all shadow-sm"
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
@@ -141,7 +141,7 @@ export default function HistorialCaja() {
                                     {activeTab === 'Aceptada' ? (
                                         <>
                                             {/* Distribución exacta para APROBADAS */}
-                                            <th className={`${thStyles} w-64`}>Contribuyente</th>
+                                            <th className={`${thStyles} text-center w-64`}>Contribuyente</th>
                                             <th className={`${thStyles} text-center w-28`}>DNI</th>
                                             <th className={`${thStyles} text-center w-40`}>Formato</th>
                                             <th className={`${thStyles} text-center w-20`}>Hojas</th>
@@ -151,7 +151,7 @@ export default function HistorialCaja() {
                                     ) : (
                                         <>
                                             {/* Distribución calibrada para DENEGADAS */}
-                                            <th className={`${thStyles} w-[460px]`}>Contribuyente</th>
+                                            <th className={`${thStyles} text-center w-[460px]`}>Contribuyente</th>
                                             <th className={`${thStyles} text-center w-28`}>DNI</th>
                                             <th className={`${thStyles} text-center w-[400px]`}>Motivo de Denegación</th>
                                             <th className={`${thStyles} text-center w-28`}>Estado</th>
@@ -170,7 +170,7 @@ export default function HistorialCaja() {
                                         <tr key={item.id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                                             {/* Celda 1: Nombre con ancho elástico adaptativo */}
                                             <td className={`py-4 px-6 ${activeTab === 'Aceptada' ? 'w-64' : 'w-[460px]'}`}>
-                                                <span className="text-[13px] font-bold text-slate-700 block truncate" title={`${item.nombres} ${item.apellidos}`}>
+                                                <span className="text-[13px] font-bold text-slate-700 block truncate  text-center" title={`${item.nombres} ${item.apellidos}`}>
                                                     {item.nombres} {item.apellidos}
                                                 </span>
                                             </td>
@@ -202,8 +202,8 @@ export default function HistorialCaja() {
                                                         </p>
                                                     </td>
                                                     <td className="py-4 px-6 text-center w-28">
-                                                        <span className="text-[11px] font-black text-rose-600 uppercase bg-rose-50 px-2.5 py-1 rounded-md border border-rose-100">
-                                                            Denegado
+                                                        <span className="px-3 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-full text-[10px] font-black uppercase tracking-wider inline-block">
+                                                            DENEGADO
                                                         </span>
                                                     </td>
                                                 </>
