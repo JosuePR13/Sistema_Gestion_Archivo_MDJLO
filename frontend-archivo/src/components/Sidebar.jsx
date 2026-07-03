@@ -20,12 +20,25 @@ export default function Sidebar({ currentScreen, setScreen }) {
         { name: 'reporte-costos', label: 'Reporte de Costos', d: "M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" },
     ];
 
+    const navegarConSeguridad = (targetScreenName) => {
+        const destino = { name: targetScreenName, id: null };
+
+        if (currentScreen === targetScreenName) return;
+
+        if (currentScreen === 'nuevo-expediente' || currentScreen === 'nueva-solicitud') {
+            const eventoNavegacion = new CustomEvent('onHeaderNavigate', { detail: destino });
+            window.dispatchEvent(eventoNavegacion);
+        } else {
+            setScreen(destino);
+        }
+    };
+
     const MenuItem = ({ item }) => {
         const isActive = currentScreen === item.name;
         return (
             <button
                 type="button"
-                onClick={() => setScreen({ name: item.name, id: null })}
+                onClick={() => navegarConSeguridad(item.name)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${isActive
                     ? 'bg-[#0F4C81] text-white shadow-md font-bold'
                     : 'text-slate-500 hover:bg-slate-100 hover:text-[#0F4C81] font-semibold'
@@ -60,7 +73,7 @@ export default function Sidebar({ currentScreen, setScreen }) {
                 <div>
                     <button
                         type="button"
-                        onClick={() => setScreen({ name: 'dashboard', id: null })}
+                        onClick={() => navegarConSeguridad('dashboard')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${currentScreen === 'dashboard'
                             ? 'bg-[#0F4C81] text-white shadow-md font-bold'
                             : 'text-slate-500 hover:bg-slate-100 hover:text-[#0F4C81] font-semibold'

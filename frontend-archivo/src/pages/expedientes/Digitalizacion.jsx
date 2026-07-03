@@ -9,7 +9,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 7;
+  const ITEMS_PER_PAGE = 12;
 
   const [selectedExpId, setSelectedExpId] = useState('');
   const [files, setFiles] = useState([]);
