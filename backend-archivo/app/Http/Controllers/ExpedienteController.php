@@ -35,6 +35,11 @@ class ExpedienteController extends Controller
             'numero_folios' => 'required|integer|min:1',
             'fecha_ingreso' => 'required|date|before_or_equal:today',
             'tiempo_conservacion' => 'required|string|max:50',
+            
+            // IMPLEMENTACIÓN DE CAMPOS CONTABLES
+            'razon_social' => 'nullable|string|max:255',
+            'monto' => 'nullable|numeric|min:0',
+            'registro_siaf' => 'nullable|string|max:50',
         ]);
 
         $data = $request->all();
@@ -57,6 +62,7 @@ class ExpedienteController extends Controller
 
         $data['estado'] = $this->calcularEstado($data['fecha_revision']);
 
+        // Se crea el registro incluyendo razon_social, monto y registro_siaf si vienen en el payload
         $expediente = Expediente::create($data);
         $expediente->load(['tipoDocumento', 'areaOrigen', 'areaActual']);
 
@@ -78,7 +84,7 @@ class ExpedienteController extends Controller
         return ExpedienteResource::collection($expedientes);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         $expediente = Expediente::with(['tipoDocumento', 'areaOrigen', 'areaActual'])->find($id);
 
@@ -90,7 +96,7 @@ class ExpedienteController extends Controller
         return response()->json(new ExpedienteResource($expediente), 200);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $expediente = Expediente::find($id);
 
@@ -108,6 +114,11 @@ class ExpedienteController extends Controller
             'numero_folios' => 'required|integer|min:1',
             'fecha_ingreso' => 'required|date|before_or_equal:today',
             'tiempo_conservacion' => 'required|string|max:50',
+
+            // IMPLEMENTACIÓN DE CAMPOS CONTABLES EN ACTUALIZACIÓN
+            'razon_social' => 'nullable|string|max:255',
+            'monto' => 'nullable|numeric|min:0',
+            'registro_siaf' => 'nullable|string|max:50',
         ]);
 
         $data = $request->except('estado');
@@ -222,7 +233,7 @@ class ExpedienteController extends Controller
         return response()->json(TipoDocumento::orderBy('nombre')->get(['id', 'nombre']), 200);
     }
 
-    public function historial($id)
+    public function historial(int $id)
     {
         $expediente = Expediente::find($id);
 

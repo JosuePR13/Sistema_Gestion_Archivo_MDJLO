@@ -38,7 +38,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
   const [pendingScreen, setPendingScreen] = useState(null); // Retiene la pantalla destino solicitada por el usuario
 
   // ESTADOS DE EXCEPCIÓN Y VALIDACIÓN DE BASE DE DATOS
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false); // Modal de aviso por llave duplicada (N° Expediente / Documento)
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false); // Modal de aviso por llave duplicada
   const [duplicateMessage, setDuplicateMessage] = useState(''); // Mensaje explicativo del error de duplicidad
 
   const [validated, setValidated] = useState(false); // Disparador visual para renderizar estados de error HTML5/Tailwind
@@ -50,12 +50,12 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
     ...Array.from({ length: 15 }, (_, i) => ({ label: `${i + 1} año${i + 1 > 1 ? 's' : ''}`, value: (i + 1).toString() }))
   ];
 
-  // HOOK EFFECT 1: Control nativo del navegador (F5, Cerrar pestaña, Alt+F4) ante cambios sin guardar
+  // HOOK EFFECT 1: Control nativo del navegador ante cambios sin guardar
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (isDirty) {
         e.preventDefault();
-        e.returnValue = ''; // Dispara el modal estándar nativo del browser
+        e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -67,28 +67,27 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
     const handleHeaderNavigation = (e) => {
       const targetScreen = e.detail;
       if (isDirty) {
-        setPendingScreen(targetScreen); // Conserva la ruta a la que quería ir
-        setShowExitModal(true); // Frena el desmontado y despliega modal de advertencia
+        setPendingScreen(targetScreen);
+        setShowExitModal(true);
       } else {
-        setScreen(targetScreen); // Navegación directa si el formulario está intacto
+        setScreen(targetScreen);
       }
     };
     window.addEventListener('onHeaderNavigate', handleHeaderNavigation);
     return () => window.removeEventListener('onHeaderNavigate', handleHeaderNavigation);
   }, [isDirty, setScreen]);
 
-  // HOOK EFFECT 3: Carga asíncrona inicial de catálogos relacionales desde el servidor REST API
+  // HOOK EFFECT 3: Carga asíncrona inicial de catálogos
   useEffect(() => {
     api.get('/areas').then(res => setAreas(res.data)).catch(console.error);
     api.get('/tipos-documento').then(res => setTipos(res.data)).catch(console.error);
   }, []);
 
-  // CONTROLADOR REACTIVO: Setea dinámicamente el estado y calcula en tiempo real la fecha límite si se tocan tiempos
+  // CONTROLADOR REACTIVO: Setea el estado y calcula la fecha límite si corresponde
   const handleInputChange = (field, value) => {
     setFormData(prev => {
       const updatedData = { ...prev, [field]: value };
-      // Si se altera la fecha de ingreso o el periodo de custodia, recalcula automáticamente la revisión
-      if (field === 'fecha_ingreso' || field === 'tiempo_conservacion') {
+      if ((field === 'fecha_ingreso' || field === 'tiempo_conservacion') && !esComprobante && !esPermanente) {
         updatedData.fecha_revision = calcularFechaRevision(
           field === 'fecha_ingreso' ? value : updatedData.fecha_ingreso,
           field === 'tiempo_conservacion' ? value : updatedData.tiempo_conservacion
@@ -96,36 +95,59 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
       }
       return updatedData;
     });
-    setIsDirty(true); // Levanta el candado de seguridad
+    setIsDirty(true);
   };
 
-  // ALGORITMO CRONOLÓGICO: Añade el periodo de vigencia a la fecha base cuidando el desfase GMT del estándar ISO
+  // ALGORITMO CRONOLÓGICO: Añade el periodo de vigencia cuidando el desfase GMT
   const calcularFechaRevision = (fechaIngreso, tiempoConservacion) => {
     if (!fechaIngreso || !tiempoConservacion || esPermanente) return '';
     const date = new Date(fechaIngreso);
-    date.setDate(date.getDate() + 1); // Corrección por desalineación horaria local
+    date.setDate(date.getDate() + 1);
     const years = parseFloat(tiempoConservacion);
     if (years === 0.5) {
-      date.setMonth(date.getMonth() + 6); // Incremento especial de 6 meses
+      date.setMonth(date.getMonth() + 6);
     } else {
-      date.setFullYear(date.getFullYear() + years); // Incremento estándar en años
+      date.setFullYear(date.getFullYear() + years);
     }
     return date.toISOString().split('T')[0];
   };
 
-  // MANEJADOR ESTRATÉGICO: Evalúa el tipo de documento para mutar dinámicamente los campos requeridos en el payload
+  // MANEJADOR ESTRATÉGICO: Conmuta dinámicamente el layout según tipo de documento
   const handleTipoDocumentoSelect = (val, objetoSeleccionado) => {
-    if (objetoSeleccionado && objetoSeleccionado.nombre.toLowerCase().includes('comprobante')) {
-      setEsComprobante(true); // Activa el flujo contable (SIAF, Razón Social, Monto)
-      setFormData(prev => ({ ...prev, tipo_documento_id: val, area_origen_id: '1', razon_social: '', monto: '', registro_siaf: '' }));
+    const esTipoComprobante = objetoSeleccionado && objetoSeleccionado.nombre.toLowerCase().includes('comprobante');
+
+    if (esTipoComprobante) {
+      setEsComprobante(true);
+      setFormData(prev => ({
+        ...prev,
+        tipo_documento_id: val,
+        area_origen_id: '1', // Forzado por defecto
+        tiempo_conservacion: 'PERMANENTE', // Siempre permanente
+        fecha_revision: 'N/A',
+        titulo: '',
+        razon_social: '',
+        monto: '',
+        registro_siaf: ''
+      }));
     } else {
-      setEsComprobante(false); // Flujo tradicional de expediente administrativo
-      setFormData(prev => ({ ...prev, tipo_documento_id: val, area_origen_id: '', numero_expediente: '', fecha_ingreso: '', titulo: '' }));
+      setEsComprobante(false);
+      setEsPermanente(false);
+      setFormData(prev => ({
+        ...prev,
+        tipo_documento_id: val,
+        area_origen_id: prev.area_origen_id === '1' ? '' : prev.area_origen_id,
+        tiempo_conservacion: '',
+        fecha_revision: '',
+        razon_social: '',
+        monto: '',
+        registro_siaf: ''
+      }));
     }
+    if (editorRef.current) editorRef.current.innerHTML = '';
     setIsDirty(true);
   };
 
-  // CONTROLADOR DE CLASIFICACIÓN: Conmuta el estatus permanente del documento forzando metadatos inmutables
+  // CONTROLADOR DE CLASIFICACIÓN: Conmuta estatus permanente para documentos tradicionales
   const handlePermanenteToggle = () => {
     const nuevoEstado = !esPermanente;
     setEsPermanente(nuevoEstado);
@@ -137,15 +159,14 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
     }
   };
 
-  // CONTROLADOR RICH TEXT: Ejecuta comandos nativos del DOM para estilos Bold/Underline en el DIV contentEditable
+  // CONTROLADOR RICH TEXT: Bold/Underline en div contentEditable
   const ejecutComando = (cmd) => {
     document.execCommand(cmd, false, null);
     if (editorRef.current) {
-      handleInputChange('descripcion', editorRef.current.innerHTML); // Guarda el HTML estructurado en el estado
+      handleInputChange('descripcion', editorRef.current.innerHTML);
     }
   };
 
-  // CONTROLADOR DE SALIDA INTERNA: Evalúa botones locales de Cancelar o Volver
   const handleTryExit = () => {
     if (isDirty) {
       setPendingScreen({ name: 'dashboard', id: null });
@@ -155,63 +176,58 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
     }
   };
 
-  // ENVIÓ Y PERSISTENCIA: Ejecuta validaciones de contingencia y procesa el payload final mediante solicitudes HTTP POST
+  // ENVIÓ Y PERSISTENCIA: Manejo estricto de payloads y captura de excepciones
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setValidated(true); // Forza el renderizado visual de campos obligatorios vacíos
+    setValidated(true);
 
-    // Evaluadores booleanos para verificar integridad obligatoria antes de disparar a Axios
     const baseValid = formData.tipo_documento_id && formData.numero_expediente.trim() && formData.fecha_ingreso && formData.numero_folios;
-    const conservacionValid = esPermanente || formData.tiempo_conservacion;
+    const conservacionValid = esComprobante || esPermanente || formData.tiempo_conservacion;
     const extraValid = esComprobante
       ? (formData.razon_social.trim() && formData.monto && formData.registro_siaf.trim())
       : (formData.titulo.trim() && formData.area_origen_id);
 
-    if (!baseValid || !conservacionValid || !extraValid) {
-      return; // Detiene el hilo si falta alguna regla crítica del negocio
-    }
+    if (!baseValid || !conservacionValid || !extraValid) return;
 
     try {
-      // Formateo estricto del payload de acuerdo a las especificaciones de la base de datos municipal
       const payloadLimpiado = {
         numero_expediente: formData.numero_expediente,
         titulo: esComprobante ? `Comprobante ${formData.numero_expediente}` : formData.titulo,
         descripcion: formData.descripcion || 'Sin descripción o asunto inicial.',
         numero_folios: parseInt(formData.numero_folios),
         fecha_ingreso: formData.fecha_ingreso,
-        tiempo_conservacion: esPermanente ? 'PERMANENTE' : `${formData.tiempo_conservacion} ${parseInt(formData.tiempo_conservacion) === 1 && parseFloat(formData.tiempo_conservacion) !== 0.5 ? 'año' : 'años'}`,
+        tiempo_conservacion: esComprobante || esPermanente ? 'PERMANENTE' : `${formData.tiempo_conservacion} ${parseInt(formData.tiempo_conservacion) === 1 && parseFloat(formData.tiempo_conservacion) !== 0.5 ? 'año' : 'años'}`,
         estado: 'Activo',
         tipo_documento_id: parseInt(formData.tipo_documento_id),
         area_origen_id: parseInt(formData.area_origen_id),
         area_actual_id: 1
       };
 
-      // Normalización de texto para el valor fraccionado de 6 meses
-      if (payloadLimpiado.tiempo_conservacion.includes('0.5')) {
+      if (!esComprobante && payloadLimpiado.tiempo_conservacion.includes('0.5')) {
         payloadLimpiado.tiempo_conservacion = '6 meses';
       }
 
-      // Inyección de llaves contables específicas si calza como Comprobante
       if (esComprobante) {
         payloadLimpiado.razon_social = formData.razon_social;
         payloadLimpiado.monto = parseFloat(formData.monto);
         payloadLimpiado.registro_siaf = formData.registro_siaf;
       }
 
-      // Persistencia asíncrona vía API REST
       await api.post('/expedientes', payloadLimpiado);
       if (typeof refrescarData === 'function') refrescarData();
 
-      setIsDirty(false); // Resetea el trigger preventivo para autorizar la limpieza
+      setIsDirty(false);
       triggerToast('¡Documento ingresado con éxito!');
 
-      // RE-INICIALIZACIÓN DEL FORMULARIO (Mantiene la UI fija en la vista actual pero vacía los campos)
+      setEsPermanente(false);
+      setEsComprobante(false);
+
       setFormData({
         numero_expediente: '',
         titulo: '',
         descripcion: '',
         tipo_documento_id: '',
-        area_origen_id: esComprobante ? '1' : '',
+        area_origen_id: '',
         area_actual_id: '1',
         numero_folios: '',
         estado: 'Activo',
@@ -224,21 +240,22 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
         registro_siaf: ''
       });
 
-      if (editorRef?.current) {
-        editorRef.current.innerHTML = ''; // Vacía el nodo contentEditable
-      }
-      if (typeof setValidated === 'function') {
-        setValidated(false); // Remueve las máscaras rojas de error visual
-      }
+      if (editorRef?.current) editorRef.current.innerHTML = '';
+      if (typeof setValidated === 'function') setValidated(false);
+
     } catch (error) {
       console.error("Error devuelto por Laravel:", error.response?.data || error.message);
       const erroresBackend = error.response?.data?.errors;
 
-      // Intercepción inteligente de excepciones de base de datos
       if (erroresBackend) {
         if (erroresBackend.numero_expediente) {
-          setDuplicateMessage(`El código "${formData.numero_expediente}" ya se encuentra registrado bajo la custodia de otro documento en el sistema municipal.`);
-          setShowDuplicateModal(true); // Despliega modal de advertencia de redundancia
+          // INTERCEPCIÓN INTELIGENTE: Adapta el mensaje si saltó el error desde el layout comprobante
+          const mensajeError = esComprobante
+            ? `El N° de Comprobante de Pago "${formData.numero_expediente}" ya se encuentra registrado en el sistema de control municipal.`
+            : `El código "${formData.numero_expediente}" ya se encuentra registrado bajo la custodia de otro documento en el sistema municipal.`;
+
+          setDuplicateMessage(mensajeError);
+          setShowDuplicateModal(true);
         } else {
           const listaErrores = Object.values(erroresBackend).flat().join('\n');
           alert(`Validación de campos de control de Laravel:\n${listaErrores}`);
@@ -249,12 +266,10 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
     }
   };
 
-  // DEFINICIONES REUTILIZABLES DE ESTILOS TAILWIND CSS
   const inputBaseStyles = "w-full h-[48px] px-4 border bg-slate-50/50 rounded-2xl text-[13px] outline-none transition-all duration-300 font-semibold text-slate-700 placeholder-slate-400 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:my-auto";
   const readOnlyStyles = "w-full h-[48px] px-4 border border-slate-100 bg-slate-100/50 text-slate-500 rounded-2xl text-[13px] font-extrabold outline-none cursor-not-allowed flex items-center";
   const labelStyles = "block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2";
 
-  // MANEJADOR DINÁMICO DE CLASES: Inyecta bordes y fondos color de advertencia si la validación falla
   const getInputStyles = (value) => {
     const isError = validated && (!value || String(value).trim() === '');
     return `${inputBaseStyles} ${isError ? 'border-rose-300 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10' : 'border-slate-200 focus:bg-white focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/10 shadow-sm'}`;
@@ -292,7 +307,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
           {/* SECCIÓN I: CAPTURA DE METADATOS PRINCIPALES */}
           <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
 
-            {/* SUB-CABECERA DINÁMICA */}
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
               <div className="w-1.5 h-5 bg-lime-500 rounded-full shadow-sm"></div>
               <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest">
@@ -320,7 +334,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                 )}
               </div>
 
-              {/* RENDERIZADO CONDICIONAL: BLOQUE COMPROBANTES DE PAGO MUNICIPALES */}
+              {/* RENDERIZADO CONDICIONAL: FLUJOS SEGÚN TIPO */}
               {esComprobante ? (
                 <>
                   <div className="md:col-span-3 lg:col-span-4">
@@ -329,17 +343,17 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       id="numero_comprobante"
                       name="numero_expediente"
                       value={formData.numero_expediente}
-                      placeholder="N° de Comprobante"
+                      placeholder="001800"
                       className={getInputStyles(formData.numero_expediente)}
-                      onChange={e => handleInputChange('numero_expediente', e.target.value)}
+                      onChange={e => handleInputChange('numero_expediente', e.target.value.replace(/\D/g, ''))}
                     />
                     {validated && !formData.numero_expediente.trim() && (
-                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Ingrese el número</p>
+                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Ingrese el número de comprobante</p>
                     )}
                   </div>
 
                   <div className="md:col-span-3 lg:col-span-4">
-                    <label htmlFor="fecha_comprobante" className={labelStyles}>Fecha *</label>
+                    <label htmlFor="fecha_comprobante" className={labelStyles}>Fecha de Ingreso *</label>
                     <input
                       id="fecha_comprobante"
                       name="fecha_ingreso"
@@ -354,14 +368,14 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                   </div>
 
                   <div className="md:col-span-12 lg:col-span-6">
-                    <label htmlFor="razon_social" className={labelStyles}>Nombre y Apellidos / RAZÓN SOCIAL *</label>
+                    <label htmlFor="razon_social" className={labelStyles}>Nombres y Apellidos / Razón Social *</label>
                     <input
                       id="razon_social"
                       name="razon_social"
                       value={formData.razon_social}
                       placeholder="Ingrese el nombre completo o la razón social de la empresa"
                       className={getInputStyles(formData.razon_social)}
-                      onChange={e => handleInputChange('razon_social', e.target.value)}
+                      onChange={e => handleInputChange('razon_social', e.target.value.replace(/[0-9]/g, ''))}
                     />
                     {validated && !formData.razon_social.trim() && (
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Ingrese el interesado / razón social</p>
@@ -386,14 +400,14 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                   </div>
 
                   <div className="md:col-span-6 lg:col-span-3">
-                    <label htmlFor="registro_siaf" className={labelStyles}>Registro SIAF / CIAF *</label>
+                    <label htmlFor="registro_siaf" className={labelStyles}>Registro SIAF *</label>
                     <input
                       id="registro_siaf"
                       name="registro_siaf"
                       value={formData.registro_siaf}
                       placeholder="N° Registro SIAF"
                       className={getInputStyles(formData.registro_siaf)}
-                      onChange={e => handleInputChange('registro_siaf', e.target.value)}
+                      onChange={e => handleInputChange('registro_siaf', e.target.value.replace(/\D/g, ''))}
                     />
                     {validated && !formData.registro_siaf.trim() && (
                       <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Ingrese el código SIAF</p>
@@ -401,10 +415,9 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                   </div>
                 </>
               ) : (
-                // RENDERIZADO CONDICIONAL: BLOQUE EXPEDIENTES / TRÁMITES ADMINISTRATIVOS COMUNES
                 <>
-                  <div className="md:col-span-3 lg:col-span-4">
-                    <label htmlFor="numero_expediente" className={labelStyles}>Documento / N° Expediente *</label>
+                  <div className="md:col-span-3 lg:col-span-3">
+                    <label htmlFor="numero_expediente" className={labelStyles}>N° Expediente / Documento *</label>
                     <input
                       id="numero_expediente"
                       name="numero_expediente"
@@ -418,7 +431,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     )}
                   </div>
 
-                  <div className="md:col-span-3 lg:col-span-4">
+                  <div className="md:col-span-3 lg:col-span-3">
                     <label htmlFor="fecha_ingreso" className={labelStyles}>Fecha de Ingreso *</label>
                     <input
                       id="fecha_ingreso"
@@ -433,8 +446,25 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     )}
                   </div>
 
+                  <div className="md:col-span-2 lg:col-span-2">
+                    <label htmlFor="numero_folios_gen" className={labelStyles}>N° de Folios *</label>
+                    <input
+                      id="numero_folios_gen"
+                      name="numero_folios"
+                      type="number"
+                      min="1"
+                      placeholder="Ej. 10"
+                      className={getInputStyles(formData.numero_folios)}
+                      value={formData.numero_folios}
+                      onChange={e => handleInputChange('numero_folios', e.target.value)}
+                    />
+                    {validated && !formData.numero_folios && (
+                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Mín 1</p>
+                    )}
+                  </div>
+
                   <div className="md:col-span-12">
-                    <label htmlFor="titulo" className={labelStyles}>Título del Documento / N° Expediente *</label>
+                    <label htmlFor="titulo" className={labelStyles}>Título del Documento *</label>
                     <input
                       id="titulo"
                       name="titulo"
@@ -444,138 +474,157 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       onChange={e => handleInputChange('titulo', e.target.value)}
                     />
                     {validated && !formData.titulo.trim() && (
-                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Ingrese el título del documento / n° expediente</p>
-                    )}
-                  </div>
-
-                  {/* CAJA DE TEXTO ENRIQUECIDA */}
-                  <div className="md:col-span-12">
-                    <label htmlFor="editor_descripcion" className={labelStyles}>Descripción / Asunto</label>
-                    <div className="w-full border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden focus-within:ring-4 focus-within:ring-[#0F4C81]/10 focus-within:border-[#0F4C81] focus-within:bg-white transition-all duration-300 shadow-inner shadow-slate-100/50">
-                      {/* BARRA DE HERRAMIENTAS DEL EDITOR */}
-                      <div className="bg-slate-100/60 border-b border-slate-200 px-3 py-2 flex gap-2 select-none">
-                        <button type="button" onClick={() => ejecutComando('bold')} className="w-8 h-8 flex items-center justify-center text-sm font-extrabold rounded-lg text-slate-600 hover:bg-white hover:shadow-sm active:bg-slate-200 transition-all" title="Negrita">B</button>
-                        <button type="button" onClick={() => ejecutComando('underline')} className="w-8 h-8 flex items-center justify-center text-sm underline rounded-lg text-slate-600 hover:bg-white hover:shadow-sm active:bg-slate-200 transition-all" title="Subrayado">U</button>
-                      </div>
-                      {/* CONTENEDOR EDITABLE NATIVO */}
-                      <div
-                        id="editor_descripcion"
-                        ref={editorRef}
-                        contentEditable
-                        className="w-full p-4 min-h-[120px] max-h-[220px] overflow-y-auto text-[13px] outline-none text-slate-700 leading-relaxed font-medium bg-transparent"
-                        onInput={(e) => handleInputChange('descripcion', e.currentTarget.innerHTML)}
-                        placeholder="Descripción detallada del contenido..."
-                      />
-                    </div>
-                  </div>
-
-                  {/* DESPLEGABLE: ÁREA MUNICIPAL DE ORIGEN */}
-                  <div className="md:col-span-12 lg:col-span-6">
-                    <label htmlFor="area_origen_id" className={labelStyles}>Área de origen *</label>
-                    <div className={`rounded-2xl transition-all ${validated && !formData.area_origen_id ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
-                      <CustomDropdown
-                        id="area_origen_id"
-                        name="area_origen_id"
-                        placeholder="Seleccione área"
-                        options={areas}
-                        selectedValue={formData.area_origen_id}
-                        onSelect={(val) => handleInputChange('area_origen_id', val)}
-                      />
-                    </div>
-                    {validated && !formData.area_origen_id && (
-                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Seleccione una opción</p>
+                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Ingrese el título del documento</p>
                     )}
                   </div>
                 </>
               )}
 
-              {/* CAMPOS DE CONTROL ESTÁTICOS / CONTROL DE FOLIOS */}
-              <div className="md:col-span-4 lg:col-span-2">
-                <label htmlFor="area_actual" className={labelStyles}>Area Actual</label>
-                <input id="area_actual" name="area_actual" type="text" value="Archivo Central" readOnly className={readOnlyStyles} />
+              {/* CAJA DE TEXTO ENRIQUECIDA (DESCRIPCIÓN / ASUNTO) - DISPONIBLE EN AMBOS FLUJOS */}
+              <div className="md:col-span-12">
+                <label htmlFor="editor_descripcion" className={labelStyles}>Descripción / Asunto</label>
+                <div className="w-full border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden focus-within:ring-4 focus-within:ring-[#0F4C81]/10 focus-within:border-[#0F4C81] focus-within:bg-white transition-all duration-300 shadow-inner shadow-slate-100/50">
+                  <div className="bg-slate-100/60 border-b border-slate-200 px-3 py-2 flex gap-2 select-none">
+                    <button type="button" onClick={() => ejecutComando('bold')} className="w-8 h-8 flex items-center justify-center text-sm font-extrabold rounded-lg text-slate-600 hover:bg-white hover:shadow-sm active:bg-slate-200 transition-all" title="Negrita">B</button>
+                    <button type="button" onClick={() => ejecutComando('underline')} className="w-8 h-8 flex items-center justify-center text-sm underline rounded-lg text-slate-600 hover:bg-white hover:shadow-sm active:bg-slate-200 transition-all" title="Subrayado">U</button>
+                  </div>
+                  <div
+                    id="editor_descripcion"
+                    ref={editorRef}
+                    contentEditable
+                    className="w-full p-4 min-h-[120px] max-h-[220px] overflow-y-auto text-[13px] outline-none text-slate-700 leading-relaxed font-medium bg-transparent"
+                    onInput={(e) => handleInputChange('descripcion', e.currentTarget.innerHTML)}
+                    placeholder="Descripción detallada del contenido..."
+                  />
+                </div>
               </div>
 
-              <div className="md:col-span-4 lg:col-span-2">
-                <label htmlFor="estado_documental" className={labelStyles}>Estado Documental</label>
-                <input id="estado_documental" name="estado_documental" type="text" value="Activo" readOnly className={readOnlyStyles} />
-              </div>
+              {/* ÁREA DE ORIGEN SÓLO PARA EXPEDIENTES GENERALES */}
+              {!esComprobante && (
+                <div className="md:col-span-6 lg:col-span-6">
+                  <label htmlFor="area_origen_id" className={labelStyles}>Área de origen *</label>
+                  <div className={`rounded-2xl transition-all ${validated && !formData.area_origen_id ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
+                    <CustomDropdown
+                      id="area_origen_id"
+                      name="area_origen_id"
+                      placeholder="Seleccione área"
+                      options={areas}
+                      selectedValue={formData.area_origen_id}
+                      onSelect={(val) => handleInputChange('area_origen_id', val)}
+                    />
+                  </div>
+                  {validated && !formData.area_origen_id && (
+                    <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Seleccione una opción</p>
+                  )}
+                </div>
+              )}
 
-              <div className="md:col-span-4 lg:col-span-2">
-                <label htmlFor="numero_folios" className={labelStyles}>N° Folios *</label>
-                <input
-                  id="numero_folios"
-                  name="numero_folios"
-                  type="number"
-                  min="1"
-                  placeholder="Ej. 10"
-                  className={getInputStyles(formData.numero_folios)}
-                  value={formData.numero_folios}
-                  onChange={e => handleInputChange('numero_folios', e.target.value)}
-                />
-                {validated && !formData.numero_folios && (
-                  <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Mín 1</p>
-                )}
-              </div>
-            </div>
-          </div>
+              {/* CAMPOS ESTÁTICOS DE CONTROL INFERIOR (SÓLO CUANDO ES EXPEDIENTE GENERAL) */}
+              {!esComprobante && (
+                <>
+                  <div className="md:col-span-3 lg:col-span-3">
+                    <label htmlFor="area_actual" className={labelStyles}>Área Actual</label>
+                    <input id="area_actual" name="area_actual" type="text" value="Archivo Central" readOnly className={readOnlyStyles} />
+                  </div>
 
-          {/* SECCIÓN II: MARCO TEMPORAL Y VIGENCIA LEGAL */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-3">
-                <div className="w-1.5 h-5 bg-lime-500 rounded-full shadow-sm"></div>
-                <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest">Vigencia Documental *</span>
-              </div>
+                  <div className="md:col-span-3 lg:col-span-3">
+                    <label htmlFor="estado_documental" className={labelStyles}>Estado Documental</label>
+                    <input id="estado_documental" name="estado_documental" type="text" value="Activo" readOnly className={readOnlyStyles} />
+                  </div>
+                </>
+              )}
 
-              {/* TOGGLE PERMANENTE: Exime al registro de incineración o expurgo */}
-              <button
-                type="button"
-                onClick={handlePermanenteToggle}
-                className={`px-4 h-[36px] text-[11px] font-black uppercase tracking-widest rounded-xl border transition-all duration-300 shadow-sm ${esPermanente ? 'bg-amber-500/10 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
-              >
-                {esPermanente ? '✓ Documento Permanente' : '¿Documento Permanente?'}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* SELECTOR DE TIEMPO DE CUSTODIA */}
-              <div>
-                <label htmlFor="tiempo_conservacion" className={labelStyles}>Tiempo de Vigencia *</label>
-                {esPermanente ? (
-                  <input id="tiempo_conservacion" name="tiempo_conservacion" type="text" value="PERMANENTE (No se elimina)" readOnly className="w-full h-[48px] px-4 border border-amber-100 bg-amber-50/40 text-amber-800 font-extrabold rounded-2xl text-[13px] outline-none cursor-not-allowed shadow-inner flex items-center" />
-                ) : (
-                  <>
-                    <div className={`rounded-2xl transition-all ${validated && !formData.tiempo_conservacion ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
-                      <CustomDropdown
-                        id="tiempo_conservacion"
-                        name="tiempo_conservacion"
-                        placeholder="Seleccione tiempo..."
-                        options={conservacionOptions}
-                        selectedValue={formData.tiempo_conservacion}
-                        onSelect={(val) => handleInputChange('tiempo_conservacion', val)}
-                      />
-                    </div>
-                    {validated && !formData.tiempo_conservacion && (
-                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Seleccione una opción</p>
+              {/* FILA COMPROBANTE: N° DE FOLIOS + DOS CAMPOS READONLY*/}
+              {esComprobante && (
+                <>
+                  <div className="md:col-span-3 lg:col-span-3">
+                    <label htmlFor="numero_folios_comp" className={labelStyles}>N° Folios *</label>
+                    <input
+                      id="numero_folios_comp"
+                      name="numero_folios"
+                      type="number"
+                      min="1"
+                      placeholder="Ej. 10"
+                      className={getInputStyles(formData.numero_folios)}
+                      value={formData.numero_folios}
+                      onChange={e => handleInputChange('numero_folios', e.target.value)}
+                    />
+                    {validated && !formData.numero_folios && (
+                      <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Mín 1</p>
                     )}
-                  </>
-                )}
-              </div>
+                  </div>
 
-              {/* MUESTRA LA FECHA DE REVISIÓN LEGAL CALCULADA POR EL ALGORITMO */}
-              <div>
-                <label htmlFor="fecha_revision" className={labelStyles}>Fecha límite de vigencia</label>
-                <input
-                  id="fecha_revision"
-                  name="fecha_revision"
-                  type="text"
-                  value={esPermanente ? 'N/A' : formData.fecha_revision}
-                  readOnly
-                  className="w-full h-[48px] px-4 border border-slate-100 bg-slate-50/50 text-slate-400 font-bold rounded-2xl text-[13px] outline-none cursor-not-allowed flex items-center"
-                />
-              </div>
+                  <div className="md:col-span-3 lg:col-span-3">
+                    <label htmlFor="area_actual_comp" className={labelStyles}>Área Actual</label>
+                    <input id="area_actual_comp" name="area_actual_comp" type="text" value="Archivo Central" readOnly className={readOnlyStyles} />
+                  </div>
+
+                  <div className="md:col-span-3 lg:col-span-3">
+                    <label htmlFor="vigencia_comp" className={labelStyles}>Vigencia Documental</label>
+                    <input id="vigencia_comp" name="vigencia_comp" type="text" value="PERMANENTE" readOnly className={`${readOnlyStyles} text-amber-600`} />
+                  </div>
+                </>
+              )}
+
             </div>
           </div>
+
+          {/* SECCIÓN II: VIGENCIA DOCUMENTAL (SÓLO ADVERTIDA EN TRÁMITES TRADICIONALES) */}
+          {!esComprobante && (
+            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-1.5 h-5 bg-lime-500 rounded-full shadow-sm"></div>
+                  <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest">Vigencia Documental *</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handlePermanenteToggle}
+                  className={`px-4 h-[36px] text-[11px] font-black uppercase tracking-widest rounded-xl border transition-all duration-300 shadow-sm ${esPermanente ? 'bg-amber-500/10 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                >
+                  {esPermanente ? '✓ Documento Permanente' : '¿Documento Permanente?'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="tiempo_conservacion" className={labelStyles}>Tiempo de Vigencia *</label>
+                  {esPermanente ? (
+                    <input id="tiempo_conservacion" name="tiempo_conservacion" type="text" value="PERMANENTE (No se elimina)" readOnly className="w-full h-[48px] px-4 border border-amber-100 bg-amber-50/40 text-amber-800 font-extrabold rounded-2xl text-[13px] outline-none cursor-not-allowed shadow-inner flex items-center" />
+                  ) : (
+                    <>
+                      <div className={`rounded-2xl transition-all ${validated && !formData.tiempo_conservacion ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}>
+                        <CustomDropdown
+                          id="tiempo_conservacion"
+                          name="tiempo_conservacion"
+                          placeholder="Seleccione tiempo..."
+                          options={conservacionOptions}
+                          selectedValue={formData.tiempo_conservacion}
+                          onSelect={(val) => handleInputChange('tiempo_conservacion', val)}
+                        />
+                      </div>
+                      {validated && !formData.tiempo_conservacion && (
+                        <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Seleccione una opción</p>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="fecha_revision" className={labelStyles}>Fecha límite de vigencia</label>
+                  <input
+                    id="fecha_revision"
+                    name="fecha_revision"
+                    type="text"
+                    value={esPermanente ? 'N/A' : formData.fecha_revision}
+                    readOnly
+                    className="w-full h-[48px] px-4 border border-slate-100 bg-slate-50/50 text-slate-400 font-bold rounded-2xl text-[13px] outline-none cursor-not-allowed flex items-center"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* CONTROLES DE CONFIRMACIÓN INFERIORES */}
           <div className="flex justify-end gap-3 pt-2">
@@ -589,7 +638,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
         </form>
       </div>
 
-      {/* MODAL I: DIÁLOGO ADVERTENCIA DE SALIDA ANTE CAMBIOS HUÉRFANOS */}
+      {/* MODAL I: ADVERTENCIA DE SALIDA */}
       {showExitModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all text-center">
@@ -615,7 +664,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
         </div>
       )}
 
-      {/* MODAL II: CONTROL DE EXCEPCIÓN POR CÓDIGO DOCUMENTAL IDENTIFICADOR REPETIDO */}
+      {/* MODAL II: CONTROL DE EXCEPCIÓN POR CÓDIGO DUPLICADO */}
       {showDuplicateModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all text-center">

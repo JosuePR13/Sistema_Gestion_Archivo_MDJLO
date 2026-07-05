@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-
 class Expediente extends Model
 {
     protected $table = 'expedientes';
@@ -23,12 +22,16 @@ class Expediente extends Model
         'tiempo_conservacion',
         'fecha_revision',
         'digitalizado',
+        'razon_social',
+        'monto',
+        'registro_siaf',
     ];
 
     protected $casts = [
         'fecha_ingreso' => 'date',
         'fecha_revision' => 'date',
         'digitalizado' => 'boolean',
+        'monto' => 'float',
     ];
 
     public function tipoDocumento()
@@ -56,6 +59,4 @@ class Expediente extends Model
     {
         return $this->hasMany(ArchivoDigital::class, 'expediente_id');
     }
-
-
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useExpedientes } from '../../context/useExpedientes';
 import CustomDropdown from '../../components/CustomDropdown';
 import { Chart } from 'chart.js/auto';
@@ -68,56 +68,80 @@ export default function ReportesScreen() {
   ).sort();
 
   // ==========================================================================
-  // 2. MOTOR DE FILTRADO MULTIDIMENSIONAL
+  // 2. MOTOR DE FILTRADO MULTIDIMENSIONAL Y CÓMPUTO DE MÉTRICAS OPERATIVAS
   // ==========================================================================
-  const expedientesFiltrados = dataGlobal.filter(exp => {
-    const fecha = exp.fecha_ingreso || exp.created_at;
-    if (!fecha) return false;
+  // Implementación de useMemo para evitar re-filtrar el dataset entero al cambiar de vista o paginación.
+  const datasetProcesado = useMemo(() => {
+    const expedientesFiltrados = dataGlobal.filter(exp => {
+      const fecha = exp.fecha_ingreso || exp.created_at;
+      if (!fecha) return false;
 
-    const expAnio = fecha.substring(0, 4);
-    const expMes = fecha.substring(5, 7);
-    const expAreaOrig = safeText(exp.area_origen || exp.area_origen_id, 'Desconocida');
+      const expAnio = fecha.substring(0, 4);
+      const expMes = fecha.substring(5, 7);
+      const expAreaOrig = safeText(exp.area_origen || exp.area_origen_id, 'Desconocida');
 
-    const matchAnio = expAnio === anio;
-    const matchMes = mes === 'Todos' ? true : (expMes === mes);
-    const matchArea = areaFiltro === 'Todas' ? true : (expAreaOrig === areaFiltro);
+      const matchAnio = anio === 'Todos' ? true : (expAnio === anio);
+      const matchMes = mes === 'Todos' ? true : (expMes === mes);
+      const matchArea = areaFiltro === 'Todas' ? true : (expAreaOrig === areaFiltro);
 
-    return matchAnio && matchMes && matchArea;
-  });
+      return matchAnio && matchMes && matchArea;
+    });
 
-  // --- PROCESAMIENTO MATEMÁTICO DE MÉTRICAS GENERALES ---
-  const totalFolios = expedientesFiltrados.reduce((acc, exp) => acc + (parseInt(exp.numero_folios) || 0), 0);
-  const promedioFolios = expedientesFiltrados.length > 0 ? Math.round(totalFolios / expedientesFiltrados.length) : 0;
+    // --- PROCESAMIENTO MATEMÁTICO DE MÉTRICAS GENERALES ---
+    const totalFolios = expedientesFiltrados.reduce((acc, exp) => acc + (parseInt(exp.numero_folios) || 0), 0);
+    const promedioFolios = expedientesFiltrados.length > 0 ? Math.round(totalFolios / expedientesFiltrados.length) : 0;
 
-  // --- SEGMENTACIÓN SEMÁNTICA PARA PROCESOS DE DIGITALIZACIÓN ---
-  const digitalizados = expedientesFiltrados.filter(e => e.digitalizado === 1 || e.digitalizado === true).length;
-  const pendientes = expedientesFiltrados.length - digitalizados;
-  const porcentaje = expedientesFiltrados.length > 0 ? Math.round((digitalizados / expedientesFiltrados.length) * 100) : 0;
+    // --- SEGMENTACIÓN SEMÁNTICA PARA PROCESOS DE DIGITALIZACIÓN ---
+    const digitalizados = expedientesFiltrados.filter(e => e.digitalizado === 1 || e.digitalizado === true).length;
+    const pendientes = expedientesFiltrados.length - digitalizados;
+    const porcentaje = expedientesFiltrados.length > 0 ? Math.round((digitalizados / expedientesFiltrados.length) * 100) : 0;
 
-  // --- AGRUPACIÓN OPERATIVA PARA TIPOLOGÍAS DOCUMENTALES ---
-  const tiposMap = {};
-  expedientesFiltrados.forEach(e => {
-    const tipoDoc = safeText(e.tipo_documento || e.tipo_documento_id, 'General');
-    if (!tiposMap[tipoDoc]) tiposMap[tipoDoc] = { total: 0, digi: 0 };
-    tiposMap[tipoDoc].total += 1;
-    if (e.digitalizado === 1 || e.digitalizado === true) tiposMap[tipoDoc].digi += 1;
-  });
-  const listaTipos = Object.keys(tiposMap).map(k => ({ tipo: k, ...tiposMap[k] })).sort((a, b) => b.total - a.total);
-  const tipoTop = listaTipos.length > 0 ? listaTipos[0].tipo : 'N/A';
+    // --- AGRUPACIÓN OPERATIVA PARA TIPOLOGÍAS DOCUMENTALES ---
+    const tiposMap = {};
+    expedientesFiltrados.forEach(e => {
+      const tipoDoc = safeText(e.tipo_documento || e.tipo_documento_id, 'General');
+      if (!tiposMap[tipoDoc]) tiposMap[tipoDoc] = { total: 0, digi: 0 };
+      tiposMap[tipoDoc].total += 1;
+      if (e.digitalizado === 1 || e.digitalizado === true) tiposMap[tipoDoc].digi += 1;
+    });
+    const listaTipos = Object.keys(tiposMap).map(k => ({ tipo: k, ...tiposMap[k] })).sort((a, b) => b.total - a.total);
+    const tipoTop = listaTipos.length > 0 ? listaTipos[0].tipo : 'N/A';
 
-  // ==========================================================================
-  // 3. ESTRUCTURACIÓN DE LOGICA Y ARREGLOS DE DATOS PARA COMPONENTES GRÁFICOS
-  // ==========================================================================
+    // Gráfico 0: Agrupación por volumen mensual indexado
+    const dataMensual = Array(12).fill(0);
+    expedientesFiltrados.forEach(e => {
+      const f = e.fecha_ingreso || e.created_at;
+      if (f) {
+        const mIdx = parseInt(f.substring(5, 7)) - 1;
+        if (mIdx >= 0 && mIdx < 12) dataMensual[mIdx]++;
+      }
+    });
 
-  // Gráfico 0: Agrupación por volumen mensual indexado
-  const dataMensual = Array(12).fill(0);
-  expedientesFiltrados.forEach(e => {
-    const f = e.fecha_ingreso || e.created_at;
-    if (f) {
-      const mIdx = parseInt(f.substring(5, 7)) - 1;
-      if (mIdx >= 0 && mIdx < 12) dataMensual[mIdx]++;
-    }
-  });
+    return {
+      expedientesFiltrados,
+      totalFolios,
+      promedioFolios,
+      digitalizados,
+      pendientes,
+      porcentaje,
+      listaTipos,
+      tipoTop,
+      dataMensual
+    };
+  }, [dataGlobal, anio, mes, areaFiltro]); // Solo se recalcula si muta la base de datos o algún control de filtrado
+
+  // Destructuración limpia de los valores memorizados para mantener compatibilidad con la vista
+  const {
+    expedientesFiltrados,
+    totalFolios,
+    promedioFolios,
+    digitalizados,
+    pendientes,
+    porcentaje,
+    listaTipos,
+    tipoTop,
+    dataMensual
+  } = datasetProcesado;
 
   /**
    * Reset centralizado de estados de control temporal y geográfico
@@ -291,7 +315,7 @@ export default function ReportesScreen() {
   const totalPages = Math.ceil(sel.tabla.length / ITEMS_PER_PAGE);
   const currentData = sel.tabla.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const optsAnios = aniosDisponibles.map(a => ({ id: a, nombre: a }));
+  const optsAnios = [{ id: 'Todos', nombre: 'Todos los años' }, ...aniosDisponibles.map(a => ({ id: a, nombre: a }))];
   const optsAreas = [{ id: 'Todas', fontStyle: 'normal', nombre: 'Todas las áreas' }, ...areasDisponibles.map(a => ({ id: a, nombre: a }))];
 
   /**
@@ -611,7 +635,6 @@ export default function ReportesScreen() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

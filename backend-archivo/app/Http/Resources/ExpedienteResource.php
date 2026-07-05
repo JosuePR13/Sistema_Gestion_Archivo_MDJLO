@@ -33,7 +33,9 @@ class ExpedienteResource extends JsonResource
             'tiempo_conservacion' => $this->tiempo_conservacion,
             'fecha_revision' => $this->fecha_revision ? Carbon::parse($this->fecha_revision)->format('Y-m-d') : 'PERMANENTE',
             'digitalizado' => (int) $this->digitalizado,
-
+            'razon_social' => $this->razon_social,
+            'monto' => $this->monto !== null ? (float) $this->monto : null,
+            'registro_siaf' => $this->registro_siaf,
             'created_at' => Carbon::parse($this->created_at)->timezone('America/Lima')->toIso8601String(),
             'updated_at' => Carbon::parse($this->updated_at)->timezone('America/Lima')->toIso8601String(),
             'ultimo_pdf_at' => $ultimoArchivo ? Carbon::parse($ultimoArchivo->uploaded_at)->timezone('America/Lima')->toIso8601String() : null,

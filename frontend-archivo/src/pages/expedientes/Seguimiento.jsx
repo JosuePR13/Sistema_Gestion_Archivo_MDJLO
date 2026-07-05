@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useExpedientes } from '../../context/useExpedientes';
 import CustomDropdown from '../../components/CustomDropdown';
 import { Chart } from 'chart.js/auto';
@@ -69,7 +69,7 @@ export default function SeguimientoScreen({ setScreen }) {
 
             const edadLabel =
                 anosCalculados >= 1
-                    ? `${anosCalculados.toFixed(1)} años`
+                    ? `${anosCalculados.toFixed(1)} years`.replace('years', 'años') // Mantener consistencia de texto
                     : (() => {
                         const mesesExactos = Math.floor(diffDays / 30.44);
                         if (mesesExactos >= 1) return `${mesesExactos} meses`;
@@ -97,23 +97,49 @@ export default function SeguimientoScreen({ setScreen }) {
     };
 
     // ==========================================================================
-    // PREPARACIÓN DE REPOSITORIOS, CONTADORES Y FILTRADO MULTIDIMENSIONAL
+    // PREPARACIÓN DE REPOSITORIOS, CONTADORES Y FILTRADO
     // ==========================================================================
-    const expedientes = !loading && dataGlobal ? procesarVigencia(dataGlobal) : [];
+    // Agrupamos todo el procesamiento matemático masivo para que solo ocurra cuando cambia dataGlobal o el dropdown de estado
+    const dataProcesada = useMemo(() => {
+        const expedientes = !loading && dataGlobal ? procesarVigencia(dataGlobal) : [];
 
-    // Contadores analíticos directos para alimentar los sub-paneles y gráficos
-    const paraDepurar = expedientes.filter(s => s.estadoRev === 'Para depurar').length;
-    const enRevision = expedientes.filter(s => s.estadoRev === 'En revisión').length;
-    const conservar = expedientes.filter(s => s.estadoRev === 'Conservar').length;
+        // Contadores analíticos directos para alimentar los sub-paneles y gráficos
+        const paraDepurar = expedientes.filter(s => s.estadoRev === 'Para depurar').length;
+        const enRevision = expedientes.filter(s => s.estadoRev === 'En revisión').length;
+        const conservar = expedientes.filter(s => s.estadoRev === 'Conservar').length;
 
-    // Segmentación por Rangos de Antigüedad para el Histograma de Barras Verticales
-    const RangoMenor1 = expedientes.filter(e => e.anosCalculados < 1).length;
-    const Rango1a5 = expedientes.filter(e => e.anosCalculados >= 1 && e.anosCalculados < 5).length;
-    const Rango5a10 = expedientes.filter(e => e.anosCalculados >= 5 && e.anosCalculados < 10).length;
-    const RangoMayor10 = expedientes.filter(e => e.anosCalculados >= 10).length;
+        // Segmentación por Rangos de Antigüedad para el Histograma de Barras Verticales
+        const RangoMenor1 = expedientes.filter(e => e.anosCalculados < 1).length;
+        const Rango1a5 = expedientes.filter(e => e.anosCalculados >= 1 && e.anosCalculados < 5).length;
+        const Rango5a10 = expedientes.filter(e => e.anosCalculados >= 5 && e.anosCalculados < 10).length;
+        const RangoMayor10 = expedientes.filter(e => e.anosCalculados >= 10).length;
 
-    // Discriminación y ordenamiento por Pestaña de Filtro dropdown activo
-    const tablaFiltrada = expedientes.filter(e => filterEstado === '' || e.estadoRev === filterEstado);
+        // Discriminación y ordenamiento por Pestaña de Filtro dropdown activo
+        const tablaFiltrada = expedientes.filter(e => filterEstado === '' || e.estadoRev === filterEstado);
+
+        return {
+            paraDepurar,
+            enRevision,
+            conservar,
+            RangoMenor1,
+            Rango1a5,
+            Rango5a10,
+            RangoMayor10,
+            tablaFiltrada
+        };
+    }, [dataGlobal, loading, filterEstado]); // Solo corre si la data de Laragon cambia o se escoge otra clasificación de auditoría
+
+    // Destructuración limpia de variables optimizadas
+    const {
+        paraDepurar,
+        enRevision,
+        conservar,
+        RangoMenor1,
+        Rango1a5,
+        Rango5a10,
+        RangoMayor10,
+        tablaFiltrada
+    } = dataProcesada;
 
     // Algoritmo matemático para el control estricto de paginación
     const totalPages = Math.ceil(tablaFiltrada.length / ITEMS_PER_PAGE) || 1;
@@ -223,7 +249,7 @@ export default function SeguimientoScreen({ setScreen }) {
                     <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-40 blur-xl bg-emerald-300 pointer-events-none"></div>
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/25 border border-emerald-300/60 flex items-center justify-center text-emerald-700 relative z-10 shadow-sm shrink-0">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                         </svg>
                     </div>
                     <div className="flex flex-col relative z-10 text-left">

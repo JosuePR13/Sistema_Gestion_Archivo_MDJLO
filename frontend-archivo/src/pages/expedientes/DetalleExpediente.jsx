@@ -31,6 +31,76 @@ export default function DetalleExpediente({
   const [selectedFileToDelete, setSelectedFileToDelete] = useState(null);
   const [isDeletingFile, setIsDeletingFile] = useState(false);
 
+  const getDocumentTypeName = () => {
+    const tipo = formData.tipo_documento || originalData.tipo_documento;
+    if (tipo) return typeof tipo === 'object' ? tipo.nombre : tipo;
+    const idFiltro = formData.tipo_documento_id || originalData.tipo_documento_id;
+    const diccionario = { 1: 'GENERAL', 2: 'CONTRATO', 3: 'RESOLUCIÓN', 4: 'ACTA', 5: 'INFORME', 6: 'OFICIO' };
+    return diccionario[idFiltro] || 'GENERAL / ADMINISTRATIVO';
+  };
+
+  const getAreaName = (campoObjeto, campoId) => {
+    const area = formData[campoObjeto] || originalData[campoObjeto];
+    if (area) return typeof area === 'object' ? area.nombre : area;
+    const idFiltro = formData[campoId] || originalData[campoId];
+    const diccionario = { 1: 'ARCHIVO CENTRAL', 2: 'ALCALDÍA', 3: 'INFRAESTRUCTURA', 4: 'RENTAS', 11: 'TESORERÍA' };
+    return diccionario[idFiltro] || 'ÁREA MUNICIPAL JLO';
+  };
+
+  const formatFieldLabel = (campo) => {
+    const diccionario = {
+      numero_expediente: esComprobante ? 'N° COMPROBANTE DE PAGO' : 'N° EXPEDIENTE REGISTRO',
+      titulo: 'TÍTULO DEL DOCUMENTO',
+      descripcion: 'DESCRIPCIÓN / ASUNTO',
+      numero_folios: 'NÚMERO DE FOLIOS',
+      fecha_ingreso: 'FECHA DE INGRESO',
+      razon_social: 'INTERESADO / RAZÓN SOCIAL',
+      monto: 'MONTO COMPROBANTE',
+      registro_siaf: 'REGISTRO SIAF',
+      tiempo_conservacion: 'TIEMPO DE VIGENCIA',
+      tipo_documento_id: 'TIPO DE DOCUMENTO',
+      area_origen_id: 'ÁREA DE ORIGEN',
+      area_actual_id: 'ÁREA ACTUAL DE CUSTODIA',
+      archivo_digital: 'DOCUMENTO DIGITAL (PDF)'
+    };
+    return diccionario[campo] || campo.toUpperCase();
+  };
+
+  const formatDateTime = (fechaStr) => {
+    if (!fechaStr) return 'Reciente';
+    try {
+      const fechaObj = new Date(fechaStr);
+      if (!isNaN(fechaObj.getTime())) {
+        return fechaObj.toLocaleString('es-PE', {
+          timeZone: 'America/Lima',
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }).replace('a. m.', 'a.m.').replace('p. m.', 'p.m.').replace('.', '');
+      }
+
+      const limpia = fechaStr.replace('T', ' ').split('.')[0];
+      const parts = limpia.split(' ');
+      if (parts.length === 2) {
+        const [ano, mes, dia] = parts[0].split('-');
+        const [hora, min] = parts[1].split(':');
+        let horaInt = parseInt(hora);
+        const ampm = horaInt >= 12 ? 'p.m.' : 'a.m.';
+        horaInt = horaInt % 12 || 12;
+        const meses = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'];
+        return `${parseInt(dia)} ${meses[parseInt(mes) - 1]} ${ano}, ${horaInt}:${min} ${ampm}`;
+      }
+      return fechaStr;
+    } catch {
+      return fechaStr;
+    }
+  };
+
+  const esComprobante = getDocumentTypeName()?.toLowerCase()?.includes('comprobante');
+
   useEffect(() => {
     const sincronizarCamposMuni = async () => {
       try {
@@ -79,7 +149,9 @@ export default function DetalleExpediente({
       formData.descripcion !== originalData.descripcion ||
       formData.numero_folios !== originalData.numero_folios ||
       formData.fecha_ingreso !== originalData.fecha_ingreso ||
-      formData.razon_social !== originalData.razon_social
+      formData.razon_social !== originalData.razon_social ||
+      formData.monto !== originalData.monto ||
+      formData.registro_siaf !== originalData.registro_siaf
     );
   };
 
@@ -122,11 +194,13 @@ export default function DetalleExpediente({
   const generarTextoAuditoria = () => {
     const cambios = [];
     if (formData.numero_expediente !== originalData.numero_expediente) cambios.push(`N° Registro: "${originalData.numero_expediente || 'N/A'}" ➔ "${formData.numero_expediente}"`);
-    if (formData.titulo !== originalData.titulo) cambios.push(`Título: "${originalData.titulo || 'N/A'}" ➔ "${formData.titulo}"`);
+    if (!esComprobante && formData.titulo !== originalData.titulo) cambios.push(`Título: "${originalData.titulo || 'N/A'}" ➔ "${formData.titulo}"`);
     if (formData.descripcion !== originalData.descripcion) cambios.push(`Descripción/Asunto actualizado`);
     if (parseInt(formData.numero_folios) !== parseInt(originalData.numero_folios)) cambios.push(`Folios: ${originalData.numero_folios || 0} ➔ ${formData.numero_folios}`);
     if (formData.fecha_ingreso !== originalData.fecha_ingreso) cambios.push(`Fecha Ingreso: ${originalData.fecha_ingreso || 'N/A'} ➔ ${formData.fecha_ingreso}`);
     if (formData.razon_social !== originalData.razon_social) cambios.push(`Razón Social: "${originalData.razon_social || 'N/A'}" ➔ "${formData.razon_social}"`);
+    if (formData.monto !== originalData.monto) cambios.push(`Monto: "${originalData.monto || '0.00'}" ➔ "${formData.monto}"`);
+    if (formData.registro_siaf !== originalData.registro_siaf) cambios.push(`SIAF: "${originalData.registro_siaf || 'N/A'}" ➔ "${formData.registro_siaf}"`);
 
     return cambios.length > 0
       ? `Campos modificados exitosamente: ${cambios.join(' | ')}`
@@ -139,11 +213,11 @@ export default function DetalleExpediente({
 
       const payloadValidado = {
         numero_expediente: formData.numero_expediente,
-        titulo: formData.titulo,
+        titulo: esComprobante ? `Comprobante ${formData.numero_expediente}` : formData.titulo,
         descripcion: formData.descripcion || 'Sin descripción.',
         numero_folios: parseInt(formData.numero_folios) || 1,
         fecha_ingreso: formData.fecha_ingreso,
-        tiempo_conservacion: formData.tiempo_conservacion || '1 año',
+        tiempo_conservacion: esComprobante ? 'PERMANENTE' : (formData.tiempo_conservacion || '1 año'),
         estado: formData.estado || 'Activo',
         tipo_documento_id: originalData.tipo_documento_id || formData.tipo_documento_id,
         area_origen_id: originalData.area_origen_id || formData.area_origen_id,
@@ -153,6 +227,12 @@ export default function DetalleExpediente({
 
       if (formData.razon_social !== undefined && formData.razon_social !== null) {
         payloadValidado.razon_social = formData.razon_social;
+      }
+      if (formData.monto !== undefined && formData.monto !== null) {
+        payloadValidado.monto = parseFloat(formData.monto) || 0;
+      }
+      if (formData.registro_siaf !== undefined && formData.registro_siaf !== null) {
+        payloadValidado.registro_siaf = formData.registro_siaf;
       }
 
       await api.put(`/expedientes/${id}`, payloadValidado);
@@ -198,72 +278,6 @@ export default function DetalleExpediente({
     }
   };
 
-  const traducirCampoMuni = (campo) => {
-    const diccionario = {
-      numero_expediente: 'N° EXPEDIENTE REGISTRO',
-      titulo: 'TÍTULO DEL DOCUMENTO',
-      descripcion: 'DESCRIPCIÓN / ASUNTO',
-      numero_folios: 'NÚMERO DE FOLIOS',
-      fecha_ingreso: 'FECHA DE INGRESO',
-      razon_social: 'RAZÓN SOCIAL / INTERESADO',
-      tiempo_conservacion: 'TIEMPO DE CONSERVACIÓN',
-      tipo_documento_id: 'TIPO DE DOCUMENTO',
-      area_origen_id: 'ÁREA DE ORIGEN',
-      area_actual_id: 'ÁREA ACTUAL DE CUSTODIA',
-      archivo_digital: 'DOCUMENTO DIGITAL (PDF)'
-    };
-    return diccionario[campo] || campo.toUpperCase();
-  };
-
-  const formatearFechaPeru = (fechaStr) => {
-    if (!fechaStr) return 'Reciente';
-    try {
-      const fechaObj = new Date(fechaStr);
-      if (!isNaN(fechaObj.getTime())) {
-        return fechaObj.toLocaleString('es-PE', {
-          timeZone: 'America/Lima',
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        }).replace('a. m.', 'a.m.').replace('p. m.', 'p.m.').replace('.', '');
-      }
-
-      const limpia = fechaStr.replace('T', ' ').split('.')[0];
-      const parts = limpia.split(' ');
-      if (parts.length === 2) {
-        const [ano, mes, dia] = parts[0].split('-');
-        const [hora, min] = parts[1].split(':');
-        let horaInt = parseInt(hora);
-        const ampm = horaInt >= 12 ? 'p.m.' : 'a.m.';
-        horaInt = horaInt % 12 || 12;
-        const meses = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'];
-        return `${parseInt(dia)} ${meses[parseInt(mes) - 1]} ${ano}, ${horaInt}:${min} ${ampm}`;
-      }
-      return fechaStr;
-    } catch {
-      return fechaStr;
-    }
-  };
-
-  const obtenerNombreTipoDocumento = () => {
-    const tipo = formData.tipo_documento || originalData.tipo_documento;
-    if (tipo) return typeof tipo === 'object' ? tipo.nombre : tipo;
-    const idFiltro = formData.tipo_documento_id || originalData.tipo_documento_id;
-    const diccionario = { 1: 'GENERAL', 2: 'CONTRATO', 3: 'RESOLUCIÓN', 4: 'ACTA', 5: 'INFORME', 6: 'OFICIO' };
-    return diccionario[idFiltro] || 'GENERAL / ADMINISTRATIVO';
-  };
-
-  const obtenerNombreArea = (campoObjeto, campoId) => {
-    const area = formData[campoObjeto] || originalData[campoObjeto];
-    if (area) return typeof area === 'object' ? area.nombre : area;
-    const idFiltro = formData[campoId] || originalData[campoId];
-    const diccionario = { 1: 'ARCHIVO CENTRAL', 2: 'ALCALDÍA', 3: 'INFRAESTRUCTURA', 4: 'RENTAS', 11: 'TESORERÍA' };
-    return diccionario[idFiltro] || 'ÁREA MUNICIPAL JLO';
-  };
-
   const estadoBadge = (estado) => {
     const st = (estado || 'Activo').toLowerCase();
     if (st.includes('revisión') || st.includes('revision')) return 'bg-amber-100 text-amber-700 border-amber-200';
@@ -280,6 +294,7 @@ export default function DetalleExpediente({
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
+
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={handleVolverAListado} className="text-[13px] text-slate-500 hover:text-[#0F4C81] transition-colors font-extrabold flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-200 mr-2">
@@ -295,12 +310,12 @@ export default function DetalleExpediente({
 
               let lim = 5;
               const cStr = (formData.tiempo_conservacion || '5').toLowerCase();
-              let esPermanente = cStr.includes('perma') || cStr.includes('indefi');
+              let esPermanenteStr = cStr.includes('perma') || cStr.includes('indefi');
 
               const m = cStr.match(/[\d.]+/);
               if (m) lim = cStr.includes('mes') ? parseFloat(m[0]) / 12 : parseFloat(m[0]);
 
-              const estadoReal = (!esPermanente && anosVal >= lim) ? 'Para Depurar' : (formData.estado || 'Activo');
+              const estadoReal = (!esPermanenteStr && anosVal >= lim) ? 'Para Depurar' : (formData.estado || 'Activo');
 
               return (
                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${estadoBadge(estadoReal)}`}>
@@ -327,7 +342,7 @@ export default function DetalleExpediente({
                 className="flex items-center gap-2 h-[48px] px-6 text-[13px] font-extrabold rounded-2xl border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 hover:text-[#0F4C81] transition-all shadow-sm"
               >
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                Editar Expediente
+                Editar Documento
               </button>
             ) : (
               <>
@@ -343,44 +358,122 @@ export default function DetalleExpediente({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
           <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-              <div className="w-1.5 h-5 bg-[#FFC107] rounded-full shadow-sm"></div>
-              <span className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Campos Generales</span>
+              <div className="w-1.5 h-5 bg-lime-500 rounded-full shadow-sm"></div>
+              <span className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">
+                {esComprobante ? 'Campos del Comprobante' : 'Campos Generales'}
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className={labelStyles}>N° Expediente / Registro *</label>
-                <input type="text" value={formData.numero_expediente || ''} disabled={!editMode} onChange={e => handleInputChange('numero_expediente', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
-              </div>
-              <div>
-                <label className={labelStyles}>Clasificación / Tipo Documental</label>
-                <input type="text" value={obtenerNombreTipoDocumento()} readOnly disabled className={`${disabledInputStyles} uppercase`} />
-              </div>
-              <div>
-                <label className={labelStyles}>Fecha de Ingreso *</label>
-                <input type="date" value={formData.fecha_ingreso || ''} disabled={!editMode} onChange={e => handleInputChange('fecha_ingreso', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
-              </div>
-              <div>
-                <label className={labelStyles}>N° de Folios *</label>
-                <input type="number" value={formData.numero_folios || 0} disabled={!editMode} onChange={e => handleInputChange('numero_folios', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelStyles}>Título del Documento *</label>
-                <input type="text" value={formData.titulo || ''} disabled={!editMode} onChange={e => handleInputChange('titulo', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
-              </div>
-              {(formData.razon_social !== undefined && formData.razon_social !== null) && (
-                <div className="sm:col-span-2">
-                  <label className={labelStyles}>Nombre / Razón Social *</label>
-                  <input type="text" value={formData.razon_social || ''} disabled={!editMode} onChange={e => handleInputChange('razon_social', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
+            {esComprobante ? (
+              /* LAYOUT EXCLUSIVO GAMA: COMPROBANTE DE PAGO CONTABLE */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+                <div>
+                  <label className={labelStyles}>N° Comprobante de Pago *</label>
+                  <input
+                    type="text"
+                    value={formData.numero_expediente || ''}
+                    disabled={!editMode}
+                    onChange={e => handleInputChange('numero_expediente', e.target.value.replace(/\D/g, ''))}
+                    className={editMode ? inputStyles : disabledInputStyles}
+                  />
                 </div>
-              )}
-              <div className="sm:col-span-2">
-                <label className={labelStyles}>Tiempo de Conservación</label>
-                <input type="text" value={formData.tiempo_conservacion || 'N/A'} disabled className={disabledInputStyles} />
+
+                <div>
+                  <label className={labelStyles}>Clasificación / Tipo Documental</label>
+                  <input type="text" value={getDocumentTypeName()} readOnly disabled className={`${disabledInputStyles} uppercase`} />
+                </div>
+
+                <div>
+                  <label className={labelStyles}>Fecha de Ingreso *</label>
+                  <input type="date" value={formData.fecha_ingreso || ''} disabled={!editMode} onChange={e => handleInputChange('fecha_ingreso', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
+                </div>
+
+                <div>
+                  <label className={labelStyles}>Registro SIAF *</label>
+                  <input
+                    type="text"
+                    value={formData.registro_siaf || ''}
+                    disabled={!editMode}
+                    placeholder="N° SIAF"
+                    onChange={e => handleInputChange('registro_siaf', e.target.value.replace(/\D/g, ''))}
+                    className={editMode ? inputStyles : disabledInputStyles}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className={labelStyles}>Nombres y Apellidos / Razón Social *</label>
+                  <input
+                    type="text"
+                    value={formData.razon_social || ''}
+                    disabled={!editMode}
+                    placeholder="Razón Social"
+                    onChange={e => handleInputChange('razon_social', e.target.value.replace(/[0-9]/g, ''))}
+                    className={editMode ? inputStyles : disabledInputStyles}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelStyles}>Monto (S/.) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editMode ? (formData.monto || '') : Number(formData.monto || 0).toFixed(2)}
+                    disabled={!editMode}
+                    placeholder="0.00"
+                    onChange={e => handleInputChange('monto', e.target.value)}
+                    className={editMode ? inputStyles : disabledInputStyles}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelStyles}>N° de Folios *</label>
+                  <input type="number" value={formData.numero_folios || 0} disabled={!editMode} onChange={e => handleInputChange('numero_folios', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className={labelStyles}>Tiempo de Vigencia</label>
+                  <input type="text" value="PERMANENTE" disabled className={`${disabledInputStyles} text-emerald-600 font-extrabold`} />
+                </div>
               </div>
-            </div>
+            ) : (
+              /* LAYOUT TRADICIONAL: EXPEDIENTES ADMINISTRATIVOS COMUNES */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className={labelStyles}>N° Expediente / Documento *</label>
+                  <input
+                    type="text"
+                    value={formData.numero_expediente || ''}
+                    disabled={!editMode}
+                    onChange={e => handleInputChange('numero_expediente', e.target.value)}
+                    className={editMode ? inputStyles : disabledInputStyles}
+                  />
+                </div>
+                <div>
+                  <label className={labelStyles}>Clasificación / Tipo Documental</label>
+                  <input type="text" value={getDocumentTypeName()} readOnly disabled className={`${disabledInputStyles} uppercase`} />
+                </div>
+                <div>
+                  <label className={labelStyles}>Fecha de Ingreso *</label>
+                  <input type="date" value={formData.fecha_ingreso || ''} disabled={!editMode} onChange={e => handleInputChange('fecha_ingreso', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
+                </div>
+                <div>
+                  <label className={labelStyles}>N° de Folios *</label>
+                  <input type="number" value={formData.numero_folios || 0} disabled={!editMode} onChange={e => handleInputChange('numero_folios', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={labelStyles}>Título del Documento *</label>
+                  <input type="text" value={formData.titulo || ''} disabled={!editMode} onChange={e => handleInputChange('titulo', e.target.value)} className={editMode ? inputStyles : disabledInputStyles} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={labelStyles}>Tiempo de Vigencia</label>
+                  <input type="text" value={formData.tiempo_conservacion || 'N/A'} disabled className={disabledInputStyles} />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between">
@@ -389,17 +482,19 @@ export default function DetalleExpediente({
                 <div className="w-1.5 h-5 bg-[#0F4C81] rounded-full shadow-sm"></div>
                 <span className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Custodia Institucional</span>
               </div>
+
               <div className="space-y-4">
                 <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Área de Origen</span>
-                  <span className="font-black text-slate-700 uppercase text-[13px]">{obtenerNombreArea('area_origen', 'area_origen_id')}</span>
+                  <span className="font-black text-slate-700 uppercase text-[13px]">{getAreaName('area_origen', 'area_origen_id')}</span>
                 </div>
                 <div className="bg-blue-50/30 p-4 rounded-2xl border border-blue-50">
                   <span className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Área Actual</span>
-                  <span className="font-black text-[#0F4C81] uppercase text-[13px]">{obtenerNombreArea('area_actual', 'area_actual_id')}</span>
+                  <span className="font-black text-[#0F4C81] uppercase text-[13px]">{getAreaName('area_actual', 'area_actual_id')}</span>
                 </div>
               </div>
             </div>
+
             <div className="mt-8 p-4 rounded-2xl text-center bg-gradient-to-br from-slate-800 to-slate-900 shadow-inner">
               <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mb-1">Auditoría Criptográfica</p>
               <p className="font-black text-sm text-emerald-400">Archivo Central - JLO</p>
@@ -410,7 +505,7 @@ export default function DetalleExpediente({
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
           <div className="flex border-b border-slate-100 bg-slate-50/50 px-6 overflow-x-auto scrollbar-hide">
             {[
-              ['info', 'Descripción / Asunto'],
+              ['info', esComprobante ? 'Descripción / Asunto' : 'Descripción / Asunto'],
               ['archivos', 'Archivos Digitales (PDF)'],
               ['historial', 'Historial de Auditoría']
             ].map(([k, l]) => (
@@ -432,7 +527,7 @@ export default function DetalleExpediente({
                   <textarea
                     value={formData.descripcion || ''}
                     onChange={e => handleInputChange('descripcion', e.target.value)}
-                    placeholder="Escriba los asuntos y detalles del expediente aquí..."
+                    placeholder="Escriba los pormenores y detalles aquí..."
                     className="w-full p-5 text-[13px] bg-slate-50 border border-slate-200 rounded-2xl outline-none min-h-[160px] resize-y font-medium text-slate-700 focus:bg-white focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 transition-all duration-300"
                   />
                 ) : (
@@ -530,9 +625,9 @@ export default function DetalleExpediente({
                       <div key={h.id || i} className="relative group">
                         <div className="absolute -left-[41px] top-0 w-5 h-5 rounded-full bg-emerald-500 border-4 border-white shadow-sm"></div>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1 text-sm">
-                          <span className="font-extrabold text-slate-800 text-[13px]">Modificación: {traducirCampoMuni(h.campo_modificado)}</span>
+                          <span className="font-extrabold text-slate-800 text-[13px]">Modificación: {formatFieldLabel(h.campo_modificado)}</span>
                           <span className="hidden sm:inline text-slate-300">·</span>
-                          <span className="text-[11px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-wider">{formatearFechaPeru(h.fecha_cambio)}</span>
+                          <span className="text-[11px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-wider">{formatDateTime(h.fecha_cambio)}</span>
                         </div>
                         <p className="text-[11px] text-slate-400 font-semibold mb-3">Operador: <span className="text-slate-700 font-extrabold">{h.usuario?.name || h.usuario?.username || 'Archivero Institucional'}</span></p>
 
@@ -557,7 +652,7 @@ export default function DetalleExpediente({
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1 text-sm">
                       <span className="font-extrabold text-slate-800 text-[13px]">Registro Inicial Generado</span>
                       <span className="hidden sm:inline text-slate-300">·</span>
-                      <span className="text-[11px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-wider">{originalData.created_at ? formatearFechaPeru(originalData.created_at) : 'Apertura'}</span>
+                      <span className="text-[11px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-wider">{originalData.created_at ? formatDateTime(originalData.created_at) : 'Apertura'}</span>
                     </div>
                     <p className="text-[11px] text-slate-400 font-semibold mb-3">Origen: <span className="text-slate-700 font-extrabold">Sistema SGD - SISGEDO</span></p>
                     <div className="bg-slate-50 text-slate-500 p-4 rounded-2xl border border-slate-200 font-mono text-[12px] max-w-3xl shadow-inner">
@@ -573,7 +668,7 @@ export default function DetalleExpediente({
         {showExitModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
-              <div className="h-2 w-full bg-[#FFC107]"></div>
+              <div className="h-2 w-full bg-[#0F4C81]"></div>
               <div className="p-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
                   <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
