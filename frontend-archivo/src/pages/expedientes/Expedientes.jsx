@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useExpedientes } from '../../context/useExpedientes';
 import CustomDropdown from '../../components/CustomDropdown';
 
@@ -51,34 +51,39 @@ export default function Expedientes({
     setCurrentPage(1);
   };
 
-  // Lógica principal de filtrado multidimensional
-  const filteredExpedientes = expedientes.filter(exp => {
-    const query = searchTerm.toLowerCase().trim();
+  // ==========================================================================
+  // LÓGICA PRINCIPAL DE FILTRADO MULTIDIMENSIONAL
+  // ==========================================================================
+  // Evita re-procesar el dataset completo de expedientes si no ha cambiado el estado de los filtros o la data global
+  const filteredExpedientes = useMemo(() => {
+    return expedientes.filter(exp => {
+      const query = searchTerm.toLowerCase().trim();
 
-    // 1. Filtro por Búsqueda
-    const matchesSearch = query === '' ||
-      (exp.numero_expediente && exp.numero_expediente.toLowerCase().includes(query)) ||
-      (exp.titulo && exp.titulo.toLowerCase().includes(query)) ||
-      (exp.razon_social && exp.razon_social.toLowerCase().includes(query));
+      // 1. Filtro por Búsqueda
+      const matchesSearch = query === '' ||
+        (exp.numero_expediente && exp.numero_expediente.toLowerCase().includes(query)) ||
+        (exp.titulo && exp.titulo.toLowerCase().includes(query)) ||
+        (exp.razon_social && exp.razon_social.toLowerCase().includes(query));
 
-    // 2. Filtro por Identificador de Tipo Documental
-    const matchesTipo = filterTipo === '' ||
-      (exp.tipo_documento_id && exp.tipo_documento_id.toString() === filterTipo.toString());
+      // 2. Filtro por Identificador de Tipo Documental
+      const matchesTipo = filterTipo === '' ||
+        (exp.tipo_documento_id && exp.tipo_documento_id.toString() === filterTipo.toString());
 
-    // 3. Filtro Cronológico
-    let matchesFecha = true;
-    if (filterFechaDesde !== '') {
-      const fechaDocStr = exp.fecha_ingreso || exp.created_at;
-      if (fechaDocStr) {
-        const fechaDocLimpia = fechaDocStr.split('T')[0];
-        const fechaFiltroLimpia = filterFechaDesde.split('T')[0];
-        matchesFecha = fechaDocLimpia >= fechaFiltroLimpia;
-      } else {
-        matchesFecha = false;
+      // 3. Filtro Cronológico
+      let matchesFecha = true;
+      if (filterFechaDesde !== '') {
+        const fechaDocStr = exp.fecha_ingreso || exp.created_at;
+        if (fechaDocStr) {
+          const fechaDocLimpia = fechaDocStr.split('T')[0];
+          const fechaFiltroLimpia = filterFechaDesde.split('T')[0];
+          matchesFecha = fechaDocLimpia >= fechaFiltroLimpia;
+        } else {
+          matchesFecha = false;
+        }
       }
-    }
-    return matchesSearch && matchesTipo && matchesFecha;
-  });
+      return matchesSearch && matchesTipo && matchesFecha;
+    });
+  }, [expedientes, searchTerm, filterTipo, filterFechaDesde]);
 
   // Cálculos matemáticos exactos para segmentar el arreglo según la página activa
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -154,6 +159,8 @@ export default function Expedientes({
                   ...tipos
                 ]}
                 selectedValue={filterTipo}
+                optionsIdProp="id"
+                optionsNameProp="nombre"
                 onSelect={(val) => { setFilterTipo(val); setCurrentPage(1); }}
               />
             </div>
@@ -221,7 +228,7 @@ export default function Expedientes({
             </div>
           ) : (
             <div className="overflow-x-auto w-full">
-              <table className="w-full border-collapse table-fixed min-w-[950px]">
+              <table className="w-full text-left border-collapse table-fixed min-w-[950px]">
                 <thead>
                   <tr className="border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest select-none bg-white">
                     <th className="py-4 px-6 w-[16%] text-center pl-8">N° Exp / Doc</th>

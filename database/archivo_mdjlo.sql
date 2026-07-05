@@ -59,9 +59,11 @@ CREATE TABLE IF NOT EXISTS `archivos_digitales` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `archivos_digitales_ibfk_1` FOREIGN KEY (`expediente_id`) REFERENCES `expedientes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `archivos_digitales_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Volcando datos para la tabla archivo_mdjlo.archivos_digitales: ~0 rows (aproximadamente)
+INSERT INTO `archivos_digitales` (`id`, `expediente_id`, `usuario_id`, `nombre_original`, `nombre_archivo`, `ruta_archivo`, `tipo_mime`, `tamano_bytes`, `uploaded_at`) VALUES
+	(1, 14, 1, 'ARTÍCULO DE TALLER-REPORT.pdf', '1783003529_ART__CULO_DE_TALLER-REPORT.pdf', 'expedientes/14/1783003529_ART__CULO_DE_TALLER-REPORT.pdf', 'application/pdf', 240352, '2026-07-02 09:45:29');
 
 -- Volcando estructura para tabla archivo_mdjlo.areas
 DROP TABLE IF EXISTS `areas`;
@@ -166,9 +168,9 @@ CREATE TABLE IF NOT EXISTS `expedientes` (
   CONSTRAINT `expedientes_ibfk_1` FOREIGN KEY (`tipo_documento_id`) REFERENCES `tipos_documento` (`id`),
   CONSTRAINT `expedientes_ibfk_2` FOREIGN KEY (`area_origen_id`) REFERENCES `areas` (`id`),
   CONSTRAINT `expedientes_ibfk_3` FOREIGN KEY (`area_actual_id`) REFERENCES `areas` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.expedientes: ~15 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.expedientes: ~17 rows (aproximadamente)
 INSERT INTO `expedientes` (`id`, `numero_expediente`, `titulo`, `descripcion`, `tipo_documento_id`, `area_origen_id`, `area_actual_id`, `numero_folios`, `estado`, `fecha_ingreso`, `tiempo_conservacion`, `fecha_revision`, `digitalizado`, `created_at`, `updated_at`) VALUES
 	(1, 'EXP-1985-0412', 'Plan de Catastro Urbano Distrital y Delimitación Territorial de José Leonardo Ortiz', 'Expediente histórico que contiene los primeros planos cartográficos, zonificación y actas de colindancia del distrito.', 8, 31, 1, 350, 'Para Depurar', '1985-04-12', '10 años', '1995-04-12', 0, '2026-06-11 10:00:00', '2026-06-27 00:00:00'),
 	(2, 'EXP-1998-1104', 'Convenio de Cooperación con Epsel S.A. para Redes de Saneamiento en el Sector Moshoqueque', 'Documentación matriz sobre el tendido primario de redes de agua potable y alcantarillado en las zonas comerciales.', 6, 11, 1, 185, 'Para Depurar', '1998-11-04', '5 años', '2003-11-04', 0, '2026-06-11 11:15:00', '2026-06-27 00:00:00'),
@@ -183,8 +185,10 @@ INSERT INTO `expedientes` (`id`, `numero_expediente`, `titulo`, `descripcion`, `
 	(11, 'EXP-2026-0502', 'Plan Operativo Institucional (POI) Corregido - Gerencia de Desarrollo Social', 'Presupuesto institucional y metas físicas asignadas a los Comedores Populares y Vaso de Leche de JLO.', 12, 19, 1, 112, 'Activo', '2026-05-02', '3 años', '2029-05-02', 0, '2026-06-16 04:33:40', '2026-06-16 04:33:40'),
 	(12, 'EXP-2026-0515', 'Solicitud de Licencia de Funcionamiento Definitiva para el Centro Comercial Confecciones Moshoqueque', 'Inspección técnica de seguridad en edificaciones (ITSE) y certificado de zonificación comercial.', 7, 22, 1, 45, 'Activo', '2026-05-15', '5 años', '2031-05-15', 0, '2026-06-16 06:33:40', '2026-06-16 06:33:40'),
 	(13, 'EXP-2026-0602', 'Ordenanza Municipal N° 008-2026 - Plan de Reordenamiento y Formalización del Comercio Ambulatorio', 'Marco regulatorio distrital aprobado en Sesión de Concejo para mitigar la congestión en los anillos comerciales.', 5, 11, 1, 28, 'Activo', '2026-06-02', 'PERMANENTE', NULL, 0, '2026-06-16 07:33:40', '2026-06-16 07:33:40'),
-	(14, 'EXP-2026-0014', 'Informe del Estado Situacional de los Sistemas Informáticos y Servidores de la Municipalidad', 'Diagnóstico de la infraestructura tecnológica, conectividad de red y propuestas de modernización digital.', 12, 16, 1, 55, 'Activo', '2026-06-16', '3 años', '2029-06-16', 0, '2026-06-16 08:33:40', '2026-06-16 08:33:40'),
-	(15, 'EXP-2026-0015', 'Solicitud de Alarmas Vecinales e Implementos de Patrullaje Integrado - Juntas Vecinales Sector San Carlos', 'Petición formal ingresada por Mesa de Partes para el equipamiento básico de las rondas de seguridad ciudadana.', 13, 26, 1, 18, 'Activo', '2026-06-16', '1 año', '2027-06-16', 0, '2026-06-16 08:33:40', '2026-06-16 08:33:40');
+	(14, 'EXP-2026-0014', 'Informe del Estado Situacional de los Sistemas Informáticos y Servidores de la Municipalidad', 'Diagnóstico de la infraestructura tecnológica, conectividad de red y propuestas de modernización digital.', 12, 16, 1, 15, 'Activo', '2026-06-16', '3 años', '2029-06-16', 1, '2026-06-16 08:33:40', '2026-07-02 09:45:29'),
+	(15, 'EXP-2026-0015', 'Solicitud de Alarmas Vecinales e Implementos de Patrullaje Integrado - Juntas Vecinales Sector San Carlos', 'Petición formal ingresada por Mesa de Partes para el equipamiento básico de las rondas de seguridad ciudadana.', 13, 26, 1, 18, 'Activo', '2026-06-16', '1 año', '2027-06-16', 0, '2026-06-16 08:33:40', '2026-06-16 08:33:40'),
+	(16, 'Documento Acta Prueba', 'Documento Acta Prueba', 'Documento Acta Prueba', 15, 11, 1, 15, 'Activo', '2026-07-03', '1 año', '2027-07-03', 0, '2026-07-03 11:37:27', '2026-07-03 11:37:27'),
+	(17, 'Documento Acta Prueba 2', 'Documento Acta Prueba 2', 'Documento Acta Prueba 2', 15, 11, 1, 15, 'Activo', '2026-07-03', '1 año', '2027-07-03', 0, '2026-07-03 11:48:19', '2026-07-03 11:48:19');
 
 -- Volcando estructura para tabla archivo_mdjlo.historial_ediciones
 DROP TABLE IF EXISTS `historial_ediciones`;
@@ -202,9 +206,13 @@ CREATE TABLE IF NOT EXISTS `historial_ediciones` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `historial_ediciones_ibfk_1` FOREIGN KEY (`expediente_id`) REFERENCES `expedientes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `historial_ediciones_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.historial_ediciones: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.historial_ediciones: ~2 rows (aproximadamente)
+INSERT INTO `historial_ediciones` (`id`, `expediente_id`, `campo_modificado`, `valor_anterior`, `valor_nuevo`, `usuario_id`, `fecha_cambio`, `observaciones`) VALUES
+	(1, 14, 'numero_folios', '55', '15', 1, '2026-07-02 14:44:49', NULL),
+	(2, 14, 'observaciones', '', 'Campos modificados exitosamente: Folios: 55 ➔ 15', 1, '2026-07-02 14:44:49', NULL),
+	(3, 14, 'archivo_digital', NULL, 'ARTÍCULO DE TALLER-REPORT.pdf', 1, '2026-07-02 14:45:29', 'Archivo PDF adjuntado');
 
 -- Volcando estructura para tabla archivo_mdjlo.historial_estados
 DROP TABLE IF EXISTS `historial_estados`;
@@ -276,9 +284,9 @@ CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
   KEY `personal_access_tokens_expires_at_index` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=178 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=195 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.personal_access_tokens: ~173 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.personal_access_tokens: ~190 rows (aproximadamente)
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
 	(2, 'App\\Models\\User', 1, 'auth_token', 'd66d3a1059cd669b17d697cb8e26aa06f39298865ad58731614b3d155af0f904', '["*"]', '2026-05-19 02:46:04', NULL, '2026-05-19 02:40:21', '2026-05-19 02:46:04'),
 	(5, 'App\\Models\\User', 1, 'auth_token', 'e32b4f51c6298b75ff315c0e8c6ab43dee28f2e1c1df490bd23e95e2d9c87b84', '["*"]', '2026-05-21 20:58:46', NULL, '2026-05-19 18:42:59', '2026-05-21 20:58:46'),
@@ -452,7 +460,24 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 	(174, 'App\\Models\\User', 1, 'auth_token', 'df66965e54eff1034003f0db820b5157af4f6f82bdbb3f729f321bb40f42d563', '["*"]', '2026-06-27 08:55:31', NULL, '2026-06-27 08:55:29', '2026-06-27 08:55:31'),
 	(175, 'App\\Models\\User', 1, 'auth_token', '84082f58f3709e3fd13db1bb9695bf405f8b88456c20c85b1c691e303364be51', '["*"]', '2026-06-27 08:58:59', NULL, '2026-06-27 08:58:57', '2026-06-27 08:58:59'),
 	(176, 'App\\Models\\User', 1, 'auth_token', '025be5559f31c610fb8dfe537852e37adafb857a21edca9bcd5cbf0b3f884115', '["*"]', '2026-06-27 17:15:04', NULL, '2026-06-27 09:00:19', '2026-06-27 17:15:04'),
-	(177, 'App\\Models\\User', 1, 'auth_token', 'ea6a168290e5e227a0ce5a7699f04d8956be5cee965cf76ee935323f18a7e986', '["*"]', '2026-06-27 17:25:06', NULL, '2026-06-27 17:15:26', '2026-06-27 17:25:06');
+	(177, 'App\\Models\\User', 1, 'auth_token', 'ea6a168290e5e227a0ce5a7699f04d8956be5cee965cf76ee935323f18a7e986', '["*"]', '2026-06-27 19:25:55', NULL, '2026-06-27 17:15:26', '2026-06-27 19:25:55'),
+	(178, 'App\\Models\\User', 1, 'auth_token', 'dccdb6bfcef76656b167c98a166df77fa9e8323ccc3db23aa6e076c5c584fc33', '["*"]', '2026-06-27 19:35:16', NULL, '2026-06-27 19:31:52', '2026-06-27 19:35:16'),
+	(179, 'App\\Models\\User', 1, 'auth_token', '3f64a048c34d47cf17b8389f1062d7418d95c808e311b780d7bff2fcc54d615a', '["*"]', '2026-06-29 00:10:16', NULL, '2026-06-27 19:41:10', '2026-06-29 00:10:16'),
+	(180, 'App\\Models\\User', 1, 'auth_token', '7733e04c4cd82b86e2f86357326ee180b8f2e171958b5f5c43b537c88479b9f9', '["*"]', '2026-06-29 01:09:29', NULL, '2026-06-29 00:10:20', '2026-06-29 01:09:29'),
+	(181, 'App\\Models\\User', 1, 'auth_token', '9e6b973d87c71bfd515ab8eff21707bcdece116eec4e94ec5c5d549703d8c6be', '["*"]', '2026-06-29 01:37:22', NULL, '2026-06-29 01:37:20', '2026-06-29 01:37:22'),
+	(182, 'App\\Models\\User', 1, 'auth_token', '8cd5ca65f8c39dd296a2cd1a2f85a43dd786d11bfbaeb1ea402e054702cbca65', '["*"]', '2026-06-29 02:59:41', NULL, '2026-06-29 01:37:42', '2026-06-29 02:59:41'),
+	(183, 'App\\Models\\User', 1, 'auth_token', '79be43d28278a9b1a558fbc89e32718803ed88355a287ddd881db47dd89b1d15', '["*"]', '2026-06-29 19:27:17', NULL, '2026-06-29 17:30:17', '2026-06-29 19:27:17'),
+	(184, 'App\\Models\\User', 1, 'auth_token', 'fdb4f1a8c0091019171089970f9f785f8eb901fd8e2a227779bff1e5070d1931', '["*"]', '2026-07-01 14:03:05', NULL, '2026-07-01 13:58:48', '2026-07-01 14:03:05'),
+	(185, 'App\\Models\\User', 1, 'auth_token', 'fceaa1a6778b9a61c0aac31c1c0e33845378079f597d5cf4677b016adde39680', '["*"]', '2026-07-01 15:44:36', NULL, '2026-07-01 14:30:47', '2026-07-01 15:44:36'),
+	(186, 'App\\Models\\User', 1, 'auth_token', '518bb3e8cf4766a145db1a9d9b85c4bfab18f9d185823e61d904df3244830b41', '["*"]', '2026-07-02 13:50:05', NULL, '2026-07-02 13:49:55', '2026-07-02 13:50:05'),
+	(187, 'App\\Models\\User', 1, 'auth_token', '2d3dc558854dc46f8331854af751d54a951e55a6bb39b8eeb062d936a91a5df7', '["*"]', '2026-07-02 14:16:32', NULL, '2026-07-02 14:16:26', '2026-07-02 14:16:32'),
+	(188, 'App\\Models\\User', 1, 'auth_token', 'facb1880dafdbade5b6ef10487de77f5e225a27e6f5deddcfe3645b7a2d664ea', '["*"]', '2026-07-02 14:19:40', NULL, '2026-07-02 14:19:33', '2026-07-02 14:19:40'),
+	(189, 'App\\Models\\User', 1, 'auth_token', '9ba9db66a36e909b4f5579e7ff8352a2ec81f98a8b611d90436d02e6d23f1e4a', '["*"]', '2026-07-02 15:12:26', NULL, '2026-07-02 14:43:38', '2026-07-02 15:12:26'),
+	(190, 'App\\Models\\User', 1, 'auth_token', 'bb5970c77baf4c2804c2bace92731c51f717696cf2b2ab3bc902325adc61b100', '["*"]', '2026-07-02 15:27:29', NULL, '2026-07-02 15:26:27', '2026-07-02 15:27:29'),
+	(191, 'App\\Models\\User', 1, 'auth_token', '667640d25b00aa11e46e4f9fe67213781c451ec9c8f38683b073d03508e71c59', '["*"]', '2026-07-02 15:27:46', NULL, '2026-07-02 15:27:38', '2026-07-02 15:27:46'),
+	(192, 'App\\Models\\User', 1, 'auth_token', 'fa9b56dccf19d736b413b6c9d2045c66e9846cda27a3e01d4074bcd172fb3f2a', '["*"]', '2026-07-02 18:40:27', NULL, '2026-07-02 15:28:03', '2026-07-02 18:40:27'),
+	(193, 'App\\Models\\User', 1, 'auth_token', '730a8416949275b2c333a609c56ca90c80e884755d5b8ed4cbf8548bf6e3dc8b', '["*"]', '2026-07-02 18:40:51', NULL, '2026-07-02 18:40:41', '2026-07-02 18:40:51'),
+	(194, 'App\\Models\\User', 1, 'auth_token', '893afcfa5c48321a6d48ab739361dab5b428ecfa063b188bfb7f71ad8c029877', '["*"]', '2026-07-03 18:49:19', NULL, '2026-07-03 13:29:15', '2026-07-03 18:49:19');
 
 -- Volcando estructura para tabla archivo_mdjlo.solicitudes
 DROP TABLE IF EXISTS `solicitudes`;
@@ -477,9 +502,9 @@ CREATE TABLE IF NOT EXISTS `solicitudes` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.solicitudes: ~26 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.solicitudes: ~43 rows (aproximadamente)
 INSERT INTO `solicitudes` (`id`, `dni`, `nombres`, `apellidos`, `telefono`, `direccion`, `expediente_solicitado`, `descripcion`, `fecha_solicitud`, `estado`, `motivo_rechazo`, `costo_tupa`, `tipo_formato_tupa`, `paginas_simples`, `paginas_fedateadas`, `numero_hojas`, `cantidad_copias`, `created_at`, `updated_at`) VALUES
 	(31, '72145689', 'Juan Carlos', 'Pérez Ramos', NULL, NULL, 'EXP-2026-001', 'Solicitud de copias de actas de sesión de consejo', '2026-01-10', 'Aceptada', NULL, 3.00, 'Copia Simple A4', '15', '0', 15, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
 	(32, '45871236', 'María Fe', 'Ruiz Gonzales', NULL, NULL, 'EXP-2026-002', 'Copia fiel del original de resolución de alcaldía', '2026-01-15', 'Aceptada', NULL, 5.00, 'Copia Fedateada', '0', '10', 10, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
@@ -506,7 +531,24 @@ INSERT INTO `solicitudes` (`id`, `dni`, `nombres`, `apellidos`, `telefono`, `dir
 	(53, '45245345', 'José Luis', 'Rivera Castillo', NULL, NULL, 'EXP-2026-0101', 'Fedateados de la 50-80', '2026-06-26', 'Aceptada', NULL, 3.00, 'Fedateado', NULL, '50-80', 30, 1, '2026-06-27 00:38:00', '2026-06-27 00:38:36'),
 	(54, '54645645', 'Joal', 'Rivadeneira', NULL, NULL, 'EXP-2026-0017', 'Requiere folios de la 1-50', '2026-06-26', 'Rechazada', 'Este expediente EXP-2026-0017 no se registra en el sistema, por lo tanto no se le puede entregar lo que solicita', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 01:26:58', '2026-06-27 01:27:41'),
 	(55, '45645354', 'Juan Carlos Esteban', 'Chuquihuanca Flores', NULL, NULL, 'EXP-2026-0018', 'EXP-2026-0018', '2026-06-27', 'Rechazada', 'No se encuentra el expediente', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 17:23:29', '2026-06-27 17:25:05'),
-	(56, '54345345', 'Roxy Aleja', 'Condorhuamán Rivera', NULL, NULL, 'EXP-2026-0017', 'EXP-2026-0017', '2026-06-27', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '1-10', NULL, 10, 1, '2026-06-27 17:24:39', '2026-06-27 17:24:51');
+	(56, '54345345', 'Roxy Aleja', 'Condorhuamán Rivera', NULL, NULL, 'EXP-2026-0017', 'EXP-2026-0017', '2026-06-27', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '1-10', NULL, 10, 1, '2026-06-27 17:24:39', '2026-06-27 17:24:51'),
+	(57, '154', 'sada', 'd', NULL, NULL, 'asdsad', 'asdasdas', '2026-06-27', 'Rechazada', 'No se encuentra', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 18:12:57', '2026-06-29 00:34:50'),
+	(58, '45614561', 'asdas', 'sas', NULL, NULL, 'EXP-2026-0014', 'EXP-2026-0014', '2026-06-27', 'Rechazada', 'No se encuentra', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 19:25:55', '2026-06-29 00:34:39'),
+	(59, '16565416', 'Luciana', 'Ordinola', NULL, NULL, 'EXP-2026-0101', 'EXP-2026-0101', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:35:47', '2026-06-29 00:35:47'),
+	(60, '54645345', 'Dilver', 'Aguilar', NULL, NULL, 'EXP-2026-0102, EXP-2026-0103', 'EXP-2026-0102, EXP-2026-0103', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:45:15', '2026-06-29 00:45:15'),
+	(61, '54634534', 'Leo', 'Pardo', NULL, NULL, 'EXP-2026-0101', 'Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500, cuando un impresor (N. del T. persona que se dedica a la imprenta) desconocido usó una galería de textos y los mezcló de tal manera que logró hacer un libro de textos especimen.', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:49:50', '2026-06-29 00:49:50'),
+	(62, '65165168', 'José Luis Enrique', 'Valderrama Puicón', NULL, NULL, 'EXP-2026-0020', 'EXP-2026-0020', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:55:39', '2026-06-29 00:55:39'),
+	(63, '32154145', 'Lucia', 'Nombera', NULL, NULL, 'EXP-2026-002', 'Copia fiel del original de resolución de alcaldía', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:09:29', '2026-06-29 01:09:29'),
+	(64, '64516546', 'Jose', 'Rodriguez', NULL, NULL, 'EXP-2026-1111', 'EXP-2026-1111', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:38:23', '2026-06-29 01:38:23'),
+	(65, '54564165', 'aaa', 'aaa', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:41:57', '2026-06-29 01:41:57'),
+	(66, '46345654', 'eeee', 'eeee', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:10', '2026-06-29 01:42:10'),
+	(67, '54645676', 'iiii', 'iiii', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:19', '2026-06-29 01:42:19'),
+	(68, '45456645', 'oooo', 'oooo', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:41', '2026-06-29 01:42:41'),
+	(69, '45634534', 'uuuu', 'uuuu', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:43:50', '2026-06-29 01:43:50'),
+	(70, '42452453', 'hhhh', 'hhhh', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:44:09', '2026-06-29 01:44:09'),
+	(71, '45345344', 'kkkk', 'kkkk', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:44:22', '2026-06-29 01:44:22'),
+	(72, '54145615', 'Josue Joal', 'Pedraza Rivadeneira', '936465461', 'Av. Chiclayo', 'EXP-2026-3333', 'Se requiere folios del 50-55 del expediente EXP-2026-3333', '2026-06-29', 'Aceptada', NULL, 0.50, 'Copia Simple A4', '50-55', NULL, 5, 1, '2026-06-29 17:53:05', '2026-06-29 18:55:36'),
+	(73, '42453453', 'José', 'Romero', NULL, NULL, 'EXP-2026-2000', 'EXP-2026-2000', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 19:04:26', '2026-06-29 19:04:26');
 
 -- Volcando estructura para tabla archivo_mdjlo.tipos_documento
 DROP TABLE IF EXISTS `tipos_documento`;
