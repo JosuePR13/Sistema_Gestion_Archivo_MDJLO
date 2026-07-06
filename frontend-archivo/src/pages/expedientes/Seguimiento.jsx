@@ -289,9 +289,10 @@ export default function SeguimientoScreen({ setScreen }) {
 
                     {/* Barra de Filtros Unificada con Fondo de Contraste y Badge Flotante */}
                     <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
-                        <div className="flex items-center gap-4">
-                            <span className="text-[11px] font-black text-blue-600 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm select-none">
-                                {tablaFiltrada.length} REGISTROS
+                        <div className="flex items-center">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/60 border border-emerald-100/80 rounded-xl text-[11px] font-bold text-emerald-700 uppercase tracking-wider shadow-sm select-none">
+                                <span className="font-black text-emerald-800 text-[11px]">{tablaFiltrada.length}</span>
+                                REGISTROS
                             </span>
                         </div>
                         <div className="relative w-full sm:w-56 z-30">

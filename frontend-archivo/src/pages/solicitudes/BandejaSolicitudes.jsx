@@ -47,6 +47,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
         { id: 'Rechazada', nombre: '❌ Denegada' }
     ];
 
+    // CORRECCIÓN INYECTADA: Se asocia propiedad 'color' para el focus dinámico de cada módulo
     const opcionesFormatosTupa = [
         { id: 'Copia Simple A4', nombre: '📄 Copia Simple Formato A4' },
         { id: 'Fedateado', nombre: '📜 Formato Fedateado' },
@@ -181,7 +182,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                 paginas_simples: pSimples,
                 paginas_fedateadas: pFedateadas,
                 numero_hojas: nuevoEstado === 'Aceptada' ? numHojas : null,
-                cantidad_copias: nuevoEstado === 'Aceptada' ? cantCopias : null
+                amount_copias: nuevoEstado === 'Aceptada' ? cantCopias : null
             });
 
             // Sincronización cruzada: Actualiza los fondos en tiempo real del módulo de Caja Recaudación
@@ -222,7 +223,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 </div>
 
-                {/* --- CONTENEDOR DEL BUSCADOR --- */}
+                {/* --- CONTENEDOR DEL BUSCADOR (CORREGIDO ENFOQUE AL COLOR DE CABECERA) --- */}
                 <div className="flex justify-end w-full animate-fade-in">
                     <div className="relative w-full md:w-96">
                         <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -231,7 +232,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                         <input
                             type="text"
                             placeholder="Buscar por Contribuyente o DNI..."
-                            className="w-full h-[46px] pl-12 pr-4 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-[#0F4C81]/10 outline-none transition-all shadow-sm"
+                            className="w-full h-[46px] pl-12 pr-4 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all shadow-sm"
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />
@@ -240,6 +241,16 @@ export default function BandejaSolicitudes({ triggerToast }) {
 
                 {/* --- TABLA DE GESTIÓN PRINCIPAL --- */}
                 <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
+                    {/* CORREGIDO CONTADOR: Muestra el total real del set filtrado independiente de la página */}
+                    <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50/60 border border-sky-100/80 rounded-xl text-[11px] font-bold text-sky-700 uppercase tracking-wider shadow-sm select-none">
+                                <span className="font-black text-sky-800 text-[11px]">{solicitudesFiltradas.length}</span>
+                                solicitud(es) en bandeja
+                            </span>
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse table-fixed">
                             <thead>
@@ -259,7 +270,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                     <tr><td colSpan="6" className="py-12 text-center text-sm font-bold text-slate-400">No se encontraron solicitudes pendientes.</td></tr>
                                 ) : (
                                     currentItems.map((sol, index) => (
-                                        <tr key={sol.id || sol.id_solicitud || index} className="border-b border-slate-50 hover:bg-slate-50/40 transition-colors">
+                                        <tr key={sol.id || sol.id_solicitud || index} className="border-b border-slate-50 hover:bg-sky-50/20 transition-colors">
 
                                             <td className="py-4 px-5 w-[280px]">
                                                 <span className="text-[13px] font-bold text-slate-800 block truncate text-center" title={`${sol.nombres} ${sol.apellidos}`}>
@@ -277,7 +288,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
 
                                             <td className="py-4 px-5 overflow-hidden">
                                                 <div className="flex flex-col w-full max-w-[260px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px]">
-                                                    <span className="text-[13px] font-bold text-[#0F4C81] truncate" title={sol.expediente_solicitado}>
+                                                    <span className="text-[13px] font-bold text-sky-700 truncate" title={sol.expediente_solicitado}>
                                                         {sol.expediente_solicitado}
                                                     </span>
                                                     <span className="text-[11px] text-slate-400 font-medium truncate mt-0.5" title={sol.descripcion}>
@@ -292,7 +303,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => abrirModalGestion(sol)}
-                                                    className="w-full py-1.5 bg-slate-100 text-[#0F4C81] hover:bg-[#0F4C81] hover:text-white rounded-xl text-[11px] font-extrabold uppercase tracking-wide transition-all shadow-sm"
+                                                    className="w-full py-1.5 bg-slate-50 text-sky-700 border border-sky-100 hover:bg-sky-600 hover:text-white hover:border-sky-600 rounded-xl text-[11px] font-extrabold uppercase tracking-wide transition-all shadow-sm"
                                                 >
                                                     Detalle
                                                 </button>
@@ -399,6 +410,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                 options={opcionesDecision}
                                                 selectedValue={nuevoEstado}
                                                 onSelect={(val) => setNuevoEstado(val)}
+                                                color="sky" // ASOCIADO AL COLOR SKY DE LA CABECERA
                                             />
                                         </div>
                                     </div>
@@ -414,7 +426,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                             </h4>
                                         </div>
 
-                                        {/* RECORDATORIO FIJO: Caja informativa persistente con scroll controlado para descripciones densas */}
                                         <div className="px-4 py-3 bg-slate-50 rounded-xl border border-slate-200/60 text-[12px] flex items-start gap-3 animate-fade-in shrink-0">
                                             <span className="text-slate-400 mt-0.5 text-base shrink-0">📋</span>
                                             <div className="flex-1 min-w-0">
@@ -431,7 +442,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                             </div>
                                         </div>
 
-                                        {/* FLUJO CONDICIONAL: Aprobación (Liquidación Financiera) vs. Denegación (Textarea de Rechazo) */}
                                         {nuevoEstado === 'Aceptada' ? (
                                             <div className="space-y-4 overflow-visible relative mt-2">
                                                 <div className="relative z-50">
@@ -443,10 +453,10 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                         options={opcionesFormatosTupa}
                                                         selectedValue={tipoFormatotupa}
                                                         onSelect={(val) => setTipoFormatotupa(val)}
+                                                        color="sky" // ASOCIADO AL COLOR SKY DE LA CABECERA
                                                     />
                                                 </div>
 
-                                                {/* APARTADO MIXTO: Desglose balanceado de folios independientes de igual color neutro */}
                                                 {tipoFormatotupa === 'Mixto' ? (
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in relative z-10">
                                                         <div>
@@ -467,7 +477,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                     </div>
                                                 )}
 
-                                                {/* CONTROLES DE MULTIPLICACIÓN ARITMÉTICA (Hojas y Copias) */}
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
                                                     <div>
                                                         <label className={labelStyles}>N° Total de Hojas *</label>
@@ -479,7 +488,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                     </div>
                                                 </div>
 
-                                                {/* PANEL RESUMEN DE TASAS */}
                                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-inner shrink-0 relative z-10 mt-2">
                                                     <div>
                                                         <p className="text-[10px] font-black text-[#0F4C81] uppercase tracking-widest">Monto Final Liquidado</p>
@@ -491,7 +499,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                 </div>
                                             </div>
                                         ) : (
-                                            /* ESCENARIO DENEGADO: Cuadro de texto reactivo con estilos semánticos de alerta */
                                             <div className="animate-fade-in relative z-10">
                                                 <label className="block text-[11px] font-extrabold text-rose-600 mb-2 tracking-widest uppercase">Especifique Motivo de Rechazo *</label>
                                                 <textarea rows="4" placeholder="Escriba el motivo técnico por el cual se rechaza el trámite..." value={motivoRechazo} onChange={(e) => setMotivoRechazo(e.target.value)} className="w-full p-4 border border-rose-200 bg-rose-50/30 rounded-2xl text-[13px] font-bold text-rose-800 focus:bg-white focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 outline-none transition-all resize-none" />

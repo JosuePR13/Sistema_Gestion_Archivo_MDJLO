@@ -537,10 +537,16 @@ export default function ReportesScreen() {
 
           </div>
 
-          {/* --- TABLA DE REGISTROS CON DATOS CENTRADOS --- */}
+          {/* --- TABLA DE REGISTROS --- */}
           <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col relative z-10">
+
             <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <span className="text-[11px] font-black text-blue-600 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm select-none">{sel.tabla.length} registros</span>
+              <div className="flex items-center">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50/60 border border-rose-100/80 rounded-xl text-[11px] font-bold text-rose-700 uppercase tracking-wider shadow-sm select-none">
+                  <span className="font-black text-rose-800 text-[11px]">{sel.tabla.length}</span>
+                  REGISTROS
+                </span>
+              </div>
             </div>
 
             <div className="overflow-x-auto w-full">
