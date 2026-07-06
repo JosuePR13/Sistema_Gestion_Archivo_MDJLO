@@ -668,17 +668,23 @@ export default function DetalleExpediente({
         {showExitModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
-              <div className="h-2 w-full bg-[#0F4C81]"></div>
+              <div className="h-2 w-full bg-amber-500"></div>
               <div className="p-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
-                  <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
                 </div>
                 <h3 className="text-lg font-black text-slate-800 mb-2 tracking-tight">{modalTexts.title}</h3>
                 <p className="text-[13px] text-slate-500 px-2 leading-relaxed font-medium">{modalTexts.desc}</p>
               </div>
               <div className="bg-slate-50/50 px-6 py-5 flex flex-col sm:flex-row justify-center gap-3 border-t border-slate-100">
-                <button type="button" onClick={() => setShowExitModal(false)} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all order-2 sm:order-1">No, continuar editando</button>
-                <button type="button" onClick={handleConfirmarSalidaModal} className="w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[13px] font-bold bg-[#0F4C81] shadow-md hover:-translate-y-0.5 transition-all order-1 sm:order-2">Sí, descartar cambios</button>
+                <button type="button" onClick={() => setShowExitModal(false)} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all order-2 sm:order-1">
+                  No, continuar editando
+                </button>
+                <button type="button" onClick={handleConfirmarSalidaModal} className="w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[13px] font-bold bg-[#0F4C81] hover:bg-blue-800 transition-all order-1 sm:order-2 shadow-md">
+                  Sí, descartar cambios
+                </button>
               </div>
             </div>
           </div>
@@ -690,13 +696,17 @@ export default function DetalleExpediente({
               <div className="h-2 w-full bg-rose-500"></div>
               <div className="p-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
-                  <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
                 </div>
                 <h3 className="text-lg font-black text-slate-800 mb-2 tracking-tight">Código Duplicado</h3>
                 <p className="text-[13px] text-slate-500 px-3 leading-relaxed font-medium">{duplicateMessage}</p>
               </div>
               <div className="bg-slate-50/50 px-6 py-5 flex justify-center border-t border-slate-100">
-                <button type="button" onClick={() => setShowDuplicateModal(false)} className="w-full px-5 py-3 text-white text-[13px] font-bold rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 shadow-md hover:-translate-y-0.5 transition-all text-center">Entendido, corregir código</button>
+                <button type="button" onClick={() => setShowDuplicateModal(false)} className="w-full px-5 py-3 text-white text-[13px] font-bold rounded-xl bg-rose-500 hover:bg-rose-600 transition-all text-center shadow-md">
+                  Entendido, corregir código
+                </button>
               </div>
             </div>
           </div>
@@ -707,15 +717,21 @@ export default function DetalleExpediente({
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
               <div className="h-2 w-full bg-rose-500"></div>
               <div className="p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
-                  <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
+                  <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </div>
                 <h3 className="text-lg font-black text-slate-800 mb-2 tracking-tight">¿Eliminar archivo PDF?</h3>
                 <p className="text-[13px] text-slate-500 px-3 leading-relaxed font-medium">Esta acción borrará permanentemente <span className="font-bold text-slate-700">"{selectedFileToDelete?.nombre_original}"</span>.</p>
               </div>
               <div className="bg-slate-50/50 px-6 py-5 flex flex-col sm:flex-row justify-center gap-3 border-t border-slate-100">
-                <button type="button" disabled={isDeletingFile} onClick={() => { setShowDeleteModal(false); setSelectedFileToDelete(null); }} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all order-2 sm:order-1">No, mantener archivo</button>
-                <button type="button" disabled={isDeletingFile} onClick={ejecutarEliminacionArchivo} className="w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[13px] font-bold bg-rose-600 shadow-md hover:bg-rose-700 transition-all order-1 sm:order-2">{isDeletingFile ? 'Eliminando...' : 'Sí, eliminar archivo'}</button>
+                <button type="button" disabled={isDeletingFile} onClick={() => { setShowDeleteModal(false); setSelectedFileToDelete(null); }} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all order-2 sm:order-1">
+                  No, mantener archivo
+                </button>
+                <button type="button" disabled={isDeletingFile} onClick={ejecutarEliminacionArchivo} className="w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[13px] font-bold bg-rose-600 hover:bg-rose-700 transition-all order-1 sm:order-2 shadow-md">
+                  {isDeletingFile ? 'Eliminando...' : 'Sí, eliminar archivo'}
+                </button>
               </div>
             </div>
           </div>
