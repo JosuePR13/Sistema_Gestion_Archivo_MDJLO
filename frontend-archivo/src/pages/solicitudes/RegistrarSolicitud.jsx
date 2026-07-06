@@ -334,7 +334,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
             {showExitModal && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
-                        <div className="h-2 w-full bg-[#FFC107]"></div>
+                        <div className="h-2 w-full bg-amber-500"></div>
                         <div className="p-8 text-center">
                             <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
                                 <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -348,7 +348,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                             <button type="button" onClick={() => setShowExitModal(false)} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all order-2 sm:order-1">
                                 No, continuar
                             </button>
-                            <button type="button" onClick={() => { setShowExitModal(false); setIsDirty(false); setScreen(pendingScreen || { name: 'dashboard', id: null }); }} className="w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[13px] font-bold bg-[#0F4C81] shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all order-1 sm:order-2">
+                            <button type="button" onClick={() => { setShowExitModal(false); setIsDirty(false); setScreen(pendingScreen || { name: 'dashboard', id: null }); }} className="w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[13px] font-bold bg-[#0F4C81] hover:bg-blue-800 transition-all order-1 sm:order-2 shadow-md">
                                 Sí, salir sin guardar
                             </button>
                         </div>

@@ -57,6 +57,14 @@ export default function CustomDropdown({
       textActive: 'text-sky-700',
       bgBadge: 'bg-sky-50',
       bgItemActive: 'bg-sky-100/70 border-sky-200/80'
+    },
+    fuchsia: {
+      hoverBorder: 'hover:border-fuchsia-300',
+      hoverShadow: 'hover:shadow-[0_4px_20px_rgba(217,70,239,0.06)]',
+      focusActive: 'border-fuchsia-600 ring-4 ring-fuchsia-600/10',
+      textActive: 'text-fuchsia-700',
+      bgBadge: 'bg-fuchsia-50',
+      bgItemActive: 'bg-fuchsia-100/70 border-fuchsia-200/80'
     }
   };
 
@@ -133,8 +141,8 @@ export default function CustomDropdown({
                       setIsOpen(false); // Repliega el menú flotante
                     }}
                     className={`relative px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-200 flex items-center justify-between overflow-hidden text-[12px] ${uppercase ? 'uppercase tracking-wide' : ''} ${isSelected
-                        ? `${currentTheme.bgItemActive} ${currentTheme.textActive} font-black border shadow-[0_2px_8px_rgba(0,0,0,0.02)]`
-                        : `text-slate-600 font-bold hover:bg-slate-50 hover:${currentTheme.textActive}`
+                      ? `${currentTheme.bgItemActive} ${currentTheme.textActive} font-black border shadow-[0_2px_8px_rgba(0,0,0,0.02)]`
+                      : `text-slate-600 font-bold hover:bg-slate-50 hover:${currentTheme.textActive}`
                       }`}
                   >
                     {/* TEXTO DE LA OPCIÓN */}
