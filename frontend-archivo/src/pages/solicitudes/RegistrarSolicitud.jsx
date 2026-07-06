@@ -116,11 +116,11 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
         try {
             // Envío asíncrono del registro documentario a la base de datos de la municipalidad
             await api.post('/solicitudes', payload);
-            
+
             setIsDirty(false); // Resetea bandera de seguridad para el ciclo de éxito
             triggerToast('¡Solicitud de Mesa de Partes registrada con éxito!');
             refrescarSolicitudes(); // Fuerza la recarga de datos en segundo plano
-            
+
             // Re-inicialización del formulario para dejarlo limpio para el siguiente administrado
             setFormData({
                 dni: '',
@@ -145,7 +145,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
     const readOnlyStyles = "w-full h-[48px] px-4 border border-slate-100 bg-slate-100/50 text-slate-500 rounded-2xl text-[13px] font-extrabold outline-none cursor-not-allowed flex items-center";
     const labelStyles = "block text-[11px] font-black text-slate-400 mb-2 tracking-widest uppercase";
 
-    // Inyección de clases críticas de error de manera reactiva campo por campo
+    // Inyección de clases críticas de error de manera reactiva campo por campo (Focus corregido a blue-600)
     const getInputStyles = (field, isOptional = false) => {
         const value = formData[field];
         let hasError = validated && !isOptional && (!value || String(value).trim() === '');
@@ -153,13 +153,13 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
         if (validated && field === 'dni' && value.length !== 8) hasError = true;
         if (validated && field === 'telefono' && value && value.length !== 9) hasError = true;
 
-        return `${inputBaseStyles} ${hasError ? 'border-rose-300 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10' : 'border-slate-200/80 focus:bg-white focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/10 shadow-sm'}`;
+        return `${inputBaseStyles} ${hasError ? 'border-rose-300 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10' : 'border-slate-200/80 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 shadow-sm'}`;
     };
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-8 relative selection:bg-blue-100 selection:text-blue-900">
             <div className="max-w-[1200px] w-full mx-auto space-y-6 animate-fade-in">
-                
+
                 {/* Botón Superior de Retroceso */}
                 <div className="flex items-center gap-2">
                     <button type="button" onClick={handleTryExit} className="text-[12px] text-slate-500 hover:text-[#0F4C81] transition-all font-black uppercase tracking-wider flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.01)] border border-slate-200/60 hover:shadow-sm">
@@ -169,16 +169,16 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                 </div>
 
                 {/* Banner de Cabecera del Módulo */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-indigo-500/20 via-indigo-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-indigo-200/80 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
-                    <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-40 blur-xl bg-indigo-300 pointer-events-none"></div>
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600/15 border border-indigo-200/60 flex items-center justify-center text-indigo-600 relative z-10 shadow-sm shrink-0">
+                <div className="relative overflow-hidden bg-gradient-to-r from-blue-500/15 via-sky-50/50 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-blue-200/70 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
+                    <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-40 blur-xl bg-sky-200 pointer-events-none"></div>
+                    <div className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-200/60 flex items-center justify-center text-blue-600 relative z-10 shadow-sm shrink-0">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>
                     </div>
                     <div className="flex flex-col relative z-10 text-left">
                         <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Registrar Solicitud</h1>
-                        <span className="text-[11px] font-black text-indigo-700 mt-1.5 uppercase tracking-wider">Trámite de Mesa de Partes</span>
+                        <span className="text-[11px] font-black text-blue-600 mt-1.5 uppercase tracking-wider">Trámite de Mesa de Partes</span>
                     </div>
                 </div>
 
@@ -186,7 +186,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                 <form onSubmit={handleSubmit} className="space-y-6" noValidate autoComplete="off">
                     <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                            
+
                             {/* Input: DNI (Filtra caracteres no numéricos al vuelo) */}
                             <div className="md:col-span-4 lg:col-span-3">
                                 <label htmlFor="dni" className={labelStyles}>DNI Solicitante *</label>

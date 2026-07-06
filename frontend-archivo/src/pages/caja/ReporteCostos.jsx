@@ -97,10 +97,10 @@ export default function ReporteCostos() {
         const totalHojasKpi = aprobadasKpi.reduce((acc, curr) => acc + (parseInt(curr.numero_hojas) || 0), 0);
 
         const ingresoHoy = movimientos
-            .filter(m => 
-                m.estado === 'Aceptada' && 
+            .filter(m =>
+                m.estado === 'Aceptada' &&
                 m.fecha_solicitud &&
-                m.fecha_solicitud.trim() !== "" && 
+                m.fecha_solicitud.trim() !== "" &&
                 m.fecha_solicitud.substring(0, 10) === fechaHoyStr
             )
             .reduce((acc, curr) => acc + (parseFloat(curr.costo_tupa) || 0), 0);
@@ -155,7 +155,8 @@ export default function ReporteCostos() {
                 if (tendenciaAnio === 'Todos' || ano === tendenciaAnio) {
                     const mesIndex = parseInt(m.fecha_solicitud.substring(5, 7)) - 1;
                     if (mesIndex >= 0 && mesIndex < 12) {
-                        mensualidades[mesIndex] += (parseFloat(m.costo_tupa) || 0);
+                        // Corrección menor interna: corregido uso de paréntesis duplicados heredados
+                        mensualidades[mesIndex] += parseFloat(m.costo_tupa) || 0;
                     }
                 }
             }
@@ -342,10 +343,10 @@ export default function ReporteCostos() {
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0 z-30">
                                         <div className="w-40">
-                                            <CustomDropdown options={opcionesMeses} selectedValue={demandaMes} onSelect={setDemandaMes} />
+                                            <CustomDropdown options={opcionesMeses} selectedValue={demandaMes} onSelect={setDemandaMes} color="purple" />
                                         </div>
                                         <div className="w-32">
-                                            <CustomDropdown options={opcionesAnios.map(a => ({ value: a, label: a === 'Todos' ? 'Histórico' : a }))} selectedValue={demandaAnio} onSelect={setDemandaAnio} />
+                                            <CustomDropdown options={opcionesAnios.map(a => ({ value: a, label: a === 'Todos' ? 'Histórico' : a }))} selectedValue={demandaAnio} onSelect={setDemandaAnio} color="purple" />
                                         </div>
                                     </div>
                                 </div>
@@ -363,7 +364,7 @@ export default function ReporteCostos() {
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0 z-20">
                                         <div className="w-32">
-                                            <CustomDropdown options={opcionesAnios.map(a => ({ value: a, label: a === 'Todos' ? 'Histórico' : a }))} selectedValue={tendenciaAnio} onSelect={setTendenciaAnio} />
+                                            <CustomDropdown options={opcionesAnios.map(a => ({ value: a, label: a === 'Todos' ? 'Histórico' : a }))} selectedValue={tendenciaAnio} onSelect={setTendenciaAnio} color="purple" />
                                         </div>
                                     </div>
                                 </div>

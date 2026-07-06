@@ -85,16 +85,16 @@ export default function HistorialCaja() {
 
                     {/* Contenedor Adaptativo de Pestañas (Intercambia colores dinámicamente según el contexto) */}
                     <div className={`flex gap-2 p-1.5 backdrop-blur-md w-full md:max-w-sm rounded-2xl border transition-all duration-300 shrink-0 shadow-sm ${activeTab === 'Aceptada'
-                            ? 'bg-emerald-50/70 border-emerald-200/50'
-                            : 'bg-rose-50/70 border-rose-200/50'
+                        ? 'bg-emerald-50/70 border-emerald-200/50'
+                        : 'bg-rose-50/70 border-rose-200/50'
                         }`}>
                         {/* Botón Pestaña Aprobadas */}
                         <button
                             type="button"
                             onClick={() => { setActiveTab('Aceptada'); setCurrentPage(1); }}
                             className={`w-full py-2.5 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === 'Aceptada'
-                                    ? 'bg-white text-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.15)] border border-emerald-100'
-                                    : 'text-emerald-700/60 hover:text-emerald-800 hover:bg-white/30'
+                                ? 'bg-white text-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.15)] border border-emerald-100'
+                                : 'text-emerald-700/60 hover:text-emerald-800 hover:bg-white/30'
                                 }`}
                         >
                             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
@@ -108,8 +108,8 @@ export default function HistorialCaja() {
                             type="button"
                             onClick={() => { setActiveTab('Rechazada'); setCurrentPage(1); }}
                             className={`w-full py-2.5 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === 'Rechazada'
-                                    ? 'bg-white text-rose-600 shadow-[0_4px_12px_rgba(244,63,94,0.15)] border border-rose-100'
-                                    : 'text-rose-700/60 hover:text-rose-800 hover:bg-white/30'
+                                ? 'bg-white text-rose-600 shadow-[0_4px_12px_rgba(244,63,94,0.15)] border border-rose-100'
+                                : 'text-rose-700/60 hover:text-rose-800 hover:bg-white/30'
                                 }`}
                         >
                             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
@@ -119,13 +119,13 @@ export default function HistorialCaja() {
                         </button>
                     </div>
 
-                    {/* Componente Barra de Búsqueda */}
+                    {/* Componente Barra de Búsqueda (Con borde y foco en color amber) */}
                     <div className="relative w-full md:w-96">
                         <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input
                             type="text"
                             placeholder="Buscar por Contribuyente o DNI..."
-                            className="w-full h-[48px] pl-12 pr-4 bg-white border border-slate-200/80 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-[#0F4C81]/10 focus:border-[#0F4C81] outline-none transition-all shadow-sm"
+                            className="w-full h-[48px] pl-12 pr-4 bg-white border border-slate-200/80 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all shadow-sm"
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />
@@ -134,6 +134,17 @@ export default function HistorialCaja() {
 
                 {/* --- PANEL DE DATOS EN FORMATO TABULAR --- */}
                 <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col w-full overflow-hidden">
+
+                    {/* Barra Superior con Contador de Registros (Usando el Total Global Filtrado en lugar de la Paginación) */}
+                    <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50/60 border border-amber-100/80 rounded-xl text-[11px] font-bold text-amber-700 uppercase tracking-wider shadow-sm select-none">
+                                <span className="font-black text-amber-800 text-[11px]">{datosFiltradosGlobales.length}</span>
+                                movimiento(s) en historial
+                            </span>
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -160,7 +171,7 @@ export default function HistorialCaja() {
                                     )}
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-slate-50 text-[13px]">
                                 {loadingCaja ? (
                                     <tr><td colSpan={activeTab === 'Aceptada' ? "6" : "5"} className="py-12 text-center text-sm font-bold text-slate-400">Accediendo a registros...</td></tr>
                                 ) : datosPaginados.length === 0 ? (

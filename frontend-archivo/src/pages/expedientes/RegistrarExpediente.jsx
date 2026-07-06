@@ -270,13 +270,14 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
   const readOnlyStyles = "w-full h-[48px] px-4 border border-slate-100 bg-slate-100/50 text-slate-500 rounded-2xl text-[13px] font-extrabold outline-none cursor-not-allowed flex items-center";
   const labelStyles = "block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2";
 
+  // ACTUALIZACIÓN DE ESTILOS: Se ajustó el resplandor activo al color de la cabecera (Fuchsia)
   const getInputStyles = (value) => {
     const isError = validated && (!value || String(value).trim() === '');
-    return `${inputBaseStyles} ${isError ? 'border-rose-300 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10' : 'border-slate-200 focus:bg-white focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/10 shadow-sm'}`;
+    return `${inputBaseStyles} ${isError ? 'border-rose-300 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10' : 'border-slate-200 focus:bg-white focus:border-fuchsia-600 focus:ring-2 focus:ring-fuchsia-600/10 shadow-sm'}`;
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-8 relative selection:bg-blue-100 selection:text-blue-900 pb-24 text-left">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-8 relative selection:bg-fuchsia-100 selection:text-fuchsia-900 pb-24 text-left">
       <div className="max-w-[1200px] w-full mx-auto space-y-6 animate-fade-in">
 
         {/* BOTÓN SUPERIOR DE RETORNO CONTROLADO */}
@@ -288,16 +289,16 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
         </div>
 
         {/* CABECERA PRINCIPAL */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-lime-500/15 via-lime-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-lime-200/60 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
-          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-lime-300 pointer-events-none"></div>
-          <div className="w-10 h-10 rounded-xl bg-lime-500/15 border border-lime-200/50 flex items-center justify-center text-lime-700 relative z-10 shadow-sm shrink-0">
+        <div className="relative overflow-hidden bg-gradient-to-r from-fuchsia-500/15 via-fuchsia-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-fuchsia-200/80 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
+          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-fuchsia-300 pointer-events-none"></div>
+          <div className="w-10 h-10 rounded-xl bg-fuchsia-600/15 border border-fuchsia-200/60 flex items-center justify-center text-fuchsia-600 relative z-10 shadow-sm shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </div>
           <div className="flex flex-col relative z-10 text-left">
             <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Registrar Documento</h1>
-            <span className="text-[11px] font-black text-lime-800 mt-1.5 uppercase tracking-wider">Trámite de ingreso al área funcional</span>
+            <span className="text-[11px] font-black text-fuchsia-700 mt-1.5 uppercase tracking-wider">Trámite de ingreso al área funcional</span>
           </div>
         </div>
 
@@ -308,7 +309,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
           <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
 
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-              <div className="w-1.5 h-5 bg-lime-500 rounded-full shadow-sm"></div>
+              {/* Se cambió el color del indicador vertical a Fuchsia para sincronía */}
+              <div className="w-1.5 h-5 bg-fuchsia-500 rounded-full shadow-sm"></div>
               <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest">
                 {esComprobante ? 'Información del Comprobante de Pago' : 'Información General'}
               </span>
@@ -327,6 +329,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     options={tipos}
                     selectedValue={formData.tipo_documento_id}
                     onSelect={handleTipoDocumentoSelect}
+                    color="fuchsia" // <-- Asignamos la propiedad de color creada previamente en el componente
                   />
                 </div>
                 {validated && !formData.tipo_documento_id && (
@@ -483,7 +486,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
               {/* CAJA DE TEXTO ENRIQUECIDA (DESCRIPCIÓN / ASUNTO) - DISPONIBLE EN AMBOS FLUJOS */}
               <div className="md:col-span-12">
                 <label htmlFor="editor_descripcion" className={labelStyles}>Descripción / Asunto</label>
-                <div className="w-full border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden focus-within:ring-4 focus-within:ring-[#0F4C81]/10 focus-within:border-[#0F4C81] focus-within:bg-white transition-all duration-300 shadow-inner shadow-slate-100/50">
+                {/* Se ajustó el foco del textarea a fuchsia-600 para que acompañe al diseño general */}
+                <div className="w-full border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden focus-within:ring-4 focus-within:ring-fuchsia-600/10 focus-within:border-fuchsia-600 focus-within:bg-white transition-all duration-300 shadow-inner shadow-slate-100/50">
                   <div className="bg-slate-100/60 border-b border-slate-200 px-3 py-2 flex gap-2 select-none">
                     <button type="button" onClick={() => ejecutComando('bold')} className="w-8 h-8 flex items-center justify-center text-sm font-extrabold rounded-lg text-slate-600 hover:bg-white hover:shadow-sm active:bg-slate-200 transition-all" title="Negrita">B</button>
                     <button type="button" onClick={() => ejecutComando('underline')} className="w-8 h-8 flex items-center justify-center text-sm underline rounded-lg text-slate-600 hover:bg-white hover:shadow-sm active:bg-slate-200 transition-all" title="Subrayado">U</button>
@@ -511,6 +515,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       options={areas}
                       selectedValue={formData.area_origen_id}
                       onSelect={(val) => handleInputChange('area_origen_id', val)}
+                      color="fuchsia" // <-- Asignamos la propiedad de color
                     />
                   </div>
                   {validated && !formData.area_origen_id && (
@@ -574,7 +579,8 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
             <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-5 bg-lime-500 rounded-full shadow-sm"></div>
+                  {/* Se cambió el color del indicador vertical a Fuchsia para sincronía */}
+                  <div className="w-1.5 h-5 bg-fuchsia-500 rounded-full shadow-sm"></div>
                   <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest">Vigencia Documental *</span>
                 </div>
 
@@ -602,6 +608,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                           options={conservacionOptions}
                           selectedValue={formData.tiempo_conservacion}
                           onSelect={(val) => handleInputChange('tiempo_conservacion', val)}
+                          color="fuchsia" // <-- Asignamos la propiedad de color
                         />
                       </div>
                       {validated && !formData.tiempo_conservacion && (
@@ -631,6 +638,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
             <button type="button" onClick={handleTryExit} className="px-6 py-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all shadow-sm">
               Cancelar
             </button>
+            {/* Se mantiene el botón inferior con su degradado azul estandarizado general del sistema */}
             <button type="submit" className="px-6 py-3.5 rounded-2xl font-black text-white text-[12px] uppercase tracking-widest bg-gradient-to-r from-[#0F4C81] to-blue-700 shadow-[0_4px_15px_rgba(15,76,129,0.2)] hover:-translate-y-0.5 transition-all">
               Registrar Documento
             </button>

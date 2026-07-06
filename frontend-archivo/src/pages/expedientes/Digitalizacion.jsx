@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useExpedientes } from '../../context/useExpedientes';
 import api from '../../services/api';
 import { PDFDocument } from 'pdf-lib';
+import { Chart } from 'chart.js/auto';
 
 export default function DigitalizacionScreen({ triggerToast }) {
   const { expedientes: dataGlobal, refrescarData } = useExpedientes();
-  const expedientes = dataGlobal || [];
+  const expedientes = useMemo(() => dataGlobal || [], [dataGlobal]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,6 +33,9 @@ export default function DigitalizacionScreen({ triggerToast }) {
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [busquedaSelect, setBusquedaSelect] = useState('');
   const selectContainerRef = useRef(null);
+
+  const chartAvanceRef = useRef(null);
+  const instanceAvanceRef = useRef(null);
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -68,12 +72,12 @@ export default function DigitalizacionScreen({ triggerToast }) {
     return fallback;
   };
 
-  const digitalizados = expedientes.filter(e => e.digitalizado === 1 || e.digitalizado === true);
-  const pendientes = expedientes.filter(e => e.digitalizado === 0 || e.digitalizado === false || !e.digitalizado);
+  const metricasYListas = useMemo(() => {
+    const digitalizados = expedientes.filter(e => e.digitalizado === 1 || e.digitalizado === true);
+    const pendientes = expedientes.filter(e => e.digitalizado === 0 || e.digitalizado === false || !e.digitalizado);
 
-  const porcentaje = expedientes.length === 0 ? 0 : Math.round((digitalizados.length / expedientes.length) * 100);
+    const porcentaje = expedientes.length === 0 ? 0 : Math.round((digitalizados.length / expedientes.length) * 100);
 
-  const calcularMemoriaUsada = () => {
     let totalBytes = expedientes.reduce((acc, exp) => {
       let size = 0;
       if (exp.archivos && Array.isArray(exp.archivos)) {
@@ -83,36 +87,103 @@ export default function DigitalizacionScreen({ triggerToast }) {
       }
       return acc + size;
     }, 0);
-    let megabytes = totalBytes / (1024 * 1024);
-    if (megabytes === 0 && digitalizados.length > 0) {
-      megabytes = digitalizados.length * 1.85;
-    }
-    return megabytes.toFixed(2);
-  };
-  const memoriaUsadaMB = calcularMemoriaUsada();
 
-  const tablaFiltrada = digitalizados.filter(e => {
-    const numExp = safeText(e.numero_expediente, '').toLowerCase();
-    const tituloExp = safeText(e.titulo, '').toLowerCase();
-    const termino = searchTerm.toLowerCase();
-    return numExp.includes(termino) || tituloExp.includes(termino);
-  });
+    let bytesFinales = totalBytes;
+    if (totalBytes === 0 && digitalizados.length > 0) {
+      bytesFinales = digitalizados.length * 1.85 * 1024 * 1024;
+    }
+
+    const formatearAlmacenamiento = (bytes) => {
+      if (bytes === 0) return { valor: '0.00', unidad: 'MB' };
+      const k = 1024;
+      const unidades = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+      let i = Math.floor(Math.log(bytes) / Math.log(k));
+      if (i < 2) i = 2;
+
+      const valor = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
+      return { valor, unidad: unidades[i] };
+    };
+
+    const almacenamiento = formatearAlmacenamiento(bytesFinales);
+
+    const opcionesDropdown = pendientes.map(exp => ({
+      id: exp.id,
+      numero: safeText(exp.numero_expediente, 'S/N'),
+      titulo: safeText(exp.titulo, 'Sin título'),
+      area: safeText(exp.area_origen || exp.area_origen_id, 'Área no especificada')
+    }));
+
+    return {
+      digitalizados,
+      pendientes,
+      porcentaje,
+      almacenamiento,
+      opcionesDropdown
+    };
+  }, [expedientes]);
+
+  const { digitalizados, pendientes, porcentaje, almacenamiento, opcionesDropdown } = metricasYListas;
+
+  const tablaFiltrada = useMemo(() => {
+    return digitalizados.filter(e => {
+      const numExp = safeText(e.numero_expediente, '').toLowerCase();
+      const tituloExp = safeText(e.titulo, '').toLowerCase();
+      const termino = searchTerm.toLowerCase();
+      return numExp.includes(termino) || tituloExp.includes(termino);
+    });
+  }, [digitalizados, searchTerm]);
+
+  const opcionesFiltradas = useMemo(() => {
+    return opcionesDropdown.filter(opt =>
+      opt.numero.toLowerCase().includes(busquedaSelect.toLowerCase()) ||
+      opt.titulo.toLowerCase().includes(busquedaSelect.toLowerCase()) ||
+      opt.area.toLowerCase().includes(busquedaSelect.toLowerCase())
+    );
+  }, [opcionesDropdown, busquedaSelect]);
 
   const totalPages = Math.ceil(tablaFiltrada.length / ITEMS_PER_PAGE);
   const currentData = tablaFiltrada.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const opcionesDropdown = pendientes.map(exp => ({
-    id: exp.id,
-    numero: safeText(exp.numero_expediente, 'S/N'),
-    titulo: safeText(exp.titulo, 'Sin título'),
-    area: safeText(exp.area_origen || exp.area_origen_id, 'Área no especificada')
-  }));
+  useEffect(() => {
+    if (!chartAvanceRef.current) return;
 
-  const opcionesFiltradas = opcionesDropdown.filter(opt =>
-    opt.numero.toLowerCase().includes(busquedaSelect.toLowerCase()) ||
-    opt.titulo.toLowerCase().includes(busquedaSelect.toLowerCase()) ||
-    opt.area.toLowerCase().includes(busquedaSelect.toLowerCase())
-  );
+    if (instanceAvanceRef.current) {
+      instanceAvanceRef.current.destroy();
+      instanceAvanceRef.current = null;
+    }
+
+    const ctx = chartAvanceRef.current.getContext('2d');
+
+    instanceAvanceRef.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Digitalizados', 'Restantes en Físico'],
+        datasets: [{
+          data: [digitalizados.length, pendientes.length],
+          backgroundColor: ['#10b981', '#f1f5f9'],
+          borderWidth: 0,
+          hoverOffset: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '85%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true }
+        }
+      }
+    });
+
+    return () => {
+      if (instanceAvanceRef.current) {
+        instanceAvanceRef.current.destroy();
+        instanceAvanceRef.current = null;
+      }
+    };
+  }, [digitalizados, pendientes]);
 
   const handleDropdownChange = (val) => {
     if (files.length > 0) {
@@ -291,211 +362,289 @@ export default function DigitalizacionScreen({ triggerToast }) {
   const limiteCasiLleno = pesoTotalMB > 4.5;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
+    <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24 text-left">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
 
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-1.5 h-8 bg-[#FFC107] rounded-full shadow-sm"></div>
-          <div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Digitalización Documental</h2>
-            <p className="text-[13px] font-medium text-slate-400 mt-0.5">Asociación y almacenamiento digital de expedientes registrados</p>
+        <div className="relative overflow-hidden bg-gradient-to-r from-lime-500/15 via-lime-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-lime-200/60 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 mb-8 z-40">
+          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-lime-300 pointer-events-none"></div>
+          <div className="w-10 h-10 rounded-xl bg-lime-500/15 border border-lime-200/50 flex items-center justify-center text-lime-700 relative z-10 shadow-sm shrink-0">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+          </div>
+          <div className="flex flex-col relative z-10 text-left">
+            <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Digitalización</h1>
+            <span className="text-[11px] font-black text-lime-800 mt-1.5 uppercase tracking-wider">Asociación y almacenamiento de Documentos</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-              <div className="w-1.5 h-5 bg-[#0F4C81] rounded-full shadow-sm"></div>
-              <h3 className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Cargar Archivo Digital</h3>
-            </div>
-
-            <div className="mb-6 relative z-30" ref={selectContainerRef}>
-              <label className="block text-[11px] font-extrabold text-slate-500 mb-2 tracking-widest uppercase">
-                Expediente Físico a Digitalizar *
-              </label>
-
-              <div className={`w-full border rounded-2xl bg-slate-50 overflow-hidden transition-all duration-300 ${isSelectOpen ? 'border-[#0F4C81] ring-4 ring-[#0F4C81]/10 bg-white shadow-sm' : 'border-slate-200 hover:border-slate-300 hover:bg-white'}`}>
-                <div className="flex items-center px-4 h-[48px]">
-                  <span className="text-slate-400 mr-3">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  </span>
-                  <input
-                    type="text"
-                    className="w-full h-full bg-transparent text-[13px] font-semibold text-slate-700 outline-none placeholder-slate-400"
-                    placeholder="Buscar por N° expediente, título o área..."
-                    value={isSelectOpen ? busquedaSelect : (selectedExpId ? opcionesDropdown.find(o => o.id === selectedExpId)?.numero + ' — ' + opcionesDropdown.find(o => o.id === selectedExpId)?.titulo : '')}
-                    onChange={(e) => {
-                      setBusquedaSelect(e.target.value);
-                      setIsSelectOpen(true);
-                      if (selectedExpId) setSelectedExpId('');
-                    }}
-                    onClick={() => setIsSelectOpen(true)}
-                  />
-                  {selectedExpId && !isSelectOpen && (
-                    <button type="button" onClick={() => setSelectedExpId('')} className="text-slate-400 hover:text-rose-500 ml-2 p-1 transition-colors">
-                      ✕
-                    </button>
-                  )}
-                  <button type="button" onClick={() => setIsSelectOpen(!isSelectOpen)} className="text-slate-400 hover:text-[#0F4C81] ml-2 p-1 transition-colors">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 items-stretch">
+          <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="w-1.5 h-5 bg-emerald-600 rounded-full shadow-sm"></div>
+                <h3 className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Asociar Archivo Digital</h3>
               </div>
 
-              {isSelectOpen && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-[300px] overflow-y-auto py-2 z-50 animate-fade-in scrollbar-hide">
-                  <div className="px-4 pb-2 mb-2 border-b border-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-                    {opcionesFiltradas.length} resultados pendientes
+              <div className="mb-6 relative z-30" ref={selectContainerRef}>
+                <label className="block text-[11px] font-extrabold text-slate-500 mb-2 tracking-widest uppercase">
+                  Documento Físico a Digitalizar *
+                </label>
+
+                <div className={`w-full border rounded-2xl bg-slate-50 overflow-hidden transition-all duration-300 ${isSelectOpen ? 'border-emerald-600 ring-4 ring-emerald-600/10 bg-white shadow-sm' : 'border-slate-200 hover:border-slate-300 hover:bg-white'}`}>
+                  <div className="flex items-center px-4 h-[48px]">
+                    <span className="text-slate-400 mr-3">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full h-full bg-transparent text-[13px] font-semibold text-slate-700 outline-none placeholder-slate-400"
+                      placeholder="Buscar por N° Expediente, Documento, Título o Área..."
+                      value={isSelectOpen ? busquedaSelect : (selectedExpId ? opcionesDropdown.find(o => o.id === selectedExpId)?.numero + ' — ' + opcionesDropdown.find(o => o.id === selectedExpId)?.titulo : '')}
+                      onChange={(e) => {
+                        setBusquedaSelect(e.target.value);
+                        setIsSelectOpen(true);
+                        if (selectedExpId) setSelectedExpId('');
+                      }}
+                      onClick={() => setIsSelectOpen(true)}
+                    />
+                    {selectedExpId && !isSelectOpen && (
+                      <button type="button" onClick={() => setSelectedExpId('')} className="text-slate-400 hover:text-rose-500 ml-2 p-1 transition-colors">
+                        ✕
+                      </button>
+                    )}
+                    <button type="button" onClick={() => setIsSelectOpen(!isSelectOpen)} className="text-slate-400 hover:text-emerald-600 ml-2 p-1 transition-colors">
+                      <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
                   </div>
-                  {opcionesFiltradas.length > 0 ? (
-                    opcionesFiltradas.map(opt => (
-                      <div
-                        key={opt.id}
-                        onClick={() => {
-                          handleDropdownChange(opt.id);
-                          setIsSelectOpen(false);
-                          setBusquedaSelect('');
-                        }}
-                        className={`px-5 py-3 cursor-pointer transition-all border-l-2 border-transparent hover:border-[#0F4C81] hover:bg-blue-50/50 group ${selectedExpId === opt.id ? 'bg-blue-50 border-[#0F4C81]' : ''}`}
-                      >
-                        <div className="flex justify-between items-start gap-4">
-                          <div className="min-w-0">
-                            <p className="text-[13px] font-black text-[#0F4C81] truncate">{opt.numero}</p>
-                            <p className="text-[12px] font-semibold text-slate-600 truncate mt-0.5 group-hover:text-slate-800" title={opt.titulo}>{opt.titulo}</p>
-                            <div className="flex items-center gap-1.5 mt-1.5">
-                              <svg className="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                              <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest truncate">{opt.area}</p>
+                </div>
+
+                {isSelectOpen && (
+                  <div className="absolute top-full left-0 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-[300px] overflow-y-auto py-2 z-50 animate-fade-in scrollbar-hide">
+                    <div className="px-4 pb-2 mb-2 border-b border-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                      {opcionesFiltradas.length} resultados pendientes
+                    </div>
+                    {opcionesFiltradas.length > 0 ? (
+                      opcionesFiltradas.map(opt => (
+                        <div
+                          key={opt.id}
+                          onClick={() => {
+                            handleDropdownChange(opt.id);
+                            setIsSelectOpen(false);
+                            setBusquedaSelect('');
+                          }}
+                          className={`px-5 py-3 cursor-pointer transition-all border-l-2 border-transparent hover:border-emerald-600 hover:bg-emerald-50/30 group ${selectedExpId === opt.id ? 'bg-blue-50 border-[#0F4C81]' : ''}`}
+                        >
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-black text-[#0F4C81] truncate">{opt.numero}</p>
+                              <p className="text-[12px] font-semibold text-slate-600 truncate mt-0.5 group-hover:text-slate-800" title={opt.titulo}>{opt.titulo}</p>
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <svg className="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest truncate">{opt.area}</p>
+                              </div>
                             </div>
                           </div>
                         </div>
+                      ))
+                    ) : (
+                      <div className="px-5 py-10 text-center flex flex-col items-center">
+                        <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3"><span className="text-xl opacity-50">📭</span></div>
+                        <p className="text-[13px] font-extrabold text-slate-600">No se encontraron expedientes</p>
+                        <p className="text-[11px] font-medium text-slate-400 mt-1">Prueba buscando con otro término o área.</p>
                       </div>
-                    ))
-                  ) : (
-                    <div className="px-5 py-10 text-center flex flex-col items-center">
-                      <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3"><span className="text-xl opacity-50">📭</span></div>
-                      <p className="text-[13px] font-extrabold text-slate-600">No se encontraron expedientes</p>
-                      <p className="text-[11px] font-medium text-slate-400 mt-1">Prueba buscando con otro término o área.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className={`relative p-8 rounded-3xl border-2 transition-all duration-300 ${!selectedExpId ? 'border-dashed border-slate-200 bg-slate-50/40 opacity-80' : (files.length > 0 ? 'border-solid border-emerald-400 bg-emerald-50/50' : 'border-dashed border-slate-300 bg-slate-50/50 hover:bg-white hover:border-emerald-600 z-10')}`}>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  multiple
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="file-upload"
+                  disabled={!selectedExpId}
+                />
+
+                {!selectedExpId ? (
+                  <div className="flex flex-col items-center justify-center w-full h-full min-h-[140px] select-none">
+                    <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center shadow-sm mb-4">
+                      <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className={`relative p-8 rounded-3xl border-2 transition-all duration-300 ${!selectedExpId ? 'border-dashed border-slate-200 bg-slate-50/40 opacity-80' : (files.length > 0 ? 'border-solid border-emerald-400 bg-emerald-50/50' : 'border-dashed border-slate-300 bg-slate-50/50 hover:bg-white hover:border-[#0F4C81] z-10')}`}>
-              <input
-                type="file"
-                accept=".pdf"
-                multiple
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                id="file-upload"
-                disabled={!selectedExpId}
-              />
-
-              {!selectedExpId ? (
-                <div className="flex flex-col items-center justify-center w-full h-full min-h-[140px] select-none">
-                  <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center shadow-sm mb-4">
-                    <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    <p className="text-[14px] font-extrabold text-slate-500 mb-1 uppercase tracking-wider">Carga Bloqueada</p>
+                    <p className="text-[11px] font-semibold text-slate-400 text-center px-4">Seleccione primero un documento en el buscador superior para habilitar la digitalización.</p>
                   </div>
-                  <p className="text-[14px] font-extrabold text-slate-500 mb-1 uppercase tracking-wider">Carga Bloqueada</p>
-                  <p className="text-[11px] font-semibold text-slate-400 text-center px-4">Seleccione primero un expediente en el buscador superior para habilitar la digitalización.</p>
-                </div>
-              ) : files.length === 0 ? (
-                <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full min-h-[140px]">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_2px_15px_rgba(15,76,129,0.08)] mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8 text-[#0F4C81]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                  </div>
-                  <p className="text-[14px] font-bold text-slate-600 mb-1">Haga clic o arrastre sus PDFs aquí</p>
-                  <p className="text-[11px] font-semibold text-slate-400">Auditoría automática de folios activa. Límite: 5.00 MB</p>
-                </label>
-              ) : (
-                <div className="flex flex-col w-full animate-fade-in">
-                  <div className="w-full max-h-[180px] overflow-y-auto space-y-3 pr-2 mb-4 scrollbar-hide">
-                    {files.map((f, i) => (
-                      <div key={i} className="flex justify-between items-center bg-white p-3 rounded-2xl border border-emerald-100 shadow-[0_2px_10px_rgba(16,185,129,0.05)] animate-fade-in">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                ) : files.length === 0 ? (
+                  <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full min-h-[140px]">
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_2px_15px_rgba(16,185,129,0.08)] mb-4 group-hover:scale-110 transition-transform">
+                      <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                    </div>
+                    <p className="text-[14px] font-bold text-slate-600 mb-1">Haga clic o arrastre sus PDFs aquí</p>
+                    <p className="text-[11px] font-semibold text-slate-400">Auditoría automática de folios activa. Límite: 5.00 MB</p>
+                  </label>
+                ) : (
+                  <div className="flex flex-col w-full animate-fade-in">
+                    <div className="w-full max-h-[180px] overflow-y-auto space-y-3 pr-2 mb-4 scrollbar-hide">
+                      {files.map((f, i) => (
+                        <div key={i} className="flex justify-between items-center bg-white p-3 rounded-2xl border border-emerald-100 shadow-[0_2px_10px_rgba(16,185,129,0.05)] animate-fade-in">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <div className="flex flex-col">
+                              <p className="text-[12px] font-extrabold text-slate-700 truncate max-w-[180px] sm:max-w-[300px]" title={f.name}>{f.name}</p>
+                              <p className="text-[10px] text-slate-400 font-bold mt-0.5">{(f.size / (1024 * 1024)).toFixed(2)} MB</p>
+                            </div>
                           </div>
-                          <div className="flex flex-col">
-                            <p className="text-[12px] font-extrabold text-slate-700 truncate max-w-[180px] sm:max-w-[300px]" title={f.name}>{f.name}</p>
-                            <p className="text-[10px] text-slate-400 font-bold mt-0.5">{(f.size / (1024 * 1024)).toFixed(2)} MB</p>
-                          </div>
+                          <button type="button" onClick={() => removeFile(i)} className="w-8 h-8 flex items-center justify-center text-rose-400 hover:text-white hover:bg-rose-500 rounded-xl transition-all shadow-sm">✕</button>
                         </div>
-                        <button type="button" onClick={() => removeFile(i)} className="w-8 h-8 flex items-center justify-center text-rose-400 hover:text-white hover:bg-rose-500 rounded-xl transition-all shadow-sm">✕</button>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <div className="flex justify-between items-center w-full pt-4 border-t border-emerald-100">
+                      <p className={`text-[12px] font-black ${limiteCasiLleno ? 'text-rose-500' : 'text-emerald-700'}`}>
+                        Total: {pesoTotalMB} / 5.00 MB
+                      </p>
+                      <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-4 py-2 rounded-xl transition-colors duration-300"
+                      >
+                        + Agregar más
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center w-full pt-4 border-t border-emerald-100">
-                    <p className={`text-[12px] font-black ${limiteCasiLleno ? 'text-rose-500' : 'text-emerald-600'}`}>Total: {pesoTotalMB} / 5.00 MB</p>
-                    <label htmlFor="file-upload" className="cursor-pointer text-[11px] font-extrabold uppercase tracking-wider text-[#0F4C81] bg-blue-50 hover:bg-[#0F4C81] hover:text-white px-4 py-2 rounded-xl transition-colors">+ Agregar más</label>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            <div className="mt-6 flex justify-end relative z-10">
+            <div className="mt-4 flex justify-end relative z-10">
               <button
                 type="button"
                 onClick={handleUpload}
                 disabled={isUploading || files.length === 0 || !selectedExpId}
-                className={`h-[48px] px-8 rounded-2xl text-white text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${isUploading || files.length === 0 || !selectedExpId ? 'bg-slate-300 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] hover:shadow-lg hover:-translate-y-0.5'}`}
+                className={`h-[48px] px-8 rounded-2xl text-white text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${isUploading || files.length === 0 || !selectedExpId
+                  ? 'bg-slate-300 cursor-not-allowed shadow-none'
+                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 shadow-[0_8px_20px_-6px_rgba(16,185,129,0.4)] hover:shadow-lg hover:-translate-y-0.5'
+                  }`}
               >
-                {isUploading ? 'Procesando...' : `📤 Subir ${files.length} documento(s)`}
+                {isUploading ? 'Procesando...' : `Subir ${files.length} documento(s)`}
               </button>
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between">
+          <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                <div className="w-1.5 h-5 bg-[#0F4C81] rounded-full shadow-sm"></div>
+                <div className="w-1.5 h-5 bg-emerald-600 rounded-full shadow-sm"></div>
                 <h3 className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Resumen General</h3>
               </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-                  <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Expedientes</span>
-                  <span className="font-black text-lg text-slate-700">{expedientes.length}</span>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="relative overflow-hidden bg-gradient-to-r from-blue-500/10 via-blue-50/30 to-transparent p-4 rounded-2xl border border-blue-100/60 shadow-[0_4px_20px_rgba(59,130,246,0.01)] flex items-center justify-between h-[82px]">
+                  <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-blue-300 pointer-events-none"></div>
+                  <div className="flex flex-col text-left justify-center h-full min-w-0">
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-wider leading-tight mb-1 truncate">Total Doc.</span>
+                    <span className="font-black text-xl text-blue-700 tracking-tight leading-none">{expedientes.length}</span>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-blue-600 shadow-[0_2px_8px_rgba(59,130,246,0.06)] border border-blue-50 shrink-0 ml-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-blue-50/50 border border-blue-50 rounded-2xl">
-                  <span className="text-[11px] font-extrabold text-[#0F4C81] uppercase tracking-wider">Digitalizados</span>
-                  <span className="font-black text-lg text-[#0F4C81]">{digitalizados.length}</span>
+
+                <div className="relative overflow-hidden bg-gradient-to-r from-emerald-500/10 via-emerald-50/30 to-transparent p-4 rounded-2xl border border-emerald-100/60 shadow-[0_4px_20px_rgba(16,185,129,0.01)] flex items-center justify-between h-[82px]">
+                  <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-emerald-300 pointer-events-none"></div>
+                  <div className="flex flex-col text-left justify-center h-full min-w-0">
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider leading-tight mb-1 truncate">Digitalizados</span>
+                    <span className="font-black text-xl text-emerald-700 tracking-tight leading-none">{digitalizados.length}</span>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-emerald-600 shadow-[0_2px_8px_rgba(16,185,129,0.06)] border border-emerald-50 shrink-0 ml-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-amber-50/50 border border-amber-50 rounded-2xl">
-                  <span className="text-[11px] font-extrabold text-amber-600 uppercase tracking-wider">En Físico</span>
-                  <span className="font-black text-lg text-amber-600">{pendientes.length}</span>
+
+                <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/10 via-amber-50/30 to-transparent p-4 rounded-2xl border border-amber-100/60 shadow-[0_4px_20px_rgba(245,158,11,0.01)] flex items-center justify-between h-[82px]">
+                  <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-amber-300 pointer-events-none"></div>
+                  <div className="flex flex-col text-left justify-center h-full min-w-0">
+                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider leading-tight mb-1 truncate">En Físico</span>
+                    <span className="font-black text-xl text-amber-700 tracking-tight leading-none">{pendientes.length}</span>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-amber-600 shadow-[0_2px_8px_rgba(245,158,11,0.06)] border border-amber-50 shrink-0 ml-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-16.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-16.25v14.25" />
+                    </svg>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-purple-50/50 border border-purple-50 rounded-2xl">
-                  <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">Memoria Usada</span>
-                  <span className="font-black text-lg text-purple-600">{memoriaUsadaMB} MB</span>
+
+                <div className="relative overflow-hidden bg-gradient-to-r from-purple-500/10 via-purple-50/30 to-transparent p-4 rounded-2xl border border-purple-100/60 shadow-[0_4px_20px_rgba(147,51,234,0.01)] flex items-center justify-between h-[82px]">
+                  <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-purple-300 pointer-events-none"></div>
+                  <div className="flex flex-col text-left justify-center h-full min-w-0">
+                    <span className="text-[10px] font-black text-purple-500 uppercase tracking-wider leading-tight mb-1 truncate">Almacén</span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="font-black text-xl text-purple-700 tracking-tight leading-none">
+                        {almacenamiento.valor}
+                      </span>
+                      <span className="text-[10px] font-bold text-purple-400">
+                        {almacenamiento.unidad}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-purple-600 shadow-[0_2px_8px_rgba(147,51,234,0.06)] border border-purple-50 shrink-0 ml-1">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75" />
+                    </svg>
+                  </div>
                 </div>
+
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-100">
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Avance Digital</span>
-                <span className="text-sm font-black text-emerald-500">{porcentaje}%</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden shadow-inner">
-                <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000 ease-out" style={{ width: `${porcentaje}%` }}></div>
+            <div className="mt-2 flex flex-col items-center">
+              <div className="relative w-full h-[140px] flex items-center justify-center">
+                <canvas ref={chartAvanceRef}></canvas>
+                <div className="absolute flex flex-col items-center justify-center pointer-events-none select-none">
+                  <span className="text-2xl font-black text-slate-800 leading-none">{porcentaje}%</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Cobertura</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col relative z-0">
+          {/* --- BARRA DE HERRAMIENTAS INTEGRADA CON LA IDENTIDAD ESMERALDA DE DIGITALIZACIÓN --- */}
           <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">{tablaFiltrada.length} registro(s) digitalizado(s)</p>
+
+            {/* Badge personalizado con tonos esmeralda/verde premium para matar el azul */}
+            <div className="flex items-center">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/60 border border-emerald-100/80 rounded-xl text-[11px] font-bold text-emerald-700 uppercase tracking-wider shadow-sm select-none">
+                <span className="font-black text-emerald-800 text-[12px]">{tablaFiltrada.length}</span>
+                Documento(s) digitalizado(s)
+              </span>
+            </div>
+
             <div className="relative w-full sm:w-72 group">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm transition-colors group-focus-within:text-[#0F4C81]">🔍</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                </svg>
+              </span>
               <input
                 type="text"
-                placeholder="Buscar expediente..."
+                placeholder="Buscar documento..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-[48px] px-4 pl-11 border border-slate-200 bg-white rounded-2xl text-[13px] focus:bg-white focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300 font-semibold text-slate-700 placeholder-slate-400"
+                className="w-full h-[48px] px-4 pl-11 border border-slate-200 bg-white rounded-2xl text-[13px] focus:bg-white focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 outline-none transition-all duration-300 font-semibold text-slate-700 placeholder-slate-400"
               />
             </div>
           </div>
@@ -504,7 +653,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
             <table className="w-full text-left border-collapse table-fixed">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest select-none bg-white">
-                  <th className="p-5 px-8 w-[20%]">N° Expediente</th>
+                  <th className="p-5 px-8 w-[20%]">N° Exp / Doc</th>
                   <th className="p-5 px-4 w-[35%]">Título del Documento</th>
                   <th className="p-5 px-4 w-[15%]">Clasificación</th>
                   <th className="p-5 px-4 text-center w-[10%]">Folios</th>
@@ -576,7 +725,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Folios en Ficha:</span>
-                    <span className="text-[14px] font-black text-[#0F4C81]">{mismatchData.expected}</span>
+                    <span className="text-[14px] font-black text-rose-500">{mismatchData.expected}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Páginas del PDF:</span>
@@ -698,7 +847,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                   <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 </div>
                 <h3 className="text-lg font-black text-slate-800 mb-2 tracking-tight">Archivos sin subir</h3>
-                <p className="text-[13px] text-slate-500 px-3 leading-relaxed font-medium">Tienes documentos seleccionados que aún no has subido. Si cambias de expediente ahora, <span className="font-bold text-slate-700">se perderán</span>.</p>
+                <p className="text-[13px] text-slate-500 px-3 leading-relaxed font-medium">Tienes documentos seleccionados que aún no has subido. Si cambias de documento ahora, <span className="font-bold text-slate-700">se perderán</span>.</p>
               </div>
               <div className="bg-slate-50/50 px-6 py-5 flex flex-col sm:flex-row justify-center gap-3 border-t border-slate-100">
                 <button type="button" onClick={cancelarCambio} className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all order-2 sm:order-1">No, cancelar</button>
