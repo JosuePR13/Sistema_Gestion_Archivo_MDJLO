@@ -80,13 +80,13 @@ export default function DetalleExpediente({
   };
 
   // ==========================================================================
-  // MOTOR DE PARSING Y NORMALIZACIÓN DE MARCAS DE TIEMPO (DATE TIME)
+  // MOTOR DE PARSING Y NORMALIZACIÓN DE MARCAS DE TIEMPO
   // ==========================================================================
   const formatDateTime = (fechaStr) => {
     if (!fechaStr) return 'Reciente';
     try {
       const fechaObj = new Date(fechaStr);
-      // Método principal: Formatea usando la configuración regional horaria de Perú (es-PE)
+      // Método principal: Formatea usando la configuración regional horaria de Perú
       if (!isNaN(fechaObj.getTime())) {
         return fechaObj.toLocaleString('es-PE', {
           timeZone: 'America/Lima',
@@ -99,7 +99,7 @@ export default function DetalleExpediente({
         }).replace('a. m.', 'a.m.').replace('p. m.', 'p.m.').replace('.', '');
       }
 
-      // Método de respaldo (Fallback): Split manual de cadenas si falla el constructor de fechas nativo
+      // Método de respaldo: Split manual de cadenas si falla el constructor de fechas nativo
       const limpia = fechaStr.replace('T', ' ').split('.')[0];
       const parts = limpia.split(' ');
       if (parts.length === 2) {
@@ -117,11 +117,11 @@ export default function DetalleExpediente({
     }
   };
 
-  // Flag evaluador: Determina si el expediente actual corresponde a un flujo de Comprobante de Pago financiero
+  // Flag evaluador: Determina si el expediente actual corresponde a un flujo de Comprobante de Pago
   const esComprobante = getDocumentTypeName()?.toLowerCase()?.includes('comprobante');
 
   // ==========================================================================
-  // CICLOS DE VIDA INTERNOS (EFFECTS) Y PETICIONES CONCURRENTES (PROMISES)
+  // CICLOS DE VIDA INTERNOS Y PETICIONES CONCURRENTES
   // ==========================================================================
   useEffect(() => {
     const sincronizarCamposMuni = async () => {
@@ -223,7 +223,7 @@ export default function DetalleExpediente({
   };
 
   // ==========================================================================
-  // MOTOR DE TRACKING DINÁMICO: GENERADOR DE STRING DE AUDITORÍA (LOGS INTERNOS)
+  // MOTOR DE TRACKING DINÁMICO: GENERADOR DE STRING DE AUDITORÍA
   // ==========================================================================
   const generarTextoAuditoria = () => {
     const cambios = [];
@@ -242,7 +242,7 @@ export default function DetalleExpediente({
   };
 
   // ==========================================================================
-  // PERSISTENCIA Y PERSISTENCIA RETROACTIVA MEDIANTE PETICIONES HTTP PUT (API REST)
+  // PERSISTENCIA Y PERSISTENCIA RETROACTIVA MEDIANTE PETICIONES HTTP PUT
   // ==========================================================================
   const handleSaveChanges = async () => {
     try {
@@ -291,7 +291,7 @@ export default function DetalleExpediente({
       console.error("Error devuelto por Laravel:", error.response?.data || error.message);
       const erroresBackend = error.response?.data?.errors;
 
-      // Capturador de excepciones de Base de Datos por restricción de unicidad (Unique Keys)
+      // Capturador de excepciones de Base de Datos por restricción de unicidad
       if (erroresBackend && erroresBackend.numero_expediente) {
         setDuplicateMessage(`No se pueden guardar los cambios. El código "${formData.numero_expediente}" ya le pertenece a otro documento registrado en el sistema.`);
         setShowDuplicateModal(true);
@@ -339,7 +339,7 @@ export default function DetalleExpediente({
   const labelStyles = "block text-[11px] font-extrabold text-slate-500 mb-2 tracking-widest uppercase";
 
   // ==========================================================================
-  // RETORNO E INYECCIÓN DE LA CAPA VISUAL JSX (INTERFAZ DE USUARIO)
+  // RETORNO E INYECCIÓN DE LA CAPA VISUAL JSX
   // ==========================================================================
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
@@ -551,7 +551,7 @@ export default function DetalleExpediente({
           </div>
         </div>
 
-        {/* --- COMPONENTE SUB-PANEL COMPUESTO POR PESTAÑAS (TABS GENERALES) --- */}
+        {/* --- COMPONENTE SUB-PANEL COMPUESTO POR PESTAÑAS --- */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
           <div className="flex border-b border-slate-100 bg-slate-50/50 px-6 overflow-x-auto scrollbar-hide">
             {[
@@ -571,7 +571,7 @@ export default function DetalleExpediente({
           </div>
 
           <div className="p-8">
-            {/* PESTAÑA A: Descripción del documento (Textarea o Visor Sanitizado HTML) */}
+            {/* PESTAÑA A: Descripción del documento */}
             {tab === 'info' && (
               <div className="text-sm text-slate-700 leading-relaxed text-left animate-fade-in">
                 {editMode ? (
@@ -671,7 +671,7 @@ export default function DetalleExpediente({
               </div>
             )}
 
-            {/* PESTAÑA C: Historial de Auditoría con línea de tiempo (Timeline) de cambios */}
+            {/* PESTAÑA C: Historial de Auditoría con línea de tiempo de cambios */}
             {tab === 'historial' && (
               <div className="animate-fade-in pl-4">
                 <div className="relative border-l-2 border-slate-200 ml-4 pl-8 space-y-8 text-left">
@@ -703,7 +703,7 @@ export default function DetalleExpediente({
                     ))
                   ) : null}
 
-                  {/* Nodo basal estático: hito primario de indexación del documento */}
+                  {/* Hito primario de indexación del documento */}
                   <div className="relative group">
                     <div className="absolute -left-[41px] top-0 w-5 h-5 rounded-full bg-[#0F4C81] border-4 border-white shadow-sm"></div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1 text-sm">
@@ -711,7 +711,7 @@ export default function DetalleExpediente({
                       <span className="hidden sm:inline text-slate-300">·</span>
                       <span className="text-[11px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-wider">{originalData.created_at ? formatDateTime(originalData.created_at) : 'Apertura'}</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 font-semibold mb-3">Origen: <span className="text-slate-700 font-extrabold">Sistema SGD - SISGEDO</span></p>
+                    <p className="text-[11px] text-slate-400 font-semibold mb-3">Origen: <span className="text-slate-700 font-extrabold">Sistema Gestión Documentaria</span></p>
                     <div className="bg-slate-50 text-slate-500 p-4 rounded-2xl border border-slate-200 font-mono text-[12px] max-w-3xl shadow-inner">
                       [INFO]: Indexado correctamente de forma predeterminada como "Activo" en la base de datos de la municipalidad.
                     </div>
@@ -726,7 +726,7 @@ export default function DetalleExpediente({
             BLOQUE DE MODALES EMERGENTES DE CONFIRMACIÓN Y ADVERTENCIA
             ========================================================================== */}
 
-        {/* MODAL: Alerta por cierre imprevisto con transacciones abiertas en caliente */}
+        {/* MODAL: Alerta por cierre imprevisto con transacciones abiertas */}
         {showExitModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -752,7 +752,7 @@ export default function DetalleExpediente({
           </div>
         )}
 
-        {/* MODAL: Bloqueo por colisión e inserción de códigos duplicados (Unique Keys validation) */}
+        {/* MODAL: Bloqueo por colisión e inserción de códigos duplicados */}
         {showDuplicateModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">

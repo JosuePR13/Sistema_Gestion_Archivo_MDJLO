@@ -81,7 +81,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
   }, [searchTerm]);
 
   // ==========================================================================
-  // FUNCIONES AUXILIARES Y CÓMPUTO DE DATASET (MEMOIZADO)
+  // FUNCIONES AUXILIARES Y CÓMPUTO DE DATASET
   // ==========================================================================
 
   // Parser preventivo: Evita rupturas en renders de objetos complejos o nulos devolviendo strings planos
@@ -248,7 +248,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length === 0) return;
 
-    // Validación preventiva: Sanitización exclusiva de formato mime application/pdf
+    // Validación preventiva: Sanitización exclusiva de formato pdf
     const validPdfs = selectedFiles.filter(f => f.type === 'application/pdf');
     if (validPdfs.length !== selectedFiles.length) {
       if (typeof triggerToast === 'function') triggerToast("⚠️ Solo se permiten archivos PDF.");
@@ -322,7 +322,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     }
   };
 
-  // Abre el panel interno de control de documentos vinculados a un expediente (Gestor Documental)
+  // Abre el panel interno de control de documentos vinculados a un expediente
   const abrirGestor = async (expId, expCode) => {
     const localExp = expedientes.find(e => e.id === expId);
     if (localExp && localExp.archivos && localExp.archivos.length > 0) {
@@ -411,13 +411,13 @@ export default function DigitalizacionScreen({ triggerToast }) {
   const limiteCasiLleno = pesoTotalMB > 4.5;
 
   // ==========================================================================
-  // RENDERIZADO DEL COMPONENTE VISTA INTERFAZ (UI JSX)
+  // RENDERIZADO DEL COMPONENTE VISTA INTERFAZ
   // ==========================================================================
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24 text-left">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
 
-        {/* --- CABECERA DE IDENTIDAD DEL MÓDULO DE DIGITALIZACIÓN --- */}
+        {/* --- CABECERA PRINCIPAL --- */}
         <div className="relative overflow-hidden bg-gradient-to-r from-lime-500/15 via-lime-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-lime-200/60 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 mb-8 z-40">
           <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-lime-300 pointer-events-none"></div>
           <div className="w-10 h-10 rounded-xl bg-lime-500/15 border border-lime-200/50 flex items-center justify-center text-lime-700 relative z-10 shadow-sm shrink-0">
@@ -431,7 +431,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         </div>
 
-        {/* --- PANEL PRINCIPAL DE TRABAJO (FORMULARIO DE CARGA + COMPONENTE ANALÍTICO) --- */}
+        {/* --- PANEL PRINCIPAL DE TRABAJO --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 items-stretch">
 
           {/* SECCIÓN IZQUIERDA: Selector Buscador y Zona de Carga Drag and Drop */}
@@ -688,7 +688,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         </div>
 
-        {/* --- TABLA DE EXPEDIENTES COMPILADOS (CON ANCHOS OPTIMIZADOS) --- */}
+        {/* --- TABLA DE EXPEDIENTES COMPILADOS --- */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col relative z-0">
           <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center">
@@ -780,7 +780,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
         )}
 
         {/* ==========================================================================
-            COMPONENTES MODALES (ANULAR CON FLUJO CONDICIONAL JSX)
+            COMPONENTES MODALES
             ========================================================================== */}
 
         {/* MODAL: Alerta Preventiva por Fallas de Auditoría entre Páginas de PDF y Ficha */}
