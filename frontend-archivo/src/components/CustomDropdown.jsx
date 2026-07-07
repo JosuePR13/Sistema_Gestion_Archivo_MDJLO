@@ -24,6 +24,11 @@ export default function CustomDropdown({
   // DETERMINACIÓN TEXTUAL: Define la etiqueta a pintar en el trigger basándose en el estado de selección
   const textoBoton = optionSeleccionada ? (optionSeleccionada.nombre || optionSeleccionada.label) : placeholder;
 
+  // --- CONTROL DE ACCESIBILIDAD PARA TOOLTIPS (TEXTO PLANO ANTE OBJETOS JSX) ---
+  const titleBotón = optionSeleccionada
+    ? (typeof optionSeleccionada.label === 'string' ? optionSeleccionada.label : (typeof optionSeleccionada.nombre === 'string' ? optionSeleccionada.nombre : placeholder))
+    : placeholder;
+
   // MAPAS DE ESTILOS DINÁMICOS: Mutación cromática limpia según la identidad del módulo
   const themes = {
     blue: {
@@ -32,7 +37,8 @@ export default function CustomDropdown({
       focusActive: 'border-[#0F4C81] ring-4 ring-blue-600/10',
       textActive: 'text-[#0F4C81]',
       bgBadge: 'bg-blue-50',
-      bgItemActive: 'bg-blue-100/70 border-blue-200/80'
+      bgItemActive: 'bg-blue-100/70 border-blue-200/80',
+      textHover: 'hover:text-[#0F4C81]'
     },
     emerald: {
       hoverBorder: 'hover:border-emerald-300',
@@ -40,7 +46,8 @@ export default function CustomDropdown({
       focusActive: 'border-emerald-600 ring-4 ring-emerald-600/10',
       textActive: 'text-emerald-700',
       bgBadge: 'bg-emerald-50',
-      bgItemActive: 'bg-emerald-100/70 border-emerald-200/80'
+      bgItemActive: 'bg-emerald-100/70 border-emerald-200/80',
+      textHover: 'hover:text-emerald-700'
     },
     purple: {
       hoverBorder: 'hover:border-purple-300',
@@ -48,7 +55,8 @@ export default function CustomDropdown({
       focusActive: 'border-purple-600 ring-4 ring-purple-600/10',
       textActive: 'text-purple-700',
       bgBadge: 'bg-purple-50',
-      bgItemActive: 'bg-purple-100/70 border-purple-200/80'
+      bgItemActive: 'bg-purple-100/70 border-purple-200/80',
+      textHover: 'hover:text-purple-700'
     },
     sky: {
       hoverBorder: 'hover:border-sky-300',
@@ -56,7 +64,8 @@ export default function CustomDropdown({
       focusActive: 'border-sky-600 ring-4 ring-sky-600/10',
       textActive: 'text-sky-700',
       bgBadge: 'bg-sky-50',
-      bgItemActive: 'bg-sky-100/70 border-sky-200/80'
+      bgItemActive: 'bg-sky-100/70 border-sky-200/80',
+      textHover: 'hover:text-sky-700'
     },
     fuchsia: {
       hoverBorder: 'hover:border-fuchsia-300',
@@ -64,7 +73,26 @@ export default function CustomDropdown({
       focusActive: 'border-fuchsia-600 ring-4 ring-fuchsia-600/10',
       textActive: 'text-fuchsia-700',
       bgBadge: 'bg-fuchsia-50',
-      bgItemActive: 'bg-fuchsia-100/70 border-fuchsia-200/80'
+      bgItemActive: 'bg-fuchsia-100/70 border-fuchsia-200/80',
+      textHover: 'hover:text-fuchsia-700'
+    },
+    rose: {
+      hoverBorder: 'hover:border-rose-300',
+      hoverShadow: 'hover:shadow-[0_4px_20px_rgba(244,63,94,0.06)]',
+      focusActive: 'border-rose-600 ring-4 ring-rose-600/10',
+      textActive: 'text-rose-700',
+      bgBadge: 'bg-rose-50',
+      bgItemActive: 'bg-rose-100/70 border-rose-200/80',
+      textHover: 'hover:text-rose-700'
+    },
+    pink: {
+      hoverBorder: 'hover:border-pink-300',
+      hoverShadow: 'hover:shadow-[0_4px_20px_rgba(244,63,94,0.06)]',
+      focusActive: 'border-pink-600 ring-4 ring-pink-600/10',
+      textActive: 'text-pink-700',
+      bgBadge: 'bg-pink-50',
+      bgItemActive: 'bg-pink-100/70 border-pink-200/80',
+      textHover: 'hover:text-pink-700'
     }
   };
 
@@ -101,7 +129,7 @@ export default function CustomDropdown({
       >
         {/* TEXTO DE CONTROL SELECCIONADO */}
         <span
-          title={textoBoton}
+          title={titleBotón}
           className={`truncate block mt-0.5 ${uppercase ? 'uppercase tracking-wide' : ''} ${!optionSeleccionada ? 'text-slate-400 font-semibold' : 'text-slate-700 font-extrabold'}`}
         >
           {textoBoton}
@@ -133,6 +161,9 @@ export default function CustomDropdown({
                 const isSelected = selectedValue?.toString() === valActual;
                 const nombrePintar = opt.nombre || opt.label;
 
+                // Forzar que el title de la lista sea un string limpio leyendo 'label' si 'nombre' es un componente de React
+                const titleItem = typeof opt.label === 'string' ? opt.label : (typeof opt.nombre === 'string' ? opt.nombre : '');
+
                 return (
                   <li
                     key={opt.id !== undefined ? opt.id : index}
@@ -142,11 +173,11 @@ export default function CustomDropdown({
                     }}
                     className={`relative px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-200 flex items-center justify-between overflow-hidden text-[12px] ${uppercase ? 'uppercase tracking-wide' : ''} ${isSelected
                       ? `${currentTheme.bgItemActive} ${currentTheme.textActive} font-black border shadow-[0_2px_8px_rgba(0,0,0,0.02)]`
-                      : `text-slate-600 font-bold hover:bg-slate-50 hover:${currentTheme.textActive}`
+                      : `text-slate-600 font-bold hover:bg-slate-50 ${currentTheme.textHover}`
                       }`}
                   >
                     {/* TEXTO DE LA OPCIÓN */}
-                    <span className="truncate relative z-10" title={nombrePintar}>{nombrePintar}</span>
+                    <span className="truncate relative z-10" title={titleItem}>{nombrePintar}</span>
 
                     {/* CHECKMARK VISUAL: Renderizado exclusivo para el elemento activo */}
                     {isSelected && (

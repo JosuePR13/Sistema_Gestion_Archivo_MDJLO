@@ -288,7 +288,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
           </button>
         </div>
 
-        {/* CABECERA PRINCIPAL EN FUCHSIA */}
+        {/* CABECERA PRINCIPAL */}
         <div className="relative overflow-hidden bg-gradient-to-r from-fuchsia-500/15 via-fuchsia-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-fuchsia-200/80 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 z-40">
           <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-fuchsia-300 pointer-events-none"></div>
           <div className="w-10 h-10 rounded-xl bg-fuchsia-600/15 border border-fuchsia-200/60 flex items-center justify-center text-fuchsia-600 relative z-10 shadow-sm shrink-0">
@@ -329,7 +329,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                     options={tipos}
                     selectedValue={formData.tipo_documento_id}
                     onSelect={handleTipoDocumentoSelect}
-                    color="fuchsia" // MODIFICADO: Focus del select mapeado al color del módulo
+                    color="fuchsia"
                   />
                 </div>
                 {validated && !formData.tipo_documento_id && (

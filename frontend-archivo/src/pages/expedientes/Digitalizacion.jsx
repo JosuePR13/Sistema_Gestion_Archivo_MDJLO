@@ -5,18 +5,22 @@ import { PDFDocument } from 'pdf-lib';
 import { Chart } from 'chart.js/auto';
 
 export default function DigitalizacionScreen({ triggerToast }) {
+  // --- CONSUMO DE ESTADO GLOBAL MEDIANTE CONTEXTO CENTRALIZADO ---
   const { expedientes: dataGlobal, refrescarData } = useExpedientes();
   const expedientes = useMemo(() => dataGlobal || [], [dataGlobal]);
 
+  // --- ESTADOS DE CONTROL DE PAGINACIÓN Y CONTROL FILTRADO ---
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
+  // --- ESTADOS DE GESTIÓN Y CARGA DE NUEVOS ARCHIVOS LOCALES ---
   const [selectedExpId, setSelectedExpId] = useState('');
   const [files, setFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  // --- CONTROL DE VENTANAS MODALES DE ADVERTENCIA Y ELIMINACIÓN ---
   const [showSizeLimitModal, setShowSizeLimitModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedFileToDelete, setSelectedFileToDelete] = useState(null);
@@ -25,18 +29,27 @@ export default function DigitalizacionScreen({ triggerToast }) {
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [pendingExpId, setPendingExpId] = useState(null);
 
+  // --- ESTADO PARA CONTROL DE DISCREPANCIA DE FOLIOS (AUDITORÍA PDF) ---
   const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [mismatchData, setMismatchData] = useState({ filename: '', expected: 0, actual: 0 });
 
+  // --- GESTOR DE VISUALIZACIÓN Y ACCIÓN DE ARCHIVOS EXISTENTES ---
   const [gestorModal, setGestorModal] = useState({ isOpen: false, expId: null, code: '', archivos: [], isLoading: false });
 
+  // --- CONTROL DEL COMPONENTE SELECTOR DE BÚSQUEDA INTEGRADO ---
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [busquedaSelect, setBusquedaSelect] = useState('');
   const selectContainerRef = useRef(null);
 
+  // --- REFERENCIAS PARA RENDERIZADO REACTIVO DE GRÁFICOS (CHART.JS) ---
   const chartAvanceRef = useRef(null);
   const instanceAvanceRef = useRef(null);
 
+  // ==========================================================================
+  // CICLOS DE VIDA INTERNOS (EFFECTS)
+  // ==========================================================================
+
+  // Hook Effect: Previene la pérdida accidental de datos si hay PDFs cargados sin subir al servidor
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (files.length > 0) {
@@ -48,6 +61,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [files]);
 
+  // Hook Effect: Cierra el menú desplegable del buscador de expedientes al hacer clic fuera del nodo
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectContainerRef.current && !selectContainerRef.current.contains(event.target)) {
@@ -58,6 +72,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Hook Effect: Resetea de forma asíncrona la paginación de la tabla al ingresar un nuevo término de búsqueda
   useEffect(() => {
     const timeout = setTimeout(() => {
       setCurrentPage(1);
@@ -65,6 +80,11 @@ export default function DigitalizacionScreen({ triggerToast }) {
     return () => clearTimeout(timeout);
   }, [searchTerm]);
 
+  // ==========================================================================
+  // FUNCIONES AUXILIARES Y CÓMPUTO DE DATASET (MEMOIZADO)
+  // ==========================================================================
+
+  // Parser preventivo: Evita rupturas en renders de objetos complejos o nulos devolviendo strings planos
   const safeText = (value, fallback = 'General') => {
     if (value === null || value === undefined) return fallback;
     if (typeof value === 'string' || typeof value === 'number') return String(value);
@@ -72,12 +92,14 @@ export default function DigitalizacionScreen({ triggerToast }) {
     return fallback;
   };
 
+  // Motor de Análisis: Cómputo matemático de métricas de almacenamiento, porcentajes y estructuración de listas
   const metricasYListas = useMemo(() => {
     const digitalizados = expedientes.filter(e => e.digitalizado === 1 || e.digitalizado === true);
     const pendientes = expedientes.filter(e => e.digitalizado === 0 || e.digitalizado === false || !e.digitalizado);
 
     const porcentaje = expedientes.length === 0 ? 0 : Math.round((digitalizados.length / expedientes.length) * 100);
 
+    // Sumatoria iterativa del peso total consumido en disco por los expedientes
     let totalBytes = expedientes.reduce((acc, exp) => {
       let size = 0;
       if (exp.archivos && Array.isArray(exp.archivos)) {
@@ -88,18 +110,20 @@ export default function DigitalizacionScreen({ triggerToast }) {
       return acc + size;
     }, 0);
 
+    // Estimador de respaldo: Si no hay tamaños registrados calcula un promedio ponderado de 1.85 MB por PDF
     let bytesFinales = totalBytes;
     if (totalBytes === 0 && digitalizados.length > 0) {
       bytesFinales = digitalizados.length * 1.85 * 1024 * 1024;
     }
 
+    // Conversor binario de almacenamiento para optimizar la legibilidad en la interfaz
     const formatearAlmacenamiento = (bytes) => {
       if (bytes === 0) return { valor: '0.00', unidad: 'MB' };
       const k = 1024;
       const unidades = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
 
       let i = Math.floor(Math.log(bytes) / Math.log(k));
-      if (i < 2) i = 2;
+      if (i < 2) i = 2; // Fuerza visualización mínima en MB
 
       const valor = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
       return { valor, unidad: unidades[i] };
@@ -107,6 +131,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
 
     const almacenamiento = formatearAlmacenamiento(bytesFinales);
 
+    // Mapeo estructurado para alimentar el dropdown selector personalizado
     const opcionesDropdown = pendientes.map(exp => ({
       id: exp.id,
       numero: safeText(exp.numero_expediente, 'S/N'),
@@ -125,6 +150,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
 
   const { digitalizados, pendientes, porcentaje, almacenamiento, opcionesDropdown } = metricasYListas;
 
+  // Filtrado reactivo de la tabla principal de documentos ya digitalizados
   const tablaFiltrada = useMemo(() => {
     return digitalizados.filter(e => {
       const numExp = safeText(e.numero_expediente, '').toLowerCase();
@@ -134,6 +160,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     });
   }, [digitalizados, searchTerm]);
 
+  // Filtrado reactivo en caliente de los elementos pertenecientes al dropdown de búsqueda
   const opcionesFiltradas = useMemo(() => {
     return opcionesDropdown.filter(opt =>
       opt.numero.toLowerCase().includes(busquedaSelect.toLowerCase()) ||
@@ -142,9 +169,13 @@ export default function DigitalizacionScreen({ triggerToast }) {
     );
   }, [opcionesDropdown, busquedaSelect]);
 
+  // Segmentación matemática de registros para bloques de paginación
   const totalPages = Math.ceil(tablaFiltrada.length / ITEMS_PER_PAGE);
   const currentData = tablaFiltrada.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+  // ==========================================================================
+  // INTEGRACIÓN REACTIVA CON EL COMPONENTE CHART.JS
+  // ==========================================================================
   useEffect(() => {
     if (!chartAvanceRef.current) return;
 
@@ -185,6 +216,11 @@ export default function DigitalizacionScreen({ triggerToast }) {
     };
   }, [digitalizados, pendientes]);
 
+  // ==========================================================================
+  // MANEJADORES DE LOGICA DE NEGOCIO Y CONTROLADORES EVENTOS
+  // ==========================================================================
+
+  // Evalúa cambios en el select disparando alertas si existen archivos pendientes en cola de subida
   const handleDropdownChange = (val) => {
     if (files.length > 0) {
       setPendingExpId(val);
@@ -194,6 +230,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     }
   };
 
+  // Resetea cola de archivos locales y confirma cambio de expediente objetivo
   const confirmarCambio = () => {
     setFiles([]);
     setSelectedExpId(pendingExpId);
@@ -206,10 +243,12 @@ export default function DigitalizacionScreen({ triggerToast }) {
     setPendingExpId(null);
   };
 
+  // Procesador binario y auditoría estructural de PDFs cargados mediante API nativa del navegador
   const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length === 0) return;
 
+    // Validación preventiva: Sanitización exclusiva de formato mime application/pdf
     const validPdfs = selectedFiles.filter(f => f.type === 'application/pdf');
     if (validPdfs.length !== selectedFiles.length) {
       if (typeof triggerToast === 'function') triggerToast("⚠️ Solo se permiten archivos PDF.");
@@ -217,6 +256,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
       return;
     }
 
+    // Validación de peso acumulado en memoria de carga: Límite estricto de 5.00 MB
     const pesoActual = files.reduce((acc, f) => acc + f.size, 0);
     const pesoNuevo = validPdfs.reduce((acc, f) => acc + f.size, 0);
     const limite5MB = 5 * 1024 * 1024;
@@ -230,6 +270,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     const expedienteSeleccionado = expedientes.find(exp => exp.id === selectedExpId);
     const foliosRegistrados = parseInt(expedienteSeleccionado?.numero_folios) || 0;
 
+    // Bucle de auditoría avanzada: Lee el binario del PDF para comprobar la consistencia entre páginas físicas y folios en ficha
     for (const file of validPdfs) {
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -259,6 +300,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
 
   const removeFile = (indexToRemove) => setFiles(prev => prev.filter((_, i) => i !== indexToRemove));
 
+  // Despliegue de payload multipart/form-data al endpoint del servidor remoto
   const handleUpload = async () => {
     if (!selectedExpId || files.length === 0) return;
     setIsUploading(true);
@@ -280,6 +322,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     }
   };
 
+  // Abre el panel interno de control de documentos vinculados a un expediente (Gestor Documental)
   const abrirGestor = async (expId, expCode) => {
     const localExp = expedientes.find(e => e.id === expId);
     if (localExp && localExp.archivos && localExp.archivos.length > 0) {
@@ -297,8 +340,10 @@ export default function DigitalizacionScreen({ triggerToast }) {
     }
   };
 
+  // Ejecutor centralizado de operaciones CRUD y de visualización sobre archivos binarios existentes
   const ejecutarAccionPDF = async (fileTarget, action) => {
     try {
+      // Acción 'ver': Consume el binario como Blob de lectura e inyecta un iframe dinámico aislado
       if (action === 'ver') {
         const res = await api.get(`/expedientes/${gestorModal.expId}/archivos/${fileTarget.id}`, { responseType: 'blob' });
         const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -321,6 +366,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
           nuevaVentana.document.close();
         }
       }
+      // Acción 'descargar': Genera de forma programática un nodo trigger de descarga en el DOM
       if (action === 'descargar') {
         const res = await api.get(`/expedientes/${gestorModal.expId}/archivos/${fileTarget.id}`, { responseType: 'blob' });
         const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -331,6 +377,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
         link.click();
         document.body.removeChild(link);
       }
+      // Acción 'eliminar': Configura referencias y despliega confirmación de borrado
       if (action === 'eliminar') {
         setSelectedFileToDelete({ id: fileTarget.id, nombre_original: fileTarget.nombre_original, expId: gestorModal.expId });
         setShowDeleteModal(true);
@@ -340,6 +387,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
     }
   };
 
+  // Confirmación final y purga destructiva de un archivo del disco duro mediante llamada de API
   const confirmarEliminacion = async () => {
     if (!selectedFileToDelete) return;
     try {
@@ -358,13 +406,18 @@ export default function DigitalizacionScreen({ triggerToast }) {
     }
   };
 
+  // Helpers de métricas locales para control inmediato de UI en la cola de carga
   const pesoTotalMB = (files.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024)).toFixed(2);
   const limiteCasiLleno = pesoTotalMB > 4.5;
 
+  // ==========================================================================
+  // RENDERIZADO DEL COMPONENTE VISTA INTERFAZ (UI JSX)
+  // ==========================================================================
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24 text-left">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
 
+        {/* --- CABECERA DE IDENTIDAD DEL MÓDULO DE DIGITALIZACIÓN --- */}
         <div className="relative overflow-hidden bg-gradient-to-r from-lime-500/15 via-lime-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-lime-200/60 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center gap-4 mb-8 z-40">
           <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-lime-300 pointer-events-none"></div>
           <div className="w-10 h-10 rounded-xl bg-lime-500/15 border border-lime-200/50 flex items-center justify-center text-lime-700 relative z-10 shadow-sm shrink-0">
@@ -378,7 +431,10 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         </div>
 
+        {/* --- PANEL PRINCIPAL DE TRABAJO (FORMULARIO DE CARGA + COMPONENTE ANALÍTICO) --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 items-stretch">
+
+          {/* SECCIÓN IZQUIERDA: Selector Buscador y Zona de Carga Drag and Drop */}
           <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
@@ -386,6 +442,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                 <h3 className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Asociar Archivo Digital</h3>
               </div>
 
+              {/* INPUT BUSCADOR ESTRUCTURADO CON LISTADO PENDIENTES */}
               <div className="mb-6 relative z-30" ref={selectContainerRef}>
                 <label className="block text-[11px] font-extrabold text-slate-500 mb-2 tracking-widest uppercase">
                   Documento Físico a Digitalizar *
@@ -419,6 +476,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                   </div>
                 </div>
 
+                {/* MENÚ FLOTANTE: Resultados filtrados de documentos pendientes */}
                 {isSelectOpen && (
                   <div className="absolute top-full left-0 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-[300px] overflow-y-auto py-2 z-50 animate-fade-in scrollbar-hide">
                     <div className="px-4 pb-2 mb-2 border-b border-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
@@ -458,6 +516,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                 )}
               </div>
 
+              {/* CONTENEDOR INPUT FILE: Área de arrastre de archivos con candado lógico */}
               <div className={`relative p-8 rounded-3xl border-2 transition-all duration-300 ${!selectedExpId ? 'border-dashed border-slate-200 bg-slate-50/40 opacity-80' : (files.length > 0 ? 'border-solid border-emerald-400 bg-emerald-50/50' : 'border-dashed border-slate-300 bg-slate-50/50 hover:bg-white hover:border-emerald-600 z-10')}`}>
                 <input
                   type="file"
@@ -524,6 +583,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
               </div>
             </div>
 
+            {/* BOTÓN DISPARADOR DE CARGA MULTIPART HACIA EL SERVIDOR */}
             <div className="mt-4 flex justify-end relative z-10">
               <button
                 type="button"
@@ -539,6 +599,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
             </div>
           </div>
 
+          {/* SECCIÓN DERECHA: Grid de KPIs Avanzados y Gráfico Doughnut Analítico */}
           <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
@@ -546,7 +607,9 @@ export default function DigitalizacionScreen({ triggerToast }) {
                 <h3 className="text-[14px] font-extrabold text-slate-800 uppercase tracking-widest">Resumen General</h3>
               </div>
 
+              {/* SUB-GRID: Tarjetas analíticas de volumen y almacenamiento */}
               <div className="grid grid-cols-2 gap-4">
+                {/* KPI: Total Expedientes */}
                 <div className="relative overflow-hidden bg-gradient-to-r from-blue-500/10 via-blue-50/30 to-transparent p-4 rounded-2xl border border-blue-100/60 shadow-[0_4px_20px_rgba(59,130,246,0.01)] flex items-center justify-between h-[82px]">
                   <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-blue-300 pointer-events-none"></div>
                   <div className="flex flex-col text-left justify-center h-full min-w-0">
@@ -560,6 +623,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                   </div>
                 </div>
 
+                {/* KPI: Digitalizados con archivo */}
                 <div className="relative overflow-hidden bg-gradient-to-r from-emerald-500/10 via-emerald-50/30 to-transparent p-4 rounded-2xl border border-emerald-100/60 shadow-[0_4px_20px_rgba(16,185,129,0.01)] flex items-center justify-between h-[82px]">
                   <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-emerald-300 pointer-events-none"></div>
                   <div className="flex flex-col text-left justify-center h-full min-w-0">
@@ -573,6 +637,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                   </div>
                 </div>
 
+                {/* KPI: Restantes en Físico */}
                 <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/10 via-amber-50/30 to-transparent p-4 rounded-2xl border border-amber-100/60 shadow-[0_4px_20px_rgba(245,158,11,0.01)] flex items-center justify-between h-[82px]">
                   <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-amber-300 pointer-events-none"></div>
                   <div className="flex flex-col text-left justify-center h-full min-w-0">
@@ -586,6 +651,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
                   </div>
                 </div>
 
+                {/* KPI: Peso total en Almacén Digital */}
                 <div className="relative overflow-hidden bg-gradient-to-r from-purple-500/10 via-purple-50/30 to-transparent p-4 rounded-2xl border border-purple-100/60 shadow-[0_4px_20px_rgba(147,51,234,0.01)] flex items-center justify-between h-[82px]">
                   <div className="absolute -right-4 -top-4 w-16 h-12 rounded-full opacity-10 blur-xl bg-purple-300 pointer-events-none"></div>
                   <div className="flex flex-col text-left justify-center h-full min-w-0">
@@ -609,6 +675,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
               </div>
             </div>
 
+            {/* CANVAS INTERNO: Renderizado de Dona de Cobertura */}
             <div className="mt-2 flex flex-col items-center">
               <div className="relative w-full h-[140px] flex items-center justify-center">
                 <canvas ref={chartAvanceRef}></canvas>
@@ -621,15 +688,13 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         </div>
 
+        {/* --- TABLA DE EXPEDIENTES COMPILADOS (CON ANCHOS OPTIMIZADOS) --- */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col relative z-0">
-          {/* --- BARRA DE HERRAMIENTAS INTEGRADA CON LA IDENTIDAD ESMERALDA DE DIGITALIZACIÓN --- */}
           <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
-            {/* Badge personalizado con tonos esmeralda/verde premium para matar el azul */}
             <div className="flex items-center">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/60 border border-emerald-100/80 rounded-xl text-[11px] font-bold text-emerald-700 uppercase tracking-wider shadow-sm select-none">
-                <span className="font-black text-emerald-800 text-[12px]">{tablaFiltrada.length}</span>
-                Documento(s) digitalizado(s)
+                <span className="font-black text-emerald-800 text-[11px]">{tablaFiltrada.length}</span>
+                REGISTROS
               </span>
             </div>
 
@@ -649,25 +714,29 @@ export default function DigitalizacionScreen({ triggerToast }) {
             </div>
           </div>
 
-          <div className="overflow-x-auto w-full">
-            <table className="w-full text-left border-collapse table-fixed">
+          <div className="overflow-x-auto w-full [scrollbar-width:thin]">
+            <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest select-none bg-white">
-                  <th className="p-5 px-8 w-[20%]">N° Exp / Doc</th>
-                  <th className="p-5 px-4 w-[35%]">Título del Documento</th>
-                  <th className="p-5 px-4 w-[15%]">Clasificación</th>
-                  <th className="p-5 px-4 text-center w-[10%]">Folios</th>
-                  <th className="p-5 px-8 text-center w-[20%]">Gestión Documental</th>
+                  <th className="p-5 px-8 text-center w-[210px]">N° Exp / Doc</th>
+                  <th className="p-5 px-4 text-center">Título</th>
+                  <th className="p-5 px-4 text-center w-[160px]">Clasificación</th>
+                  <th className="p-5 px-4 text-center w-[90px]">Folios</th>
+                  <th className="p-5 px-8 text-center w-[220px]">Gestión Documental</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 text-[13px]">
                 {currentData.length > 0 ? (
                   currentData.map((d) => (
                     <tr key={d.id} className="hover:bg-blue-50/40 transition-colors h-[72px]">
-                      <td className="p-5 px-8 font-black text-[#0F4C81] truncate tracking-wide">{safeText(d.numero_expediente, 'S/N')}</td>
-                      <td className="p-5 px-4 font-extrabold text-slate-800 truncate" title={safeText(d.titulo, '')}>{safeText(d.titulo, 'Sin título')}</td>
-                      <td className="p-5 px-4 text-slate-500 font-bold truncate lowercase first-letter:uppercase">{safeText(d.tipo_documento || d.tipoDocumento, 'General')}</td>
-                      <td className="p-5 px-4 text-center text-slate-500 font-black truncate">{safeText(d.numero_folios, '0')}</td>
+                      <td className="p-5 px-8 text-center font-black text-[#0F4C81] tracking-wide whitespace-nowrap">{safeText(d.numero_expediente, 'S/N')}</td>
+
+                      <td className="p-5 px-4 text-center font-extrabold text-slate-800 text-[12px] max-w-[260px] truncate" title={safeText(d.titulo, '')}>
+                        {safeText(d.titulo, 'Sin título')}
+                      </td>
+
+                      <td className="p-5 px-4 text-center text-slate-500 font-bold truncate lowercase first-letter:uppercase">{safeText(d.tipo_documento || d.tipoDocumento, 'General')}</td>
+                      <td className="p-5 px-4 text-center text-slate-500 font-black whitespace-nowrap">{safeText(d.numero_folios, '0')}</td>
                       <td className="p-5 px-8 text-center whitespace-nowrap">
                         <button
                           type="button"
@@ -693,6 +762,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         </div>
 
+        {/* --- CAPA DE PAGINACIÓN FLOTANTE CONTROLADA --- */}
         {totalPages > 1 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 p-2 px-6 flex justify-between items-center bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-all z-40 w-max min-w-[320px]">
             <span className="text-[12px] text-slate-500 font-extrabold tracking-widest uppercase mr-8">
@@ -709,6 +779,11 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
+        {/* ==========================================================================
+            COMPONENTES MODALES (ANULAR CON FLUJO CONDICIONAL JSX)
+            ========================================================================== */}
+
+        {/* MODAL: Alerta Preventiva por Fallas de Auditoría entre Páginas de PDF y Ficha */}
         {showMismatchModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -741,12 +816,13 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
+        {/* MODAL GESTOR: Listado de Archivos del Servidor e Inyección de Blobs de Lectura */}
         {gestorModal.isOpen && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
               <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
                 <div>
-                  <h3 className="text-lg font-black text-slate-800 tracking-tight">Documentos del Expediente</h3>
+                  <h3 className="text-lg font-black text-slate-800 tracking-tight">Documentos Adjuntos</h3>
                   <p className="text-[12px] text-slate-500 font-bold mt-1 uppercase tracking-wider">Ref: <span className="text-[#0F4C81]">{gestorModal.code}</span></p>
                 </div>
                 <button onClick={() => setGestorModal({ isOpen: false, expId: null, code: '', archivos: [], isLoading: false })} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-sm">
@@ -801,6 +877,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
+        {/* MODAL: Alerta Exceso de Peso de Carga Local (5.00 MB Máx) */}
         {showSizeLimitModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
@@ -819,13 +896,14 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
+        {/* MODAL: Confirmación de purga destructiva de archivos del Servidor */}
         {showDeleteModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
               <div className="h-2 w-full bg-rose-500"></div>
               <div className="p-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
-                  <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  <svg className="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </div>
                 <h3 className="text-lg font-black text-slate-800 mb-2 tracking-tight">¿Desea eliminar este PDF?</h3>
                 <p className="text-[13px] text-slate-500 px-3 leading-relaxed font-medium">El documento <span className="font-bold text-slate-700">"{selectedFileToDelete?.nombre_original}"</span> se borrará de forma permanente.</p>
@@ -838,6 +916,7 @@ export default function DigitalizacionScreen({ triggerToast }) {
           </div>
         )}
 
+        {/* MODAL: Advertencia de cambio de expediente con cola activa en memoria */}
         {showWarningModal && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">

@@ -108,16 +108,16 @@ export default function Expedientes({
       <div className="max-w-screen-xl mx-auto animate-fade-in">
 
         {/* --- SECCIÓN 1: CABECERA PRINCIPAL --- */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-slate-500/25 via-slate-100/60 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-slate-200/90 shadow-[0_4px_30px_rgba(71,85,105,0.03)] flex items-center gap-4 mb-8 z-40">
-          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-slate-400 pointer-events-none"></div>
-          <div className="w-10 h-10 rounded-xl bg-slate-600/15 border border-slate-300/60 flex items-center justify-center text-slate-800 relative z-10 shadow-sm shrink-0">
+        <div className="relative overflow-hidden bg-gradient-to-r from-pink-500/25 via-pink-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-pink-200/80 shadow-[0_4px_30px_rgba(244,63,94,0.03)] flex items-center gap-4 mb-8 z-40">
+          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-30 blur-xl bg-pink-300 pointer-events-none"></div>
+          <div className="w-10 h-10 rounded-xl bg-pink-600/15 border border-pink-200/60 flex items-center justify-center text-slate-600 relative z-10 shadow-sm shrink-0">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
             </svg>
           </div>
           <div className="flex flex-col relative z-10 text-left">
-            <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Búsqueda Documental</h1>
-            <span className="text-[11px] font-black text-slate-600 mt-1.5 uppercase tracking-wider">Gestión integral y localización</span>
+            <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Búsqueda Documental</h1>
+            <span className="text-[11px] font-black text-pink-700 mt-1.5 uppercase tracking-wider">Gestión integral y localización</span>
           </div>
         </div>
 
@@ -134,7 +134,7 @@ export default function Expedientes({
             <div className="md:col-span-3">
               <label className={labelStyles}>Búsqueda</label>
               <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#0F4C81]">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-pink-600">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.8" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
                   </svg>
@@ -142,7 +142,7 @@ export default function Expedientes({
                 <input
                   type="text"
                   placeholder="Ej: EXP-2026, Título..."
-                  className={`${inputStyles} pl-11`}
+                  className={`${inputStyles} pl-11 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10`}
                   value={searchTerm}
                   onChange={handleSearch}
                 />
@@ -152,6 +152,7 @@ export default function Expedientes({
             {/* Inyección Automática de la Opción de Limpieza en los Tipos */}
             <div className="md:col-span-5">
               <CustomDropdown
+                color="pink"
                 label="Tipo Documental"
                 placeholder="Todos los tipos"
                 options={[
@@ -170,7 +171,7 @@ export default function Expedientes({
               <label className={labelStyles}>Fecha (A partir de)</label>
               <input
                 type="date"
-                className={inputStyles}
+                className={`${inputStyles} focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10`}
                 value={filterFechaDesde}
                 onChange={(e) => { setFilterFechaDesde(e.target.value); setCurrentPage(1); }}
               />
@@ -197,9 +198,10 @@ export default function Expedientes({
 
           {/* Información General */}
           <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
-            <div className="flex items-center gap-4">
-              <span className="text-[11px] font-black text-blue-600 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm select-none">
-                {filteredExpedientes.length} REGISTROS
+            <div className="flex items-center">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-50/60 border border-pink-100/80 rounded-xl text-[11px] font-bold text-pink-700 uppercase tracking-wider shadow-sm select-none">
+                <span className="font-black text-pink-800 text-[11px]">{filteredExpedientes.length}</span>
+                REGISTROS
               </span>
             </div>
 
