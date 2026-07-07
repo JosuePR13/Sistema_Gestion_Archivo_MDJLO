@@ -54,7 +54,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
         { id: 'Mixto', nombre: '📑 Formato Mixto (Simple y Fedateado)' }
     ];
 
-    // REGEX VALIDATOR: Bloquea caracteres alfanuméricos permitiendo solo números, guiones, espacios y comas (Manejo de Rangos)
+    // REGEX VALIDATOR: Bloquea caracteres alfanuméricos permitiendo solo números, guiones, espacios y comas
     const handleValidacionFolios = (valorStr, setterFunction) => {
         if (/^[0-9,\- ]*$/.test(valorStr)) {
             setterFunction(valorStr);
@@ -223,7 +223,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 </div>
 
-                {/* --- CONTENEDOR DEL BUSCADOR (CORREGIDO ENFOQUE AL COLOR DE CABECERA) --- */}
+                {/* --- CONTENEDOR DEL BUSCADOR --- */}
                 <div className="flex justify-end w-full animate-fade-in">
                     <div className="relative w-full md:w-96">
                         <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,7 +241,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
 
                 {/* --- TABLA DE GESTIÓN PRINCIPAL --- */}
                 <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
-                    {/* CORREGIDO CONTADOR: Muestra el total real del set filtrado independiente de la página */}
+                    {/* Muestra el total real del set filtrado */}
                     <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50/60 border border-sky-100/80 rounded-xl text-[11px] font-bold text-sky-700 uppercase tracking-wider shadow-sm select-none">

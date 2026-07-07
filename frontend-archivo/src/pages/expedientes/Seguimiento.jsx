@@ -211,7 +211,7 @@ export default function SeguimientoScreen({ setScreen }) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }, // Oculto porque los ejes ya definen la métrica
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94A3B8' }, grid: { color: '#F1F5F9' } },
                         x: { ticks: { color: '#94A3B8', font: { weight: 'bold', size: 11 } }, grid: { display: false } }
@@ -227,7 +227,7 @@ export default function SeguimientoScreen({ setScreen }) {
         };
     }, [paraDepurar, enRevision, conservar, RangoMenor1, Rango1a5, Rango5a10, RangoMayor10, loading]);
 
-    // --- RENDER DE ESQUELETO / LOADER ADAPTATIVO ---
+    // --- RENDER DE ESQUELETO ---
     if (loading) return (
         <div className="flex h-screen items-center justify-center bg-[#F8FAFC]">
             <div className="flex flex-col items-center">
@@ -258,7 +258,7 @@ export default function SeguimientoScreen({ setScreen }) {
                     </div>
                 </div>
 
-                {/* --- SECCIÓN DE ANALÍTICA AVANZADA --- */}
+                {/* --- SECCIÓN DE ANALÍTICA --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch relative z-20">
 
                     {/* Panel Izquierdo: Dona */}
@@ -272,7 +272,7 @@ export default function SeguimientoScreen({ setScreen }) {
                         </div>
                     </div>
 
-                    {/* Panel Derecho: Histograma Multicolor */}
+                    {/* Panel Derecho: Histograma */}
                     <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-100 shadow-[0_4px_25px_rgb(0,0,0,0.02)] lg:col-span-7 flex flex-col justify-between">
                         <div className="mb-4 text-left">
                             <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-wider">Antigüedad del Archivo</h3>
@@ -287,7 +287,7 @@ export default function SeguimientoScreen({ setScreen }) {
                 {/* --- PANEL DE LISTADO PRINCIPAL --- */}
                 <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col w-full overflow-hidden">
 
-                    {/* Barra de Filtros Unificada con Fondo de Contraste y Badge Flotante */}
+                    {/* Barra de Filtros */}
                     <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
                         <div className="flex items-center">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/60 border border-emerald-100/80 rounded-xl text-[11px] font-bold text-emerald-700 uppercase tracking-wider shadow-sm select-none">

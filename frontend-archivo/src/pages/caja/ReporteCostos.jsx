@@ -86,7 +86,7 @@ export default function ReporteCostos() {
     ];
 
     // ==========================================
-    // 1. PROCESAMIENTO DE KPIS GLOBALES (MEMORIZADO)
+    // 1. PROCESAMIENTO DE KPIS GLOBALES
     // ==========================================
     const kpisGlobales = useMemo(() => {
         const aprobadasKpi = movimientos.filter(i => i.estado === 'Aceptada');
@@ -127,7 +127,7 @@ export default function ReporteCostos() {
     }, [movimientos, fechaHoyStr]);
 
     // ==========================================
-    // 2. FILTRADO EXCLUSIVO PARA EL GRÁFICO DE DEMANDA (MEMORIZADO)
+    // 2. FILTRADO EXCLUSIVO PARA EL GRÁFICO DE DEMANDA
     // ==========================================
     const datosGraficoDemanda = useMemo(() => {
         const aprobadasDemanda = movimientos.filter(i => {
@@ -145,7 +145,7 @@ export default function ReporteCostos() {
     }, [movimientos, demandaAnio, demandaMes]);
 
     // ==========================================
-    // 3. ESTRUCTURACIÓN DE DATOS MENSUALES (MEMORIZADO)
+    // 3. ESTRUCTURACIÓN DE DATOS MENSUALES
     // ==========================================
     const datosMensualesAnio = useMemo(() => {
         const mensualidades = Array(12).fill(0);
@@ -155,7 +155,6 @@ export default function ReporteCostos() {
                 if (tendenciaAnio === 'Todos' || ano === tendenciaAnio) {
                     const mesIndex = parseInt(m.fecha_solicitud.substring(5, 7)) - 1;
                     if (mesIndex >= 0 && mesIndex < 12) {
-                        // Corrección menor interna: corregido uso de paréntesis duplicados heredados
                         mensualidades[mesIndex] += parseFloat(m.costo_tupa) || 0;
                     }
                 }

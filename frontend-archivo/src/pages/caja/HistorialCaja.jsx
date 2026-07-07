@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useCaja } from '../../context/CajaContext';
 
 export default function HistorialCaja() {
-    // --- CONSUMO DE ESTADO GLOBAL (CONTEXTO) ---
+    // --- CONSUMO DE ESTADO GLOBAL ---
     const { movimientos, loadingCaja } = useCaja();
 
     // --- ESTADOS LOCALES DE CONTROL ---
@@ -50,7 +50,7 @@ export default function HistorialCaja() {
     const indiceFin = indiceInicio + registrosPorPagina;
     const datosPaginados = datosFiltradosGlobales.slice(indiceInicio, indiceFin);
 
-    // --- HOJA DE ESTILOS AUXILIAR PARA CABECERAS (DRY PRINCIPLE) ---
+    // --- HOJA DE ESTILOS AUXILIAR PARA CABECERAS ---
     const thStyles = "py-4 px-6 text-[11px] font-black text-slate-400 uppercase tracking-widest";
 
     return (
@@ -83,7 +83,7 @@ export default function HistorialCaja() {
                 {/* --- SECCIÓN DE ACCIONES Y CONTROL DE BÚSQUEDA --- */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
 
-                    {/* Contenedor Adaptativo de Pestañas (Intercambia colores dinámicamente según el contexto) */}
+                    {/* Contenedor Adaptativo de Pestañas */}
                     <div className={`flex gap-2 p-1.5 backdrop-blur-md w-full md:max-w-sm rounded-2xl border transition-all duration-300 shrink-0 shadow-sm ${activeTab === 'Aceptada'
                         ? 'bg-emerald-50/70 border-emerald-200/50'
                         : 'bg-rose-50/70 border-rose-200/50'
@@ -119,7 +119,7 @@ export default function HistorialCaja() {
                         </button>
                     </div>
 
-                    {/* Componente Barra de Búsqueda (Con borde y foco en color amber) */}
+                    {/* Componente Barra de Búsqueda */}
                     <div className="relative w-full md:w-96">
                         <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input
@@ -135,7 +135,7 @@ export default function HistorialCaja() {
                 {/* --- PANEL DE DATOS EN FORMATO TABULAR --- */}
                 <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col w-full overflow-hidden">
 
-                    {/* Barra Superior con Contador de Registros (Usando el Total Global Filtrado en lugar de la Paginación) */}
+                    {/* Barra Superior con Contador de Registros */}
                     <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50/60 border border-amber-100/80 rounded-xl text-[11px] font-bold text-amber-700 uppercase tracking-wider shadow-sm select-none">
@@ -278,7 +278,7 @@ export default function HistorialCaja() {
                         {/* Barra de estado visual superior */}
                         <div className={`h-2 w-full shrink-0 ${selectedItem.estado === 'Aceptada' ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
 
-                        {/* Cuerpo interno del Modal con Scroll controlado */}
+                        {/* Cuerpo interno del Modal */}
                         <div className="p-6 sm:p-8 space-y-5 overflow-y-auto custom-scroll">
 
                             {/* Membrete Oficial Institucional */}
@@ -288,7 +288,7 @@ export default function HistorialCaja() {
                                 <p className="text-[13px] font-extrabold text-[#0F4C81] pt-1">Ficha de Sustento - Mesa de Partes</p>
                             </div>
 
-                            {/* Ficha Técnica: Datos del Contribuyente (Distribución Asimétrica Equilibrada) */}
+                            {/* Ficha Técnica: Datos del Contribuyente */}
                             <div className="space-y-3 text-[13px] bg-slate-50 p-4 rounded-2xl border border-slate-100">
                                 {/* Cambiado a grid-cols-3 para empujar la segunda columna más a la derecha */}
                                 <div className="grid grid-cols-3 gap-2">

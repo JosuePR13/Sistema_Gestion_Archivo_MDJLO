@@ -91,7 +91,7 @@ export default function Expedientes({
   const currentItems = filteredExpedientes.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredExpedientes.length / itemsPerPage);
 
-  // Semántica de colores para las sublíneas de estado de cada expediente
+  // Semántica de colores para las sublíneas de estado de cada documento
   const colorEstadoSublinea = (estado) => {
     const st = (estado || 'Activo').toLowerCase();
     if (st.includes('revisión') || st.includes('revision')) return 'bg-amber-500';
@@ -99,7 +99,7 @@ export default function Expedientes({
     return 'bg-emerald-500';
   };
 
-  // Clases utilitarias reutilizables para mantener la consistencia visual premium
+  // Clases utilitarias reutilizables
   const inputStyles = "w-full h-[48px] px-4 border border-slate-200 bg-slate-50 rounded-2xl text-[13px] focus:bg-white focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300 font-semibold text-slate-700 placeholder-slate-400";
   const labelStyles = "block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2";
 

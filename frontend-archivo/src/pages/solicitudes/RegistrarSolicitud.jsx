@@ -46,7 +46,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [isDirty]);
 
-    // HOOK EFFECT 2: Interceptor del evento personalizado del Header (Navegación por clicks en la barra superior)
+    // HOOK EFFECT 2: Interceptor del evento personalizado del Header
     useEffect(() => {
         const handleHeaderNavigation = (e) => {
             const targetScreen = e.detail;
@@ -145,7 +145,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
     const readOnlyStyles = "w-full h-[48px] px-4 border border-slate-100 bg-slate-100/50 text-slate-500 rounded-2xl text-[13px] font-extrabold outline-none cursor-not-allowed flex items-center";
     const labelStyles = "block text-[11px] font-black text-slate-400 mb-2 tracking-widest uppercase";
 
-    // Inyección de clases críticas de error de manera reactiva campo por campo (Focus corregido a blue-600)
+    // Inyección de clases críticas de error de manera reactiva campo por campo
     const getInputStyles = (field, isOptional = false) => {
         const value = formData[field];
         let hasError = validated && !isOptional && (!value || String(value).trim() === '');
@@ -187,7 +187,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                     <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
 
-                            {/* Input: DNI (Filtra caracteres no numéricos al vuelo) */}
+                            {/* Input: DNI */}
                             <div className="md:col-span-4 lg:col-span-3">
                                 <label htmlFor="dni" className={labelStyles}>DNI Solicitante *</label>
                                 <input
@@ -285,7 +285,7 @@ export default function RegistrarSolicitud({ setScreen, triggerToast }) {
                                 {validated && !formData.expediente_solicitado && <p className="text-[11px] text-rose-500 font-bold mt-1.5 ml-2">⚠️ Ingrese el documento o expediente</p>}
                             </div>
 
-                            {/* Input: Fecha (Protegido por ReadOnly nativo para evitar manipulaciones externas) */}
+                            {/* Input: Fecha */}
                             <div className="md:col-span-4 lg:col-span-4">
                                 <label htmlFor="fecha_solicitud" className={labelStyles}>Fecha de Ingreso *</label>
                                 <input

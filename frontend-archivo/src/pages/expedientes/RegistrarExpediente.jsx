@@ -7,7 +7,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
   // CONTEXTO: Consumo del trigger global para refrescar las grillas de expedientes en segundo plano
   const { refrescarData } = useExpedientes();
 
-  // ESTADO ESTRUCTURAL: Objeto de persistencia mapeado exactamente con las columnas del backend (Laravel)
+  // ESTADO ESTRUCTURAL: Objeto de persistencia mapeado exactamente con las columnas del backend
   const [formData, setFormData] = useState({
     numero_expediente: '',
     titulo: '',
@@ -269,7 +269,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
   const readOnlyStyles = "w-full h-[48px] px-4 border border-slate-100 bg-slate-100/50 text-slate-500 rounded-2xl text-[13px] font-extrabold outline-none cursor-not-allowed flex items-center";
   const labelStyles = "block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2";
 
-  // MODIFICADO: El focus de los inputs ahora apunta limpiamente a fuchsia-600
   const getInputStyles = (value) => {
     const isError = validated && (!value || String(value).trim() === '');
     return `${inputBaseStyles} ${isError ? 'border-rose-300 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10' : 'border-slate-200 focus:bg-white focus:border-fuchsia-600 focus:ring-2 focus:ring-fuchsia-600/10 shadow-sm'}`;
@@ -307,9 +306,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
 
           {/* SECCIÓN I: CAPTURA DE METADATOS PRINCIPALES */}
           <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
-
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-              {/* MODIFICADO: Indicador visual lateral cambiado a fuchsia-500 */}
               <div className="w-1.5 h-5 bg-fuchsia-500 rounded-full shadow-sm"></div>
               <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest">
                 {esComprobante ? 'Información del Comprobante de Pago' : 'Información General'}
@@ -486,7 +483,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
               {/* CAJA DE TEXTO ENRIQUECIDA (DESCRIPCIÓN / ASUNTO) - DISPONIBLE EN AMBOS FLUJOS */}
               <div className="md:col-span-12">
                 <label htmlFor="editor_descripcion" className={labelStyles}>Descripción / Asunto</label>
-                {/* MODIFICADO: Focus general del contenedor Rich Text adaptado a fuchsia-600 */}
                 <div className="w-full border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden focus-within:ring-4 focus-within:ring-fuchsia-600/10 focus-within:border-fuchsia-600 focus-within:bg-white transition-all duration-300 shadow-inner shadow-slate-100/50">
                   <div className="bg-slate-100/60 border-b border-slate-200 px-3 py-2 flex gap-2 select-none">
                     <button type="button" onClick={() => ejecutComando('bold')} className="w-8 h-8 flex items-center justify-center text-sm font-extrabold rounded-lg text-slate-600 hover:bg-white hover:shadow-sm active:bg-slate-200 transition-all" title="Negrita">B</button>
@@ -515,7 +511,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                       options={areas}
                       selectedValue={formData.area_origen_id}
                       onSelect={(val) => handleInputChange('area_origen_id', val)}
-                      color="fuchsia" // MODIFICADO: Focus del select mapeado al color fucsia del módulo
+                      color="fuchsia"
                     />
                   </div>
                   {validated && !formData.area_origen_id && (
@@ -524,7 +520,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                 </div>
               )}
 
-              {/* CAMPOS ESTÁTICOS DE CONTROL INFERIOR (SÓLO CUANDO ES EXPEDIENTE GENERAL) */}
+              {/* CAMPOS ESTÁTICOS DE CONTROL INFERIOR */}
               {!esComprobante && (
                 <>
                   <div className="md:col-span-3 lg:col-span-3">
@@ -579,7 +575,6 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
             <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/80">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
-                  {/* MODIFICADO: Indicador visual lateral cambiado a fuchsia-500 */}
                   <div className="w-1.5 h-5 bg-fuchsia-500 rounded-full shadow-sm"></div>
                   <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest">Vigencia Documental *</span>
                 </div>
@@ -608,7 +603,7 @@ export default function RegistrarExpediente({ setScreen, triggerToast }) {
                           options={conservacionOptions}
                           selectedValue={formData.tiempo_conservacion}
                           onSelect={(val) => handleInputChange('tiempo_conservacion', val)}
-                          color="fuchsia" // MODIFICADO: Focus del select mapeado al color fucsia del módulo
+                          color="fuchsia"
                         />
                       </div>
                       {validated && !formData.tiempo_conservacion && (

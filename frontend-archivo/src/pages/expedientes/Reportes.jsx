@@ -341,7 +341,7 @@ export default function ReportesScreen() {
           </div>
         </div>
 
-        {/* --- TABS SELECTORES SUPERIORES CON ANIMACIÓN HOVER --- */}
+        {/* --- TABS SELECTORES SUPERIORES --- */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
           {tiposReporte.map((t, i) => {
             const isActive = tipoRep === i;
