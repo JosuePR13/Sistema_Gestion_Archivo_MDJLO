@@ -25,6 +25,7 @@ export default function ReportesScreen() {
   const meses = [
     {
       id: 'Todos',
+      label: 'Todo el año',
       nombre: (
         <div className="flex items-center gap-2">
           <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -34,10 +35,9 @@ export default function ReportesScreen() {
         </div>
       )
     },
-    { id: '01', nombre: 'Enero' }, { id: '02', nombre: 'Febrero' }, { id: '03', nombre: 'Marzo' },
-    { id: '04', nombre: 'Abril' }, { id: '05', nombre: 'Mayo' }, { id: '06', fontStyle: 'normal', nombre: 'Junio' },
-    { id: '07', nombre: 'Julio' }, { id: '08', fontStyle: 'normal', nombre: 'Agosto' }, { id: '09', nombre: 'Septiembre' },
-    { id: '10', fontStyle: 'normal', nombre: 'Octubre' }, { id: '11', textName: 'Diciembre', nombre: 'Noviembre' }, { id: '12', nombre: 'Diciembre' }
+    { id: '01', nombre: 'Enero' }, { id: '02', fontStyle: 'normal', nombre: 'Febrero' }, { id: '03', nombre: 'Marzo' }, { id: '04', nombre: 'Abril' },
+    { id: '05', nombre: 'Mayo' }, { id: '06', fontStyle: 'normal', nombre: 'Junio' }, { id: '07', nombre: 'Julio' }, { id: '08', fontStyle: 'normal', nombre: 'Agosto' },
+    { id: '09', nombre: 'Septiembre' }, { id: '10', fontStyle: 'normal', nombre: 'Octubre' }, { id: '11', textName: 'Diciembre', nombre: 'Noviembre' }, { id: '12', nombre: 'Diciembre' }
   ];
 
   /**
@@ -70,7 +70,6 @@ export default function ReportesScreen() {
   // ==========================================================================
   // 2. MOTOR DE FILTRADO MULTIDIMENSIONAL Y CÓMPUTO DE MÉTRICAS OPERATIVAS
   // ==========================================================================
-  // Implementación de useMemo para evitar re-filtrar el dataset entero al cambiar de vista o paginación.
   const datasetProcesado = useMemo(() => {
     const expedientesFiltrados = dataGlobal.filter(exp => {
       const fecha = exp.fecha_ingreso || exp.created_at;
@@ -128,9 +127,8 @@ export default function ReportesScreen() {
       tipoTop,
       dataMensual
     };
-  }, [dataGlobal, anio, mes, areaFiltro]); // Solo se recalcula si muta la base de datos o algún control de filtrado
+  }, [dataGlobal, anio, mes, areaFiltro]);
 
-  // Destructuración limpia de los valores memorizados para mantener compatibilidad con la vista
   const {
     expedientesFiltrados,
     totalFolios,
@@ -143,9 +141,6 @@ export default function ReportesScreen() {
     dataMensual
   } = datasetProcesado;
 
-  /**
-   * Reset centralizado de estados de control temporal y geográfico
-   */
   const handleLimpiarFiltros = () => {
     setAnio(new Date().getFullYear().toString());
     setMes('Todos');
@@ -159,7 +154,6 @@ export default function ReportesScreen() {
   useEffect(() => {
     if (loading || !chartCanvasRef.current) return;
 
-    // Control preventivo: Destrucción rigurosa de la instancia previa para evitar fugas de DOM o colisiones de IDs
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
       chartInstanceRef.current = null;
@@ -168,7 +162,6 @@ export default function ReportesScreen() {
     const ctx = chartCanvasRef.current.getContext('2d');
     let config = {};
 
-    // CONFIGURACIÓN 0: REPORTE DE VOLUMEN
     if (tipoRep === 0) {
       config = {
         type: 'bar',
@@ -192,8 +185,6 @@ export default function ReportesScreen() {
           }
         }
       };
-
-      // CONFIGURACIÓN 1: COBERTURA DIGITAL
     } else if (tipoRep === 1) {
       config = {
         type: 'doughnut',
@@ -215,8 +206,6 @@ export default function ReportesScreen() {
           cutout: '70%'
         }
       };
-
-      // CONFIGURACIÓN 2: TIPOLOGÍA DE ALTO VOLUMEN
     } else if (tipoRep === 2) {
       config = {
         type: 'bar',
@@ -249,7 +238,6 @@ export default function ReportesScreen() {
       console.error("Fallo de renderizado reactivo en Chart.js:", err);
     }
 
-    // Clean-up local para liberar recursos cuando cambie el contexto o se desmonte la vista
     return () => {
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
@@ -318,9 +306,6 @@ export default function ReportesScreen() {
   const optsAnios = [{ id: 'Todos', nombre: 'Todos los años' }, ...aniosDisponibles.map(a => ({ id: a, nombre: a }))];
   const optsAreas = [{ id: 'Todas', fontStyle: 'normal', nombre: 'Todas las áreas' }, ...areasDisponibles.map(a => ({ id: a, nombre: a }))];
 
-  /**
-   * Mapeo semántico estricto para badges de las tablas
-   */
   const badgeColor = (estado) => {
     if (!estado) return '';
     const e = estado.toLowerCase();
@@ -329,7 +314,6 @@ export default function ReportesScreen() {
     return 'bg-blue-50 text-[#0F4C81] border-blue-100';
   }
 
-  // Loader esqueleto adaptado
   if (loading) return (
     <div className="flex h-screen items-center justify-center bg-[#F8FAFC]">
       <div className="flex flex-col items-center">
@@ -339,9 +323,6 @@ export default function ReportesScreen() {
     </div>
   );
 
-  // ==========================================================================
-  // 6. CAPA DE PRESENTACIÓN DE LA INTERFAZ DE USUARIO
-  // ==========================================================================
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24 text-left">
       <div className="max-w-screen-xl mx-auto animate-fade-in">
@@ -431,13 +412,13 @@ export default function ReportesScreen() {
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-end">
               <div className="sm:col-span-2">
-                <CustomDropdown label="Año de Consulta" placeholder="Año" options={optsAnios} selectedValue={anio} onSelect={(val) => { setAnio(val); setCurrentPage(1); }} />
+                <CustomDropdown color="rose" label="Año de Consulta" placeholder="Año" options={optsAnios} selectedValue={anio} onSelect={(val) => { setAnio(val); setCurrentPage(1); }} />
               </div>
               <div className="sm:col-span-3">
-                <CustomDropdown label="Mes de Consulta" placeholder="Seleccione mes" options={meses} selectedValue={mes} onSelect={(val) => { setMes(val); setCurrentPage(1); }} />
+                <CustomDropdown color="rose" label="Mes de Consulta" placeholder="Seleccione mes" options={meses} selectedValue={mes} onSelect={(val) => { setMes(val); setCurrentPage(1); }} />
               </div>
               <div className="sm:col-span-5">
-                <CustomDropdown label="Área de Origen" placeholder="Seleccione el área..." options={optsAreas} selectedValue={areaFiltro} onSelect={(val) => { setAreaFiltro(val); setCurrentPage(1); }} />
+                <CustomDropdown color="rose" label="Área de Origen" placeholder="Seleccione el área..." options={optsAreas} selectedValue={areaFiltro} onSelect={(val) => { setAreaFiltro(val); setCurrentPage(1); }} />
               </div>
               <div className="sm:col-span-2">
                 <button
@@ -452,9 +433,7 @@ export default function ReportesScreen() {
             </div>
           </div>
 
-          {/* =======================================================================================
-                                       COLUMNA DE KPIS + GRÁFICO EXPANDIBLE
-              ======================================================================================= */}
+          {/* --- COLUMNA DE KPIS + GRÁFICO --- */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch relative z-20">
 
             {/* SUB-PANEL IZQUIERDO: KPIs Verticales */}
@@ -516,7 +495,7 @@ export default function ReportesScreen() {
               })}
             </div>
 
-            {/* SUB-PANEL DERECHO: Canvas de Analítica Avanzada escalable */}
+            {/* SUB-PANEL DERECHO: Canvas de Analítica Avanzada */}
             <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-[0_4px_25px_rgb(0,0,0,0.02)] lg:col-span-8 flex flex-col justify-between">
               <div className="mb-4 text-left">
                 <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-wider">
