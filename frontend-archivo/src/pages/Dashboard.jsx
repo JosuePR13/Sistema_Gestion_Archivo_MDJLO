@@ -2,7 +2,13 @@ import { useEffect, useRef, useMemo } from 'react';
 import { useExpedientes } from '../context/useExpedientes';
 import { Chart } from 'chart.js/auto';
 
-// Componente Cabecera Reutilizable para consistencia visual de las secciones inferiores
+// ====================================================================
+// COMPONENTES AUXILIARES Y DICCIONARIOS DE CONFIGURACIÓN VISUAL
+// ====================================================================
+
+/**
+ * HeaderBlock - Cabecera modular para consistencia visual de paneles inferiores
+ */
 const HeaderBlock = ({ title, color }) => (
   <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3 bg-white">
     <div className="w-1.5 h-5 rounded-full shadow-sm" style={{ background: color }}></div>
@@ -10,7 +16,9 @@ const HeaderBlock = ({ title, color }) => (
   </div>
 );
 
-// --- DICCIONARIO DE TEMAS DE COLOR (Agregamos Cyan para el nuevo KPI) ---
+/**
+ * kpiThemes - Paleta oficial de gradientes translúcidos, bordes e iconos
+ */
 const kpiThemes = {
   cyan: { bg: 'bg-cyan-50/70', border: 'border-cyan-200/50', textValue: 'text-cyan-800', decoration: 'bg-cyan-500' },
   fuchsia: { bg: 'bg-fuchsia-50/70', border: 'border-fuchsia-200/50', textValue: 'text-fuchsia-800', decoration: 'bg-fuchsia-500' },
@@ -24,28 +32,42 @@ const kpiThemes = {
   purple: { bg: 'bg-purple-50/70', border: 'border-purple-200/50', textValue: 'text-purple-800', decoration: 'bg-purple-500' }
 };
 
+/**
+ * obtenerSaludo - Helper analítico para computar el saludo en tiempo real según la hora de la máquina
+ */
+const obtenerSaludo = () => {
+  const hora = new Date().getHours();
+  if (hora >= 6 && hora < 12) return '¡Buenos días';
+  if (hora >= 12 && hora < 19) return '¡Buenas tardes';
+  return '¡Buenas noches';
+};
+
+// ====================================================================
+// COMPONENTE PRINCIPAL: DASHBOARD
+// ====================================================================
 export default function Dashboard({ setScreen }) {
-  // --- CONSUMO DEL CONTEXTO CENTRALIZADO ---
+
+  // --- 1. ESTADO GLOBAL Y MEMORIZACIÓN ---
   const { expedientes: dataGlobal, loading } = useExpedientes();
 
-  // Memorizado estructural para resguardar la salud de los re-renders del gráfico
+  // Resguarda la referencia del arreglo global evitando re-renders cíclicos destructivos
   const expedientes = useMemo(() => {
     return !loading && dataGlobal ? dataGlobal : [];
   }, [loading, dataGlobal]);
 
   const P = '#0F4C81';
 
-  // --- REFERENCIA PARA EL GRÁFICO DE TENDENCIA ---
+  // --- 2. REFERENCIAS PARA INSTANCIAS DE GRÁFICOS ---
   const chartLineasRef = useRef(null);
   const instanceLineasRef = useRef(null);
 
+  // --- 3. HELPERS DE FORMATEO Y TIEMPO RELATIVO ---
   const safeText = (val, fallback = 'General') => {
     if (!val) return fallback;
     if (typeof val === 'object') return val.nombre || fallback;
     return String(val);
   };
 
-  // --- LÓGICA DE TIEMPO RELATIVO ---
   const tiempoRelativo = (fechaTarget) => {
     const f = new Date(fechaTarget);
     const ahora = new Date();
@@ -62,17 +84,51 @@ export default function Dashboard({ setScreen }) {
     return f.toLocaleDateString('es-PE');
   };
 
-  // --- KPI: CONTADOR DE INGRESOS DEL DÍA ---
-  const ingresosHoy = expedientes.filter(exp => {
-    if (!exp.created_at) return false;
-    const fechaDocLimpia = exp.created_at.substring(0, 10);
-    const hoyPeru = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
-    return fechaDocLimpia === hoyPeru;
-  }).length;
+  // --- 4. CÓMPUTO DE DATA PARA KPIS EN TIEMPO REAL ---
 
-  // --- AHORA SON EXACTAMENTE 10 OPCIONES PARA LLENAR 5 ARRIBA Y 5 ABAJO ---
+  // Filtra y acumula únicamente los documentos registrados en la fecha actual
+  const ingresosHoy = useMemo(() => {
+    const hoyPeru = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+    return expedientes.filter(exp => {
+      if (!exp.created_at) return false;
+      return exp.created_at.substring(0, 10) === hoyPeru;
+    }).length;
+  }, [expedientes]);
+
+  // Procesa y distribuye los expedientes creados en la semana actual (Lunes a Sábado) para la tendencia
+  const dataSemanalReal = useMemo(() => {
+    const conteos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+
+    const hoy = new Date();
+    const diaSemanaActual = hoy.getDay();
+    const distanciaAlLunes = diaSemanaActual === 0 ? -6 : 1 - diaSemanaActual;
+
+    const lunesSemana = new Date(hoy);
+    lunesSemana.setDate(hoy.getDate() + distanciaAlLunes);
+    lunesSemana.setHours(0, 0, 0, 0);
+
+    const sabadoSemana = new Date(lunesSemana);
+    sabadoSemana.setDate(lunesSemana.getDate() + 5);
+    sabadoSemana.setHours(23, 59, 59, 999);
+
+    expedientes.forEach(exp => {
+      if (!exp.created_at) return;
+      const fechaExp = new Date(exp.created_at);
+
+      if (fechaExp >= lunesSemana && fechaExp <= sabadoSemana) {
+        const d = fechaExp.getDay();
+        if (d >= 1 && d <= 6) {
+          conteos[d] += 1;
+        }
+      }
+    });
+
+    return [conteos[1], conteos[2], conteos[3], conteos[4], conteos[5], conteos[6]];
+  }, [expedientes]);
+
+  // --- 5. ENRUTAMIENTO Y ASIGNACIÓN DE CONTENEDORES ---
   const accesosDirectos = [
-    { name: 'expedientes', label: 'Ingresos Hoy', valor: ingresosHoy, theme: kpiThemes.cyan, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /> },
+    { name: 'ingresos-hoy-kpi', label: 'Ingresos Hoy', valor: ingresosHoy, theme: kpiThemes.cyan, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /> },
     { name: 'nuevo-expediente', label: 'Registrar Documento', theme: kpiThemes.fuchsia, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /> },
     { name: 'expedientes', label: 'Búsqueda Documental', theme: kpiThemes.pink, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> },
     { name: 'digitalizacion', label: 'Digitalización', theme: kpiThemes.lime, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /> },
@@ -84,7 +140,7 @@ export default function Dashboard({ setScreen }) {
     { name: 'reporte-costos', label: 'Reporte de Costos', theme: kpiThemes.purple, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" /> }
   ];
 
-  // --- CONSTRUCTOR COMPUESTO DE ACTIVIDAD RECIENTE ---
+  // --- 6. PARSEO DE HISTORIAL Y LÍNEA DE TIEMPO ---
   const historialTimeline = [];
   expedientes.forEach(e => {
     const timeCreacion = new Date(e.created_at).getTime();
@@ -95,43 +151,20 @@ export default function Dashboard({ setScreen }) {
     const numExp = safeText(e.numero_expediente);
     const isDigi = e.digitalizado === 1 || e.digitalizado === true;
 
-    historialTimeline.push({
-      id: `reg-${e.id}`,
-      num: numExp,
-      accion: 'Registrado',
-      fechaReal: timeCreacion,
-      tiempo: tiempoRelativo(timeCreacion),
-      area: areaOrig,
-      color: P
-    });
+    historialTimeline.push({ id: `reg-${e.id}`, num: numExp, accion: 'Registrado', fechaReal: timeCreacion, tiempo: tiempoRelativo(timeCreacion), area: areaOrig, color: P });
 
     if (isDigi) {
       const fechaFinalPdf = timePdf || timeActualizacion;
-      historialTimeline.push({
-        id: `digi-${e.id}`,
-        num: numExp,
-        accion: 'Digitalizado',
-        fechaReal: fechaFinalPdf + 10,
-        tiempo: tiempoRelativo(fechaFinalPdf),
-        area: areaOrig,
-        color: '#10B981'
-      });
+      historialTimeline.push({ id: `digi-${e.id}`, num: numExp, accion: 'Digitalizado', fechaReal: fechaFinalPdf + 10, tiempo: tiempoRelativo(fechaFinalPdf), area: areaOrig, color: '#10B981' });
     }
 
     if (timeActualizacion > timeCreacion + 3000) {
       const margenPrioridad = isDigi ? -10 : 0;
-      historialTimeline.push({
-        id: `upd-${e.id}-${timeActualizacion}`,
-        num: numExp,
-        accion: 'Actualizado',
-        fechaReal: timeActualizacion + margenPrioridad,
-        tiempo: tiempoRelativo(timeActualizacion),
-        area: areaOrig,
-        color: '#8B5CF6'
-      });
+      historialTimeline.push({ id: `upd-${e.id}-${timeActualizacion}`, num: numExp, accion: 'Actualizado', fechaReal: timeActualizacion + margenPrioridad, tiempo: tiempoRelativo(timeActualizacion), area: areaOrig, color: '#8B5CF6' });
     }
   });
 
+  // Depuración de llaves duplicadas por colisión de milisegundos en la base de datos
   const uniqueTimeline = [];
   const seenKeys = new Set();
   historialTimeline
@@ -146,9 +179,9 @@ export default function Dashboard({ setScreen }) {
 
   const actividadReciente = uniqueTimeline.slice(0, 6);
 
-  // --- EFECTO AUTOMÁTICO: CONEXIÓN GRÁFICO ---
+  // --- 7. CICLO DE VIDA: CONEXIÓN Y RENDER DEL GRÁFICO ---
   useEffect(() => {
-    if (loading || expedientes.length === 0) return;
+    if (loading) return;
 
     if (instanceLineasRef.current) instanceLineasRef.current.destroy();
 
@@ -160,7 +193,7 @@ export default function Dashboard({ setScreen }) {
           labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
           datasets: [{
             label: 'Flujo de Carga',
-            data: [ingresosHoy * 0.4, ingresosHoy * 0.7, ingresosHoy * 0.5, ingresosHoy * 0.9, ingresosHoy, ingresosHoy * 0.3],
+            data: dataSemanalReal,
             borderColor: '#0F4C81',
             backgroundColor: 'rgba(15, 76, 129, 0.04)',
             borderWidth: 3,
@@ -178,7 +211,11 @@ export default function Dashboard({ setScreen }) {
           plugins: { legend: { display: false } },
           scales: {
             x: { grid: { display: false } },
-            y: { grid: { borderDash: [5, 5], color: '#f1f5f9' }, ticks: { precision: 0 } }
+            y: {
+              beginAtZero: true,
+              grid: { borderDash: [5, 5], color: '#f1f5f9' },
+              ticks: { precision: 0 }
+            }
           }
         }
       });
@@ -187,71 +224,97 @@ export default function Dashboard({ setScreen }) {
     return () => {
       if (instanceLineasRef.current) instanceLineasRef.current.destroy();
     };
-  }, [loading, expedientes, ingresosHoy]);
+  }, [loading, dataSemanalReal]);
 
+  // --- 8. CONTROL DE CARGA ---
   if (loading) return (
     <div className="flex h-[50vh] items-center justify-center">
       <div className="animate-spin rounded-full h-10 w-10 border-b-4 border-[#0F4C81]"></div>
     </div>
   );
 
+  // --- 9. RENDERIZADO DEL LAYOUT ---
   return (
     <div className="p-4 sm:p-8 max-w-screen-xl mx-auto min-h-screen bg-[#F8FAFC] animate-fade-in text-left selection:bg-blue-200 selection:text-blue-900 pb-24">
 
-      {/* --- CABECERA DINÁMICA DE BIENVENIDA MUNICIPAL --- */}
+      {/* --- CABECERA PRINCIPAL CON SALUDO DINÁMICO --- */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#0F4C81]/15 via-blue-50/40 to-transparent p-6 sm:px-8 sm:py-5 rounded-3xl border border-blue-200/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-[#0F4C81]/10 border border-blue-200/50 flex items-center justify-center text-[#0F4C81] font-black shrink-0">🏛️</div>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">¡Buen día, Josué!</h1>
-            <span className="text-[11px] font-bold text-[#0F4C81] mt-1.5 uppercase tracking-wider">Módulo Principal de Monitoreo Archivístico</span>
+          <div className="w-10 h-10 rounded-xl bg-[#0F4C81]/10 border border-blue-200/50 flex items-center justify-center text-[#0F4C81] shrink-0 shadow-sm">
+            <svg fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+            </svg>
+          </div>
+          <div className="flex flex-col text-left">
+            <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">
+              {obtenerSaludo()}, Usuario!
+            </h1>
+            <span className="text-[11px] font-bold text-[#0F4C81] mt-1.5 uppercase tracking-wider">Módulo Principal de Monitoreo Documental</span>
           </div>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200/80 shadow-sm rounded-xl text-[10px] font-black text-emerald-600 uppercase tracking-wider">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          SISGEDO API ONLINE
+          En línea
         </div>
       </div>
 
-      {/* --- 10 TARJETAS (5 ARRIBA Y 5 ABAJO EXACTAS) --- */}
+      {/* --- REJILLA SIMÉTRICA DE 10 ELEMENTOS (5 COLUMNAS X 2 FILAS) --- */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6 mb-8 items-stretch">
-        {accesosDirectos.map((a, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => { if (typeof setScreen === 'function') setScreen({ name: a.name, id: null }); }}
-            className={`relative overflow-hidden p-6 rounded-2xl border ${a.theme.border} ${a.theme.bg} shadow-[0_4px_25px_rgba(0,0,0,0.015)] transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center justify-between gap-4 text-left w-full min-h-[110px] group`}
-          >
-            {/* Blur decorativo trasero */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-25 blur-xl ${a.theme.decoration} pointer-events-none`}></div>
+        {accesosDirectos.map((a, i) => {
 
-            {/* Bloque Izquierdo: Título y píldora de KPI (si existe) */}
-            <div className="relative z-10 flex flex-col justify-center min-w-0 flex-1">
-              <p className={`text-[12px] font-black uppercase tracking-wider ${a.theme.textValue} whitespace-normal break-words leading-snug`}>
-                {a.label}
-                {/* Micro-badge para mostrar la cuenta solo en Ingresos de Hoy */}
-                {a.valor !== undefined && (
-                  <span className="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 rounded-md bg-white/60 shadow-sm border border-white/50 text-[11px] leading-none">
+          // CASO A: TARJETA INFORMATIVA ANÁLITICA DE INGRESOS HOY
+          if (a.name === 'ingresos-hoy-kpi') {
+            return (
+              <div
+                key={i}
+                className={`relative overflow-hidden p-6 rounded-2xl border ${a.theme.border} ${a.theme.bg} shadow-[0_4px_25px_rgba(0,0,0,0.015)] flex items-center justify-between gap-4 text-left w-full min-h-[110px] cursor-default group transition-all duration-300 hover:-translate-y-1 hover:shadow-md`}
+              >
+                <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-25 blur-xl ${a.theme.decoration} pointer-events-none`}></div>
+                <div className="relative z-10 flex items-center gap-3 min-w-0 flex-1">
+                  <p className={`text-[12px] font-black uppercase tracking-wider ${a.theme.textValue} whitespace-normal break-words leading-snug`}>
+                    {a.label}
+                  </p>
+                  <span className={`text-3xl font-black tracking-tight ${a.theme.textValue} leading-none`}>
                     {a.valor}
                   </span>
-                )}
-              </p>
-            </div>
+                </div>
+                <div className={`relative z-10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/60 backdrop-blur-md shadow-sm ${a.theme.textValue} group-hover:scale-105 duration-300`}>
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {a.icon}
+                  </svg>
+                </div>
+              </div>
+            );
+          }
 
-            {/* Bloque Derecho: Caja de icono sutil */}
-            <div className={`relative z-10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/60 backdrop-blur-md shadow-sm ${a.theme.textValue} group-hover:scale-105 duration-300`}>
-              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {a.icon}
-              </svg>
-            </div>
-          </button>
-        ))}
+          // CASO B: BOTONES DIRECTOS OPERATIVOS CON MUTACIÓN DE ENRUTAMIENTO
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => { if (typeof setScreen === 'function') setScreen({ name: a.name, id: null }); }}
+              className={`relative overflow-hidden p-6 rounded-2xl border ${a.theme.border} ${a.theme.bg} shadow-[0_4px_25px_rgba(0,0,0,0.015)] transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center justify-between gap-4 text-left w-full min-h-[110px] group`}
+            >
+              <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-25 blur-xl ${a.theme.decoration} pointer-events-none`}></div>
+              <div className="relative z-10 flex flex-col justify-center min-w-0 flex-1">
+                <p className={`text-[12px] font-black uppercase tracking-wider ${a.theme.textValue} whitespace-normal break-words leading-snug`}>
+                  {a.label}
+                </p>
+              </div>
+              <div className={`relative z-10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/60 backdrop-blur-md shadow-sm ${a.theme.textValue} group-hover:scale-105 duration-300`}>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {a.icon}
+                </svg>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* --- SECCIÓN 3: COMPONENTE INFERIOR --- */}
+      {/* --- SECCIÓN INFERIOR COMPUESTA: TENDENCIA VS HISTORIAL DE ACCIONES --- */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
 
-        {/* GRÁFICO B: TENDENCIA SEMANAL DE CARGA */}
+        {/* PANEL DE TENDENCIA SEMANAL DE CARGA */}
         <div className="lg:col-span-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col">
           <HeaderBlock title="Tendencia Semanal de Carga" color={P} />
           <div className="p-8 flex-1 bg-white flex flex-col justify-center">
@@ -261,7 +324,7 @@ export default function Dashboard({ setScreen }) {
           </div>
         </div>
 
-        {/* PANEL: ACTIVIDAD RECIENTE */}
+        {/* PANEL DE ACTIVIDAD RECIENTE */}
         <div className="lg:col-span-4 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col">
           <HeaderBlock title="Actividad Reciente" color={P} />
           <div className="p-6 space-y-5 flex-1 flex flex-col justify-center bg-white">
