@@ -2,7 +2,7 @@ import { useEffect, useRef, useMemo } from 'react';
 import { useExpedientes } from '../context/useExpedientes';
 import { Chart } from 'chart.js/auto';
 
-// Componente Cabecera Reutilizable para consistencia visual
+// Componente Cabecera Reutilizable para consistencia visual de las secciones inferiores
 const HeaderBlock = ({ title, color }) => (
   <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3 bg-white">
     <div className="w-1.5 h-5 rounded-full shadow-sm" style={{ background: color }}></div>
@@ -10,30 +10,30 @@ const HeaderBlock = ({ title, color }) => (
   </div>
 );
 
-// --- DICCIONARIO DE TEMAS DE COLOR SEGÚN TU CONFIGURACIÓN OFICIAL ---
+// --- DICCIONARIO DE TEMAS DE COLOR (Agregamos Cyan para el nuevo KPI) ---
 const kpiThemes = {
-  fuchsia: { bg: 'bg-fuchsia-50/70', border: 'border-fuchsia-200/50', textLabel: 'text-fuchsia-700/70', textValue: 'text-fuchsia-800', decoration: 'bg-fuchsia-500' },
-  pink: { bg: 'bg-pink-50/70', border: 'border-pink-200/50', textLabel: 'text-pink-700/70', textValue: 'text-pink-800', decoration: 'bg-pink-500' },
-  lime: { bg: 'bg-lime-50/70', border: 'border-lime-200/50', textLabel: 'text-lime-700/70', textValue: 'text-lime-800', decoration: 'bg-lime-500' },
-  emerald: { bg: 'bg-emerald-50/70', border: 'border-emerald-200/50', textLabel: 'text-emerald-700/70', textValue: 'text-emerald-800', decoration: 'bg-emerald-500' },
-  rose: { bg: 'bg-rose-50/70', border: 'border-rose-200/50', textLabel: 'text-rose-700/70', textValue: 'text-rose-800', decoration: 'bg-rose-500' },
-  blue: { bg: 'bg-blue-50/70', border: 'border-blue-200/50', textLabel: 'text-blue-700/70', textValue: 'text-blue-800', decoration: 'bg-blue-500' },
-  sky: { bg: 'bg-sky-50/70', border: 'border-sky-200/50', textLabel: 'text-sky-700/70', textValue: 'text-sky-800', decoration: 'bg-sky-500' },
-  orange: { bg: 'bg-amber-50/70', border: 'border-amber-200/50', textLabel: 'text-amber-700/70', textValue: 'text-amber-800', decoration: 'bg-amber-500' }, // Se mapea orange al amber visual de tu reporte
-  purple: { bg: 'bg-purple-50/70', border: 'border-purple-200/50', textLabel: 'text-purple-700/70', textValue: 'text-purple-800', decoration: 'bg-purple-500' }
+  cyan: { bg: 'bg-cyan-50/70', border: 'border-cyan-200/50', textValue: 'text-cyan-800', decoration: 'bg-cyan-500' },
+  fuchsia: { bg: 'bg-fuchsia-50/70', border: 'border-fuchsia-200/50', textValue: 'text-fuchsia-800', decoration: 'bg-fuchsia-500' },
+  pink: { bg: 'bg-pink-50/70', border: 'border-pink-200/50', textValue: 'text-pink-800', decoration: 'bg-pink-500' },
+  lime: { bg: 'bg-lime-50/70', border: 'border-lime-200/50', textValue: 'text-lime-800', decoration: 'bg-lime-500' },
+  emerald: { bg: 'bg-emerald-50/70', border: 'border-emerald-200/50', textValue: 'text-emerald-800', decoration: 'bg-emerald-500' },
+  rose: { bg: 'bg-rose-50/70', border: 'border-rose-200/50', textValue: 'text-rose-800', decoration: 'bg-rose-500' },
+  blue: { bg: 'bg-blue-50/70', border: 'border-blue-200/50', textValue: 'text-blue-800', decoration: 'bg-blue-500' },
+  sky: { bg: 'bg-sky-50/70', border: 'border-sky-200/50', textValue: 'text-sky-800', decoration: 'bg-sky-500' },
+  orange: { bg: 'bg-amber-50/70', border: 'border-amber-200/50', textValue: 'text-amber-800', decoration: 'bg-amber-500' },
+  purple: { bg: 'bg-purple-50/70', border: 'border-purple-200/50', textValue: 'text-purple-800', decoration: 'bg-purple-500' }
 };
 
 export default function Dashboard({ setScreen }) {
   // --- CONSUMO DEL CONTEXTO CENTRALIZADO ---
   const { expedientes: dataGlobal, loading } = useExpedientes();
 
-  // Guardamos los expedientes con useMemo para asegurar la consistencia de renderizado
+  // Memorizado estructural para resguardar la salud de los re-renders del gráfico
   const expedientes = useMemo(() => {
     return !loading && dataGlobal ? dataGlobal : [];
   }, [loading, dataGlobal]);
 
   const P = '#0F4C81';
-  const Y = '#FFC107';
 
   // --- REFERENCIA PARA EL GRÁFICO DE TENDENCIA ---
   const chartLineasRef = useRef(null);
@@ -45,7 +45,7 @@ export default function Dashboard({ setScreen }) {
     return String(val);
   };
 
-  // --- LÓGICA DE TIEMPO RELATIVO (CONSERVADA AL 100% SIN ALTERACIONES) ---
+  // --- LÓGICA DE TIEMPO RELATIVO ---
   const tiempoRelativo = (fechaTarget) => {
     const f = new Date(fechaTarget);
     const ahora = new Date();
@@ -62,7 +62,7 @@ export default function Dashboard({ setScreen }) {
     return f.toLocaleDateString('es-PE');
   };
 
-  // --- MÉTRICA EXCLUSIVA PARA EL COMPORTAMIENTO INTERNO DEL GRÁFICO ---
+  // --- KPI: CONTADOR DE INGRESOS DEL DÍA ---
   const ingresosHoy = expedientes.filter(exp => {
     if (!exp.created_at) return false;
     const fechaDocLimpia = exp.created_at.substring(0, 10);
@@ -70,20 +70,21 @@ export default function Dashboard({ setScreen }) {
     return fechaDocLimpia === hoyPeru;
   }).length;
 
-  // --- LAS 9 OPCIONES OPERATIVAS ADAPTADAS CON TUS COLORES OFICIALES Y DISEÑO DE KPICARD ---
+  // --- AHORA SON EXACTAMENTE 10 OPCIONES PARA LLENAR 5 ARRIBA Y 5 ABAJO ---
   const accesosDirectos = [
-    { name: 'nuevo-expediente', label: 'Ingresos de Hoy', desc: 'Registrar Documento', theme: kpiThemes.fuchsia, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /> },
-    { name: 'expedientes', label: 'Búsqueda Documental', desc: 'Consulta avanzada y localización.', theme: kpiThemes.pink, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> },
-    { name: 'digitalizacion', label: 'Digitalización', desc: 'Carga de PDFs y control de folios.', theme: kpiThemes.lime, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /> },
-    { name: 'seguimiento', label: 'Control de Plazos', desc: 'Vigencias y alertas de depuración.', theme: kpiThemes.emerald, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /> },
-    { name: 'reportes', label: 'Reporte Documental', desc: 'Estadísticas del fondo archivístico.', theme: kpiThemes.rose, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" /> },
-    { name: 'nueva-solicitud', label: 'Registrar Solicitud', desc: 'Ingreso formal de Mesa de Partes.', theme: kpiThemes.blue, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /> },
-    { name: 'bandeja-solicitudes', label: 'Bandeja Solicitudes', desc: 'Administración de trámites externos.', theme: kpiThemes.sky, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /> },
-    { name: 'historial-caja', label: 'Historial de Caja', desc: 'Auditoría histórica de tasas de copias.', theme: kpiThemes.orange, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /> },
-    { name: 'reporte-costos', label: 'Reporte de Costos', desc: 'Métricas de recaudación de caja.', theme: kpiThemes.purple, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" /> }
+    { name: 'expedientes', label: 'Ingresos Hoy', valor: ingresosHoy, theme: kpiThemes.cyan, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /> },
+    { name: 'nuevo-expediente', label: 'Registrar Documento', theme: kpiThemes.fuchsia, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /> },
+    { name: 'expedientes', label: 'Búsqueda Documental', theme: kpiThemes.pink, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> },
+    { name: 'digitalizacion', label: 'Digitalización', theme: kpiThemes.lime, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /> },
+    { name: 'seguimiento', label: 'Control de Plazos', theme: kpiThemes.emerald, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /> },
+    { name: 'reportes', label: 'Reporte Documental', theme: kpiThemes.rose, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" /> },
+    { name: 'nueva-solicitud', label: 'Registrar Solicitud', theme: kpiThemes.blue, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /> },
+    { name: 'bandeja-solicitudes', label: 'Bandeja Solicitudes', theme: kpiThemes.sky, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /> },
+    { name: 'historial-caja', label: 'Historial de Caja', theme: kpiThemes.orange, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /> },
+    { name: 'reporte-costos', label: 'Reporte de Costos', theme: kpiThemes.purple, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 13h2v7H3zm5-6h2v13H8zm5 9h2v4h-2zm5-12h2v16h-2z" /> }
   ];
 
-  // --- CONSTRUCTOR COMPUESTO DE ACTIVIDAD RECIENTE (CONSERVADO AL 100%) ---
+  // --- CONSTRUCTOR COMPUESTO DE ACTIVIDAD RECIENTE ---
   const historialTimeline = [];
   expedientes.forEach(e => {
     const timeCreacion = new Date(e.created_at).getTime();
@@ -145,7 +146,7 @@ export default function Dashboard({ setScreen }) {
 
   const actividadReciente = uniqueTimeline.slice(0, 6);
 
-  // --- EFECTO AUTOMÁTICO: CONEXIÓN GRÁFICO (TENDENCIA DE CARGA) ---
+  // --- EFECTO AUTOMÁTICO: CONEXIÓN GRÁFICO ---
   useEffect(() => {
     if (loading || expedientes.length === 0) return;
 
@@ -188,6 +189,12 @@ export default function Dashboard({ setScreen }) {
     };
   }, [loading, expedientes, ingresosHoy]);
 
+  if (loading) return (
+    <div className="flex h-[50vh] items-center justify-center">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-4 border-[#0F4C81]"></div>
+    </div>
+  );
+
   return (
     <div className="p-4 sm:p-8 max-w-screen-xl mx-auto min-h-screen bg-[#F8FAFC] animate-fade-in text-left selection:bg-blue-200 selection:text-blue-900 pb-24">
 
@@ -206,48 +213,42 @@ export default function Dashboard({ setScreen }) {
         </div>
       </div>
 
-      {/* --- ENCAPSULADO CORRECTO: 9 ACCESOS USANDO EL DISEÑO ORIGINAL DE KPICARD EN 5 COLUMNAS --- */}
-      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col mb-8">
-        <HeaderBlock title="Accesos Directos del Sistema" color={Y} />
+      {/* --- 10 TARJETAS (5 ARRIBA Y 5 ABAJO EXACTAS) --- */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6 mb-8 items-stretch">
+        {accesosDirectos.map((a, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => { if (typeof setScreen === 'function') setScreen({ name: a.name, id: null }); }}
+            className={`relative overflow-hidden p-6 rounded-2xl border ${a.theme.border} ${a.theme.bg} shadow-[0_4px_25px_rgba(0,0,0,0.015)] transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center justify-between gap-4 text-left w-full min-h-[110px] group`}
+          >
+            {/* Blur decorativo trasero */}
+            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-25 blur-xl ${a.theme.decoration} pointer-events-none`}></div>
 
-        <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 bg-slate-50/30 items-stretch">
+            {/* Bloque Izquierdo: Título y píldora de KPI (si existe) */}
+            <div className="relative z-10 flex flex-col justify-center min-w-0 flex-1">
+              <p className={`text-[12px] font-black uppercase tracking-wider ${a.theme.textValue} whitespace-normal break-words leading-snug`}>
+                {a.label}
+                {/* Micro-badge para mostrar la cuenta solo en Ingresos de Hoy */}
+                {a.valor !== undefined && (
+                  <span className="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 rounded-md bg-white/60 shadow-sm border border-white/50 text-[11px] leading-none">
+                    {a.valor}
+                  </span>
+                )}
+              </p>
+            </div>
 
-          {accesosDirectos.map((a, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => { if (typeof setScreen === 'function') setScreen({ name: a.name, id: null }); }}
-              className={`relative overflow-hidden p-5 rounded-2xl border ${a.theme.border} ${a.theme.bg} transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center justify-between gap-3 text-left w-full min-h-[92px] group`}
-            >
-              {/* Resaltado especial de borde verde esmeralda lateral únicamente para el primer módulo (Registrar Documento) */}
-              {i === 0 && <div className="absolute left-0 top-0 h-full w-1.5 bg-emerald-500 z-20"></div>}
-
-              {/* Blur de decoración de fondo de tu KpiCard original */}
-              <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-20 blur-xl ${a.theme.decoration} pointer-events-none`}></div>
-
-              {/* Contenido de Texto exacto: Título arriba, descripción abajo */}
-              <div className="relative z-10 flex flex-col min-w-0 flex-1">
-                <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 ${a.theme.textLabel} truncate`}>
-                  {a.label}
-                </p>
-                <p className={`text-[11px] font-bold text-slate-500 leading-snug line-clamp-2`}>
-                  {a.desc}
-                </p>
-              </div>
-
-              {/* Caja de Icono a la derecha: fondo blanco/60 con desenfoque de fondo */}
-              <div className={`relative z-10 w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/60 backdrop-blur-md shadow-sm ${a.theme.textValue} group-hover:scale-105 duration-300`}>
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {a.icon}
-                </svg>
-              </div>
-            </button>
-          ))}
-
-        </div>
+            {/* Bloque Derecho: Caja de icono sutil */}
+            <div className={`relative z-10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/60 backdrop-blur-md shadow-sm ${a.theme.textValue} group-hover:scale-105 duration-300`}>
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {a.icon}
+              </svg>
+            </div>
+          </button>
+        ))}
       </div>
 
-      {/* --- SECCIÓN 3: COMPONENTE INFERIOR (GRÁFICO TENDENCIA VS ACTIVIDAD RECIENTE) --- */}
+      {/* --- SECCIÓN 3: COMPONENTE INFERIOR --- */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
 
         {/* GRÁFICO B: TENDENCIA SEMANAL DE CARGA */}
