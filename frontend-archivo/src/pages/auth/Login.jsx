@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import api from '../../services/api';
-import logoMuni from '../../assets/Logo_2.png';
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
@@ -44,84 +43,109 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 selection:bg-blue-200 selection:text-blue-900">
-      <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#0F4C81] via-[#125896] to-[#0A3156] flex-col p-12 justify-between relative overflow-hidden shadow-[10px_0_30px_rgba(0,0,0,0.1)] z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400/20 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-300/10 rounded-full blur-[80px] pointer-events-none"></div>
-        <div className="relative z-10">
-          <div className="w-12 h-1.5 bg-muni-yellow rounded-full mb-10 shadow-[0_0_15px_rgba(255,193,7,0.5)]"></div>
-          <div className="flex flex-col text-white mt-8">
-            <div className="w-40 h-40 bg-white/10 backdrop-blur-md rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.2)] border border-white/20 flex items-center justify-center overflow-hidden mb-8 transition-transform hover:scale-105 duration-500">
-              <img
-                src={logoMuni}
-                alt="Logo Municipalidad JLO"
-                className="w-full h-full object-cover rounded-full"
-              />
-            </div>
-            <p className="text-muni-yellow text-xs font-bold uppercase tracking-[0.2em] mb-1.5 drop-shadow-md">
-              Municipalidad Distrital
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#0F4C81] via-[#104a82] to-[#0A3156] relative overflow-hidden selection:bg-blue-200 selection:text-blue-900 text-left">
+
+      {/* --- ARTE ABSTRACTO DE FONDO --- */}
+      <div className="absolute top-[-15%] left-[-10%] w-[45vw] h-[45vw] bg-gradient-to-br from-blue-500 to-[#0F4C81] rounded-full opacity-90 shadow-[inset_0_0_80px_rgba(0,0,0,0.3)] pointer-events-none z-0"></div>
+      <div className="absolute top-[30%] right-[-5%] w-[35vw] h-[35vw] bg-gradient-to-tl from-blue-400 to-[#125896] rounded-full opacity-80 shadow-2xl pointer-events-none z-0"></div>
+      <div className="absolute bottom-[-20%] left-[20%] w-[40vw] h-[40vw] bg-gradient-to-tr from-[#082846] to-blue-500 rounded-full opacity-70 shadow-[0_20px_60px_rgba(0,0,0,0.4)] pointer-events-none z-0"></div>
+
+      <p className="absolute bottom-8 left-8 lg:left-16 text-blue-100/50 text-xs font-bold tracking-wider z-10">MDJLO © 2026</p>
+
+      {/* --- CONTENEDOR CENTRAL --- */}
+      <div className="w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 flex flex-col lg:flex-row items-center justify-between gap-16 relative z-10">
+
+        {/* --- LADO IZQUIERDO: TEXTOS --- */}
+        <div className="w-full lg:w-1/2 flex flex-col text-white pt-10 lg:pt-0">
+
+          {/* ========================================================================= */}
+          {/*                                   LOGO                                    */}
+          {/* ========================================================================= */}
+          <div
+            className="self-start h-[90px] bg-white rounded-2xl shadow-xl flex items-center justify-center px-7 py-3 mb-8 transition-transform hover:scale-105 duration-300 transform-gpu"
+            style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'antialiased' }}
+          >
+            <img
+              src="/img/logo_muni.png"
+              alt="Logo Municipalidad JLO"
+              className="h-full w-auto object-contain transform-gpu"
+            />
+          </div>
+          {/* ========================================================================= */}
+
+          <p className="text-muni-yellow text-xs font-black uppercase tracking-[0.25em] mb-2 drop-shadow-md">
+            Municipalidad Distrital
+          </p>
+          <h1 className="text-5xl xl:text-6xl font-black mb-4 tracking-tight text-white drop-shadow-lg leading-none">
+            José Leonardo Ortiz
+          </h1>
+          <p className="text-blue-100/80 text-sm mb-10 font-bold uppercase tracking-widest">
+            Lambayeque — Perú
+          </p>
+
+          <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.1)] max-w-lg">
+            <div className="w-10 h-1 bg-muni-yellow rounded-full mb-4"></div>
+            <h3 className="text-white font-black text-lg mb-2 tracking-wide">
+              Sistema de Gestión Documental
+            </h3>
+            <p className="text-blue-100/80 text-sm leading-relaxed font-medium">
+              Plataforma centralizada para la administración de archivos, digitalización en alta resolución y control riguroso de documentos municipales.
             </p>
-            <h1 className="text-4xl font-extrabold mb-1 tracking-tight text-white drop-shadow-sm">
-              José Leonardo Ortiz
-            </h1>
-            <p className="text-blue-100/80 text-sm mb-12 font-medium">
-              Lambayeque — Perú
-            </p>
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all hover:bg-white/10">
-              <p className="text-white font-bold text-sm mb-2 tracking-wide">
-                Sistema de Gestión de Archivos y Digitalización Documental
-              </p>
-              <p className="text-blue-100/70 text-xs leading-relaxed font-medium">
-                Unidad Funcional de Archivo y Acceso Documentario. Gestión integral de expedientes, digitalización documental y seguimiento de antigüedad.
-              </p>
-            </div>
           </div>
         </div>
 
-        <p className="text-blue-100/40 text-xs font-semibold tracking-wider relative z-10">MDJLO © 2026</p>
-      </div>
+        {/* --- LADO DERECHO: TARJETA FLOTANTE --- */}
+        <div className="w-full max-w-[460px] bg-white rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] p-10 lg:p-12 relative z-20 transform transition-all animate-fade-in">
 
-      <div className="flex-1 flex items-center justify-center bg-[#F8FAFC] p-8 relative">
-        <div className="w-full max-w-[400px] bg-white rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-10 transform transition-all">
-          <div className="w-10 h-1.5 bg-muni-yellow rounded-full mb-8"></div>
-          <h2 className="text-2xl font-extrabold text-slate-800 mb-1.5 tracking-tight">Iniciar Sesión</h2>
-          <p className="text-slate-400 text-sm mb-8 font-medium">Ingrese sus credenciales corporativas</p>
+          <div className="mb-10 text-center lg:text-left">
+            <h2 className="text-[32px] font-black text-[#0F4C81] tracking-tight mb-2 leading-none">Iniciar Sesión</h2>
+            <p className="text-slate-400 text-xs font-bold tracking-widest uppercase mt-3">Ingresa tus credenciales corporativas</p>
+          </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl font-semibold flex items-center gap-3 animate-shake shadow-sm">
-              <span className="flex-shrink-0 text-red-500">⚠️</span>
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-[13px] rounded-xl font-bold flex items-start gap-3 shadow-sm">
+              <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
               <span className="leading-tight">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-[13px] font-bold text-slate-500 mb-2 tracking-wide">Correo</label>
+              <label className="block text-[11px] font-black text-slate-500 mb-2 tracking-wider uppercase">Correo</label>
               <div className="relative flex items-center group">
-                <span className="absolute left-4 text-slate-400 text-sm transition-colors group-focus-within:text-[#0F4C81]">👤</span>
+                <div className="absolute left-4 text-slate-400 transition-colors group-focus-within:text-[#0F4C81]">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="Ingrese su usuario o correo"
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300 font-medium text-slate-700 placeholder-slate-400"
+                  placeholder="Ingrese su correo"
+                  className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-xl text-sm focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300 font-bold text-slate-700 placeholder-slate-300 hover:border-slate-200"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[13px] font-bold text-slate-500 mb-2 tracking-wide">Contraseña</label>
+              <label className="block text-[11px] font-black text-slate-500 mb-2 tracking-wider uppercase">Contraseña</label>
               <div className="relative flex items-center group">
-                <span className="absolute left-4 text-slate-400 text-sm transition-colors group-focus-within:text-[#0F4C81]">🔒</span>
+                <div className="absolute left-4 text-slate-400 transition-colors group-focus-within:text-[#0F4C81]">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300 font-medium text-slate-700 placeholder-slate-400"
+                  className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-xl text-sm focus:border-[#0F4C81] focus:ring-4 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300 font-bold text-slate-700 placeholder-slate-300 hover:border-slate-200"
                 />
               </div>
             </div>
@@ -129,11 +153,10 @@ const Login = ({ onLoginSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 mt-8 rounded-2xl font-bold text-white text-[13px] uppercase tracking-widest bg-gradient-to-r from-[#0F4C81] to-blue-700 shadow-[0_8px_20px_-6px_rgba(15,76,129,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(15,76,129,0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-70 disabled:pointer-events-none disabled:transform-none"
+              className="w-full py-4 mt-4 rounded-xl font-black text-white text-[13px] uppercase tracking-widest bg-gradient-to-r from-[#0F4C81] to-[#125896] shadow-[0_10px_20px_-6px_rgba(15,76,129,0.5)] hover:shadow-[0_15px_25px_-6px_rgba(15,76,129,0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-70 disabled:pointer-events-none"
             >
-              {loading ? 'Validando...' : 'Iniciar sesión'}
+              {loading ? 'Validando...' : 'Iniciar Sesión'}
             </button>
-
           </form>
         </div>
       </div>
