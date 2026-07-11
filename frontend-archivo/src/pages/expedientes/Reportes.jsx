@@ -251,7 +251,7 @@ export default function ReportesScreen() {
   // ==========================================================================
   const tiposReporte = [
     {
-      t: 'Expedientes Registrados',
+      t: 'Documentos Registrados',
       d: 'Ingresos al sistema',
       c: '#0F4C81',
       bgGradient: 'from-blue-500/5 via-blue-500/10 to-transparent',
