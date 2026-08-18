@@ -21,12 +21,11 @@ const HeaderBlock = ({ title, color }) => (
  */
 const kpiThemes = {
   cyan: { bg: 'bg-cyan-50/70', border: 'border-cyan-200/50', textValue: 'text-cyan-800', decoration: 'bg-cyan-500' },
-  fuchsia: { bg: 'bg-fuchsia-50/70', border: 'border-fuchsia-200/50', textValue: 'text-fuchsia-800', decoration: 'bg-fuchsia-500' },
+  blue: { bg: 'bg-blue-50/70', border: 'border-blue-200/50', textValue: 'text-blue-800', decoration: 'bg-blue-500' },
   pink: { bg: 'bg-pink-50/70', border: 'border-pink-200/50', textValue: 'text-pink-800', decoration: 'bg-pink-500' },
   lime: { bg: 'bg-lime-50/70', border: 'border-lime-200/50', textValue: 'text-lime-800', decoration: 'bg-lime-500' },
   emerald: { bg: 'bg-emerald-50/70', border: 'border-emerald-200/50', textValue: 'text-emerald-800', decoration: 'bg-emerald-500' },
   rose: { bg: 'bg-rose-50/70', border: 'border-rose-200/50', textValue: 'text-rose-800', decoration: 'bg-rose-500' },
-  blue: { bg: 'bg-blue-50/70', border: 'border-blue-200/50', textValue: 'text-blue-800', decoration: 'bg-blue-500' },
   sky: { bg: 'bg-sky-50/70', border: 'border-sky-200/50', textValue: 'text-sky-800', decoration: 'bg-sky-500' },
   orange: { bg: 'bg-amber-50/70', border: 'border-amber-200/50', textValue: 'text-amber-800', decoration: 'bg-amber-500' },
   purple: { bg: 'bg-purple-50/70', border: 'border-purple-200/50', textValue: 'text-purple-800', decoration: 'bg-purple-500' }
@@ -129,7 +128,7 @@ export default function Dashboard({ setScreen }) {
   // --- 5. ENRUTAMIENTO Y ASIGNACIÓN DE CONTENEDORES ---
   const accesosDirectos = [
     { name: 'ingresos-hoy-kpi', label: 'Ingresos Hoy', valor: ingresosHoy, theme: kpiThemes.cyan, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /> },
-    { name: 'nuevo-expediente', label: 'Registrar Documento', theme: kpiThemes.fuchsia, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /> },
+    { name: 'nuevo-expediente', label: 'Registrar Documento', theme: kpiThemes.blue, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /> },
     { name: 'expedientes', label: 'Búsqueda Documental', theme: kpiThemes.pink, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> },
     { name: 'digitalizacion', label: 'Digitalización', theme: kpiThemes.lime, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /> },
     { name: 'seguimiento', label: 'Control de Plazos', theme: kpiThemes.emerald, icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /> },
