@@ -28,5 +28,7 @@ class Solicitud extends Model
         'paginas_fedateadas',
         'numero_hojas',
         'cantidad_copias',
+        'numero_voucher',
+        'fecha_pago',
     ];
 }

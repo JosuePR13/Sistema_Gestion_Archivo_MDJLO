@@ -6,83 +6,78 @@ import { useSolicitudes } from '../../context/useSolicitudes';
 import { useCaja } from '../../context/CajaContext';
 
 export default function BandejaSolicitudes({ triggerToast }) {
-    // CONTEXTOS GLOBALES: Consumo de datos compartidos de Mesa de Partes y Caja Recaudación
+    // CONTEXTOS GLOBALES
     const { solicitudes, loadingSolicitudes, refrescarSolicitudes } = useSolicitudes();
     const { refrescarCaja } = useCaja();
 
-    // ESTADOS DE CONTROL Y FILTRADO DE LA TABLA PRINCIPAL
-    const [searchTerm, setSearchTerm] = useState(''); // Cadena de búsqueda ingresada por el operador
-    const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null); // Instancia del registro bajo evaluación
-    const [currentStep, setCurrentStep] = useState(1); // Control del asistente secuencial por pasos (Paso 1, 2 o 3)
+    // ESTADOS DE CONTROL Y FILTRADO
+    const [searchTerm, setSearchTerm] = useState('');
+    const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
+    const [currentStep, setCurrentStep] = useState(1);
 
     // ESTADOS DEL DICTAMEN DE EVALUACIÓN
-    const [nuevoEstado, setNuevoEstado] = useState(''); // Almacena la resolución tomada: 'Aceptada' o 'Rechazada'
-    const [motivoRechazo, setMotivoRechazo] = useState(''); // Sustento técnico legal obligatorio en caso de denegación
-    const [isUpdating, setIsSubmitting] = useState(false); // Estado asíncrono para bloquear la UI durante el guardado
+    const [nuevoEstado, setNuevoEstado] = useState('');
+    const [motivoRechazo, setMotivoRechazo] = useState('');
+    const [isUpdating, setIsSubmitting] = useState(false);
 
-    // ESTADOS DE LIQUIDACIÓN FINANCIERA (TUPA MUNICIPAL)
-    const [tipoFormatotupa, setTipoFormatotupa] = useState(''); // Modalidad del documento (Copia Simple, Fedateado, Mixto)
-    const [paginasRequeridas, setPaginasRequeridas] = useState(''); // Rango de folios para formatos independientes
-    const [numHojas, setNumHojas] = useState(1); // Cantidad de hojas base del expediente original
-    const [cantCopias, setCantCopias] = useState(1); // Factor de multiplicación por juegos de copias requeridos
+    // ESTADOS DE LIQUIDACIÓN FINANCIERA
+    const [tipoFormatotupa, setTipoFormatotupa] = useState('');
+    const [paginasRequeridas, setPaginasRequeridas] = useState('');
+    const [numHojas, setNumHojas] = useState(1);
+    const [cantCopias, setCantCopias] = useState(1);
 
     // ESTADOS ADICIONALES PARA FORMULACIONES MIXTAS
-    const [paginasSimples, setPaginasSimples] = useState(''); // Segmento de páginas para copias de tipo simple
-    const [paginasFedateadas, setPaginasFedateadas] = useState(''); // Segmento de páginas sujetas a certificación por Fedatario
+    const [paginasSimples, setPaginasSimples] = useState('');
+    const [paginasFedateadas, setPaginasFedateadas] = useState('');
 
-    // ESTADOS DE SEGURIDAD CONTRA ABANDONO ACCIDENTAL DE MODALES
-    const [showConfirmExitModal, setShowConfirmExitModal] = useState(false); // Flag de apertura para la ventana de descarte
-    const [pendingAction, setPendingAction] = useState(null); // Almacena el destino solicitado por el usuario ('CLOSE' o 'BACK')
+    // ---> ESTADOS: DATOS DE PAGO <---
+    const [numeroVoucher, setNumeroVoucher] = useState('');
+    const [fechaPago, setFechaPago] = useState('');
 
-    // PARÁMETROS DE PAGINACIÓN LOCAL EN MEMORIA CLIENTE
+    // ESTADOS DE SEGURIDAD
+    const [showConfirmExitModal, setShowConfirmExitModal] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null);
+
+    // PAGINACIÓN
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 12; // Cuota fija de registros por grilla visual
+    const itemsPerPage = 12;
 
-    // REGLA DE NEGOCIO: Cálculo matemático de la tasa TUPA distrital (S/. 0.10 por cada folio liquidado)
+    // REGLA DE NEGOCIO: Cálculo matemático
     const costoCalculado = ((parseInt(numHojas) || 0) * (parseInt(cantCopias) || 0) * 0.10).toFixed(2);
 
-    // DICCIONARIOS DE SELECCIÓN PARA DROPDOWNS CUSTOMIZADOS
-    const opcionesDecision = [
-        { id: 'Aceptada', nombre: '✅ Aprobada' },
-        { id: 'Rechazada', nombre: '❌ Denegada' }
-    ];
-
-    // CORRECCIÓN INYECTADA: Se asocia propiedad 'color' para el focus dinámico de cada módulo
     const opcionesFormatosTupa = [
         { id: 'Copia Simple A4', nombre: '📄 Copia Simple Formato A4' },
         { id: 'Fedateado', nombre: '📜 Formato Fedateado' },
         { id: 'Mixto', nombre: '📑 Formato Mixto (Simple y Fedateado)' }
     ];
 
-    // REGEX VALIDATOR: Bloquea caracteres alfanuméricos permitiendo solo números, guiones, espacios y comas
     const handleValidacionFolios = (valorStr, setterFunction) => {
         if (/^[0-9,\- ]*$/.test(valorStr)) {
             setterFunction(valorStr);
         }
     };
 
-    // EVALUACIÓN DE INTEGRIDAD: Verifica si existen campos llenados en el paso final antes de permitir una salida limpia
+    // EVALUACIÓN DE INTEGRIDAD
     const tieneProgresoEnPasoFinal = () => {
         if (currentStep !== 3) return false;
         if (nuevoEstado === 'Rechazada' && motivoRechazo.trim().length > 0) return true;
         if (nuevoEstado === 'Aceptada') {
+            if (numeroVoucher.trim().length > 0 || fechaPago.trim().length > 0) return true;
             if (tipoFormatotupa === 'Mixto' && (paginasSimples.trim().length > 0 || paginasFedateadas.trim().length > 0)) return true;
             if (tipoFormatotupa !== 'Mixto' && paginasRequeridas.trim().length > 0) return true;
         }
         return false;
     };
 
-    // INTERCEPTOR DE CIERRE: Fuerza la confirmación reactiva si detecta progreso latente
     const intentarCerrarModal = () => {
         if (tieneProgresoEnPasoFinal()) {
             setPendingAction('CLOSE');
             setShowConfirmExitModal(true);
         } else {
-            setSolicitudSeleccionada(null); // Cierre inmediato sin fricciones
+            setSolicitudSeleccionada(null);
         }
     };
 
-    // INTERCEPTOR DE RETROCESO: Evita pérdida de folios calculados en el Paso 3 al intentar volver al Paso 2
     const intentarIrAtras = () => {
         if (currentStep === 3 && tieneProgresoEnPasoFinal()) {
             setPendingAction('BACK');
@@ -92,7 +87,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         }
     };
 
-    // CONTROL DE CONFIRMACIÓN: Resuelve y ejecuta las acciones en cola que fueron interceptadas por seguridad
     const confirmarAccionPendiente = () => {
         setShowConfirmExitModal(false);
         if (pendingAction === 'CLOSE') {
@@ -103,12 +97,15 @@ export default function BandejaSolicitudes({ triggerToast }) {
         setPendingAction(null);
     };
 
-    // VALIDACIÓN DE NEGOCIO: Aplica restricciones mínimas de caracteres y obligatoriedad de campos para la firma del trámite
+    // VALIDACIÓN DE NEGOCIO
     const validarCamposPasoFinal = () => {
         if (nuevoEstado === 'Rechazada') {
-            return motivoRechazo.trim().length > 4; // Sustento técnico mínimo de 5 caracteres
+            return motivoRechazo.trim().length > 4;
         }
         if (nuevoEstado === 'Aceptada') {
+            if (parseFloat(costoCalculado) > 0) {
+                if (numeroVoucher.trim().length === 0 || fechaPago.trim().length === 0) return false;
+            }
             if (!tipoFormatotupa) return false;
             if (tipoFormatotupa === 'Mixto') {
                 return paginasSimples.trim().length > 0 && paginasFedateadas.trim().length > 0;
@@ -119,27 +116,22 @@ export default function BandejaSolicitudes({ triggerToast }) {
         return false;
     };
 
-    // ALGORITMO FILTRADO HÍBRIDO: Evaluación estricta posicional para DNI e inclusiones libres para nombres/apellidos
     const solicitudesFiltradas = (solicitudes || []).filter(sol => {
-        if (sol.estado !== 'Pendiente') return false; // Solo procesa expedientes en cola de espera
-
+        if (sol.estado !== 'Pendiente') return false;
         const buscar = searchTerm.trim().toLowerCase();
         if (!buscar) return true;
-
-        const porDni = sol.dni ? sol.dni.toLowerCase().startsWith(buscar) : false; // El DNI se busca desde el inicio
+        const porDni = sol.dni ? sol.dni.toLowerCase().startsWith(buscar) : false;
         const nombreCompleto = sol.nombres && sol.apellidos ? `${sol.nombres} ${sol.apellidos}`.toLowerCase() : '';
-        const porNombre = nombreCompleto.includes(buscar); // Los nombres se buscan en cualquier posición de la cadena
-
+        const porNombre = nombreCompleto.includes(buscar);
         return porDni || porNombre;
     });
 
-    // CÁLCULO ARITMÉTICO DE PAGINACIÓN SOBRE EL SET DE DATOS YA FILTRADO
     const totalPages = Math.ceil(solicitudesFiltradas.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = solicitudesFiltradas.slice(indexOfFirstItem, indexOfLastItem); // Sub-array exacto a renderizar en la grilla
+    const currentItems = solicitudesFiltradas.slice(indexOfFirstItem, indexOfLastItem);
 
-    // INICIALIZADOR DEL ASISTENTE: Limpia por completo la memoria de estados para evitar residuos de expedientes anteriores
+    // INICIALIZADOR DEL ASISTENTE
     const abrirModalGestion = (solicitud) => {
         setSolicitudSeleccionada(solicitud);
         setCurrentStep(1);
@@ -151,9 +143,11 @@ export default function BandejaSolicitudes({ triggerToast }) {
         setPaginasFedateadas('');
         setNumHojas(1);
         setCantCopias(1);
+        setNumeroVoucher('');
+        setFechaPago('');
     };
 
-    // PERSISTENCIA DE LA EVALUACIÓN: Sincroniza la decisión con el backend y deriva el expediente hacia Caja si procede
+    // PERSISTENCIA DE LA EVALUACIÓN
     const handleActualizarEstado = async (e) => {
         e.preventDefault();
         if (!validarCamposPasoFinal()) return;
@@ -162,7 +156,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         let pSimples = null;
         let pFedateadas = null;
 
-        // Distribución asimétrica de folios basada en la modalidad liquidada
         if (nuevoEstado === 'Aceptada') {
             if (tipoFormatotupa === 'Copia Simple A4') pSimples = paginasRequeridas;
             if (tipoFormatotupa === 'Fedateado') pFedateadas = paginasRequeridas;
@@ -173,7 +166,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
         }
 
         try {
-            // Petición PUT para actualizar el ciclo de vida del expediente documentario
             await api.put(`/solicitudes/${solicitudSeleccionada.id}`, {
                 estado: nuevoEstado,
                 motivo_rechazo: nuevoEstado === 'Rechazada' ? motivoRechazo : null,
@@ -182,15 +174,15 @@ export default function BandejaSolicitudes({ triggerToast }) {
                 paginas_simples: pSimples,
                 paginas_fedateadas: pFedateadas,
                 numero_hojas: nuevoEstado === 'Aceptada' ? numHojas : null,
-                amount_copias: nuevoEstado === 'Aceptada' ? cantCopias : null
+                cantidad_copias: nuevoEstado === 'Aceptada' ? cantCopias : null,
+                numero_voucher: nuevoEstado === 'Aceptada' ? numeroVoucher : null,
+                fecha_pago: nuevoEstado === 'Aceptada' ? fechaPago : null
             });
 
-            // Sincronización cruzada: Actualiza los fondos en tiempo real del módulo de Caja Recaudación
             await refrescarCaja();
-
             triggerToast('¡Decisión guardada con éxito!');
-            setSolicitudSeleccionada(null); // Cierre exitoso del modal por pasos
-            refrescarSolicitudes(); // Remueve el registro procesado de la vista de pendientes
+            setSolicitudSeleccionada(null);
+            refrescarSolicitudes();
         } catch (error) {
             console.error("Error al actualizar la solicitud:", error);
             alert('Ocurrió un error al guardar los cambios en el servidor.');
@@ -199,22 +191,28 @@ export default function BandejaSolicitudes({ triggerToast }) {
         }
     };
 
-    // VARIABLES DE DISEÑO REUTILIZABLES
     const labelStyles = "block text-[11px] font-black text-slate-400 mb-2 tracking-widest uppercase";
     const inputStyles = "w-full h-[48px] px-4 border border-slate-200 bg-slate-50/50 rounded-2xl text-[13px] font-semibold text-slate-700 focus:bg-white focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/10 outline-none transition-all duration-300";
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-8 relative selection:bg-blue-200 selection:text-blue-900 pb-24">
+
+            {/* ESTILOS GLOBALES DE SCROLLBAR */}
+            <style>{`
+                .custom-scroll::-webkit-scrollbar { width: 6px; }
+                .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+                .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+                .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+            `}</style>
+
             <div className="max-w-[1200px] w-full mx-auto space-y-6 animate-fade-in">
 
-                {/* --- CABECERA PRINCIPAL --- */}
+                {/* CABECERA PRINCIPAL */}
                 <div className="relative overflow-hidden bg-gradient-to-r from-sky-500/20 via-sky-100/40 to-transparent p-6 sm:px-8 sm:py-6 rounded-3xl border border-sky-200/80 shadow-[0_4px_25px_rgb(0,0,0,0.01)] flex items-center justify-between gap-4 z-40">
                     <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-40 blur-xl bg-sky-300 pointer-events-none"></div>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-200/60 flex items-center justify-center text-sky-600 relative z-10 shadow-sm shrink-0">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" />
-                            </svg>
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" /></svg>
                         </div>
                         <div className="flex flex-col relative z-10 text-left">
                             <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Bandeja de Solicitudes</h1>
@@ -223,25 +221,16 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 </div>
 
-                {/* --- CONTENEDOR DEL BUSCADOR --- */}
+                {/* CONTENEDOR DEL BUSCADOR */}
                 <div className="flex justify-end w-full animate-fade-in">
                     <div className="relative w-full md:w-96">
-                        <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder="Buscar por Contribuyente o DNI..."
-                            className="w-full h-[46px] pl-12 pr-4 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all shadow-sm"
-                            value={searchTerm}
-                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                        />
+                        <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <input type="text" placeholder="Buscar por Contribuyente o DNI..." className="w-full h-[46px] pl-12 pr-4 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold text-slate-700 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all shadow-sm" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} />
                     </div>
                 </div>
 
-                {/* --- TABLA DE GESTIÓN PRINCIPAL --- */}
+                {/* TABLA DE GESTIÓN PRINCIPAL */}
                 <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
-                    {/* Muestra el total real del set filtrado */}
                     <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50/60 border border-sky-100/80 rounded-xl text-[11px] font-bold text-sky-700 uppercase tracking-wider shadow-sm select-none">
@@ -250,7 +239,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                             </span>
                         </div>
                     </div>
-
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse table-fixed">
                             <thead>
@@ -271,40 +259,20 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 ) : (
                                     currentItems.map((sol, index) => (
                                         <tr key={sol.id || sol.id_solicitud || index} className="border-b border-slate-50 hover:bg-sky-50/20 transition-colors">
-
                                             <td className="py-4 px-5 w-[280px]">
-                                                <span className="text-[13px] font-bold text-slate-800 block truncate text-center" title={`${sol.nombres} ${sol.apellidos}`}>
-                                                    {sol.nombres} {sol.apellidos}
-                                                </span>
+                                                <span className="text-[13px] font-bold text-slate-800 block truncate text-center" title={`${sol.nombres} ${sol.apellidos}`}>{sol.nombres} {sol.apellidos}</span>
                                             </td>
-
-                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-700 text-center whitespace-nowrap w-[110px]">
-                                                {sol.dni}
-                                            </td>
-
-                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-600 text-center whitespace-nowrap w-[120px]">
-                                                {sol.fecha_solicitud}
-                                            </td>
-
+                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-700 text-center whitespace-nowrap w-[110px]">{sol.dni}</td>
+                                            <td className="py-4 px-4 text-[13px] font-bold text-slate-600 text-center whitespace-nowrap w-[120px]">{sol.fecha_solicitud}</td>
                                             <td className="py-4 px-5 overflow-hidden">
                                                 <div className="flex flex-col w-full max-w-[260px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px]">
-                                                    <span className="text-[13px] font-bold text-sky-700 truncate" title={sol.expediente_solicitado}>
-                                                        {sol.expediente_solicitado}
-                                                    </span>
-                                                    <span className="text-[11px] text-slate-400 font-medium truncate mt-0.5" title={sol.descripcion}>
-                                                        {sol.descripcion}
-                                                    </span>
+                                                    <span className="text-[13px] font-bold text-sky-700 truncate text-center" title={sol.expediente_solicitado}>{sol.expediente_solicitado}</span>
+                                                    <span className="text-[11px] text-slate-400 font-medium truncate mt-0.5 text-center" title={sol.descripcion}>{sol.descripcion}</span>
                                                 </div>
                                             </td>
+                                            <td className="py-4 px-4 text-center w-[120px]"><StatusBadge estado={sol.estado} /></td>
                                             <td className="py-4 px-4 text-center w-[120px]">
-                                                <StatusBadge estado={sol.estado} />
-                                            </td>
-                                            <td className="py-4 px-4 text-center w-[120px]">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => abrirModalGestion(sol)}
-                                                    className="w-full py-1.5 bg-slate-50 text-sky-700 border border-sky-100 hover:bg-sky-600 hover:text-white hover:border-sky-600 rounded-xl text-[11px] font-extrabold uppercase tracking-wide transition-all shadow-sm"
-                                                >
+                                                <button type="button" onClick={() => abrirModalGestion(sol)} className="w-full py-1.5 bg-slate-50 text-sky-700 border border-sky-100 hover:bg-sky-600 hover:text-white hover:border-sky-600 rounded-xl text-[11px] font-extrabold uppercase tracking-wide transition-all shadow-sm">
                                                     Detalle
                                                 </button>
                                             </td>
@@ -316,40 +284,31 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 </div>
 
-                {/* --- COMPONENTE FLOTANTE DE PAGINACIÓN UNIFICADO --- */}
+                {/* COMPONENTE FLOTANTE DE PAGINACIÓN */}
                 {totalPages > 1 && !loadingSolicitudes && currentItems.length > 0 && (
                     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 p-2 px-6 flex justify-between items-center bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-all z-40 w-max min-w-[320px]">
                         <span className="text-[12px] text-slate-500 font-extrabold tracking-widest uppercase mr-8">
                             Pág. <span className="text-[#0F4C81] text-[14px]">{currentPage}</span> / {totalPages}
                         </span>
                         <div className="flex gap-2">
-                            <button
-                                type="button"
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-500 disabled:opacity-40 hover:bg-slate-50 hover:text-[#0F4C81] hover:border-blue-200 transition-all shadow-sm"
-                            >
+                            <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-500 disabled:opacity-40 hover:bg-slate-50 hover:text-[#0F4C81] hover:border-blue-200 transition-all shadow-sm">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" /></svg>
                             </button>
-                            <button
-                                type="button"
-                                disabled={currentPage === totalPages}
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                className="w-10 h-10 flex items-center justify-center bg-[#0F4C81] text-white rounded-xl disabled:opacity-50 hover:bg-blue-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
-                            >
+                            <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} className="w-10 h-10 flex items-center justify-center bg-[#0F4C81] text-white rounded-xl disabled:opacity-50 hover:bg-blue-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
                             </button>
                         </div>
                     </div>
                 )}
 
-                {/* --- WIZARD MODAL: ASISTENTE DE GESTIÓN DINÁMICA POR PASOS --- */}
+                {/* WIZARD MODAL CORREGIDO */}
                 {solicitudSeleccionada && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-                        <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 flex flex-col overflow-visible h-auto max-h-[90vh]">
 
-                            {/* Cabecera del Wizard */}
-                            <div className="p-6 bg-white rounded-t-3xl shrink-0">
+                        {/* 1. Modal SIEMPRE tiene overflow-hidden para respetar bordes y el footer */}
+                        <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 flex flex-col overflow-hidden h-auto max-h-[90vh] transition-all">
+
+                            <div className="p-6 bg-white rounded-t-3xl shrink-0 z-10 shadow-sm relative">
                                 <div className="flex justify-between items-center mb-4">
                                     <div className="flex flex-col">
                                         <h3 className="text-[15px] font-black text-slate-800 tracking-tight">Gestión de Solicitudes</h3>
@@ -359,15 +318,15 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
                                 </div>
-                                {/* Barra de Progreso Secuencial Estilizada */}
                                 <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden flex">
                                     <div className={`h-full bg-[#0F4C81] transition-all duration-500 ${currentStep === 1 ? 'w-1/3' : currentStep === 2 ? 'w-2/3' : 'w-full'}`}></div>
                                 </div>
                             </div>
 
-                            <div className="p-6 overflow-visible flex-1">
+                            {/* 2. Cuerpo del modal SIEMPRE permite scroll, y la clase 'custom-scroll' lo estiliza */}
+                            <div className="p-6 overflow-y-auto overflow-x-hidden flex-1 custom-scroll relative">
 
-                                {/* STEP 1: AUDITORÍA DE DATOS DE ORIGEN */}
+                                {/* STEP 1 */}
                                 {currentStep === 1 && (
                                     <div className="animate-fade-in space-y-4">
                                         <div className="p-1 flex items-center gap-2">
@@ -385,7 +344,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                 <p className="text-slate-500 font-semibold col-span-2">📍 Dirección: <strong className="text-slate-700 font-bold">{solicitudSeleccionada.direccion || 'No especificada'}</strong></p>
                                             </div>
                                         </div>
-
                                         <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100/50 text-[13px]">
                                             <p className="text-[10px] font-black text-[#0F4C81] uppercase tracking-widest mb-1">Documentación Requerida</p>
                                             <p className="font-bold text-slate-800">{solicitudSeleccionada.expediente_solicitado}</p>
@@ -396,33 +354,78 @@ export default function BandejaSolicitudes({ triggerToast }) {
 
                                 {/* STEP 2: RESOLUCIÓN Y CALIFICACIÓN TÉCNICA LEGAL */}
                                 {currentStep === 2 && (
-                                    <div className="animate-fade-in space-y-4 min-h-[140px] overflow-visible">
+                                    <div className="animate-fade-in space-y-4">
                                         <div className="p-1 flex items-center gap-2">
                                             <span className="w-5 h-5 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[10px] font-black">2</span>
                                             <h4 className="text-[12px] font-black text-slate-700 uppercase tracking-wider">Resolución del Trámite</h4>
                                         </div>
-                                        <div className="relative z-50 pt-2">
+
+                                        <div className="pt-2">
                                             <label className={labelStyles}>Seleccione Decisión *</label>
-                                            <CustomDropdown
-                                                id="estado_gestion"
-                                                name="estado_gestion"
-                                                placeholder="¿Se aprueba el trámite documental?"
-                                                options={opcionesDecision}
-                                                selectedValue={nuevoEstado}
-                                                onSelect={(val) => setNuevoEstado(val)}
-                                                color="sky" // ASOCIADO AL COLOR SKY DE LA CABECERA
-                                            />
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+
+                                                {/* Opción APROBADA */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNuevoEstado('Aceptada')}
+                                                    className={`p-4 rounded-2xl border-2 text-left transition-all flex items-start gap-3.5 ${nuevoEstado === 'Aceptada'
+                                                            ? 'bg-emerald-50/70 border-emerald-500 shadow-md ring-2 ring-emerald-500/10'
+                                                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                                                        }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${nuevoEstado === 'Aceptada' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'
+                                                        }`}>
+                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className={`text-[13px] font-bold ${nuevoEstado === 'Aceptada' ? 'text-emerald-900' : 'text-slate-700'}`}>
+                                                            Aprobar Trámite
+                                                        </p>
+                                                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                                                            Derivar a liquidación de pago y entrega
+                                                        </p>
+                                                    </div>
+                                                </button>
+
+                                                {/* Opción DENEGADA */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNuevoEstado('Rechazada')}
+                                                    className={`p-4 rounded-2xl border-2 text-left transition-all flex items-start gap-3.5 ${nuevoEstado === 'Rechazada'
+                                                            ? 'bg-rose-50/70 border-rose-500 shadow-md ring-2 ring-rose-500/10'
+                                                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                                                        }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${nuevoEstado === 'Rechazada' ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-400'
+                                                        }`}>
+                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className={`text-[13px] font-bold ${nuevoEstado === 'Rechazada' ? 'text-rose-900' : 'text-slate-700'}`}>
+                                                            Denegar Trámite
+                                                        </p>
+                                                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                                                            Rechazar con sustento técnico legal
+                                                        </p>
+                                                    </div>
+                                                </button>
+
+                                            </div>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* STEP 3: LIQUIDACIÓN TUPA CORPORATIVA O SUSTENTO DE RECHAZO */}
+                                {/* STEP 3 */}
                                 {currentStep === 3 && (
-                                    <div className="animate-fade-in space-y-4 overflow-visible">
+                                    <div className="animate-fade-in space-y-4 pb-2">
                                         <div className="p-1 flex items-center gap-2">
                                             <span className="w-5 h-5 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[10px] font-black">3</span>
                                             <h4 className="text-[12px] font-black text-slate-700 uppercase tracking-wider">
-                                                {nuevoEstado === 'Aceptada' ? 'Liquidación de Caja' : 'Sustento de Denegación'}
+                                                {nuevoEstado === 'Aceptada' ? 'Liquidación y Pago' : 'Sustento de Denegación'}
                                             </h4>
                                         </div>
 
@@ -430,31 +433,46 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                             <span className="text-slate-400 mt-0.5 text-base shrink-0">📋</span>
                                             <div className="flex-1 min-w-0">
                                                 <span className="font-extrabold text-[#0F4C81] tracking-wide block text-[10px] uppercase mb-0.5">Trámite Evaluado:</span>
-                                                <span className="font-bold text-slate-800 block truncate" title={solicitudSeleccionada.expediente_solicitado}>
-                                                    {solicitudSeleccionada.expediente_solicitado}
-                                                </span>
-
+                                                <span className="font-bold text-slate-800 block truncate" title={solicitudSeleccionada.expediente_solicitado}>{solicitudSeleccionada.expediente_solicitado}</span>
                                                 <div className="max-h-[62px] overflow-y-auto pr-1 mt-1 scrollbar-thin scrollbar-thumb-slate-200 standard-scroll">
-                                                    <p className="text-[11px] text-slate-500 italic leading-relaxed font-medium whitespace-pre-wrap">
-                                                        "{solicitudSeleccionada.descripcion}"
-                                                    </p>
+                                                    <p className="text-[11px] text-slate-500 italic leading-relaxed font-medium whitespace-pre-wrap">"{solicitudSeleccionada.descripcion}"</p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {nuevoEstado === 'Aceptada' ? (
-                                            <div className="space-y-4 overflow-visible relative mt-2">
-                                                <div className="relative z-50">
+                                            <div className="space-y-4 relative mt-2">
+
+                                                {/* BLOQUE: VOUCHER Y FECHA DE PAGO */}
+                                                <div className="p-4 bg-sky-50/50 rounded-2xl border border-sky-100">
+                                                    <p className="text-[10px] font-black text-sky-700 uppercase tracking-widest mb-3 border-b border-sky-200/60 pb-2">Datos de Pago</p>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className={labelStyles}>N° de Voucher *</label>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Ej: 0014589"
+                                                                value={numeroVoucher}
+                                                                onChange={(e) => setNumeroVoucher(e.target.value)}
+                                                                className={inputStyles}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className={labelStyles}>Fecha de Pago *</label>
+                                                            <input
+                                                                type="date"
+                                                                value={fechaPago}
+                                                                max={new Date().toISOString().split("T")[0]}
+                                                                onChange={(e) => setFechaPago(e.target.value)}
+                                                                className={inputStyles}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="relative z-40 pt-2">
                                                     <label className="block text-[11px] font-extrabold text-[#0F4C81] mb-2 tracking-widest uppercase">Tipo de Formato Requerido *</label>
-                                                    <CustomDropdown
-                                                        id="tipo_formato_tupa"
-                                                        name="tipo_formato_tupa"
-                                                        placeholder="Seleccione formato..."
-                                                        options={opcionesFormatosTupa}
-                                                        selectedValue={tipoFormatotupa}
-                                                        onSelect={(val) => setTipoFormatotupa(val)}
-                                                        color="sky" // ASOCIADO AL COLOR SKY DE LA CABECERA
-                                                    />
+                                                    <CustomDropdown id="tipo_formato_tupa" name="tipo_formato_tupa" placeholder="Seleccione formato..." options={opcionesFormatosTupa} selectedValue={tipoFormatotupa} onSelect={(val) => setTipoFormatotupa(val)} color="sky" />
                                                 </div>
 
                                                 {tipoFormatotupa === 'Mixto' ? (
@@ -488,7 +506,7 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                                     </div>
                                                 </div>
 
-                                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-inner shrink-0 relative z-10 mt-2">
+                                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-inner shrink-0 relative z-10 mt-2 mb-2">
                                                     <div>
                                                         <p className="text-[10px] font-black text-[#0F4C81] uppercase tracking-widest">Monto Final Liquidado</p>
                                                         <p className="text-[11px] text-slate-400 mt-0.5 font-semibold italic">Tasa TUPA Distrital: S/. 0.10 por folio</p>
@@ -508,9 +526,8 @@ export default function BandejaSolicitudes({ triggerToast }) {
                                 )}
                             </div>
 
-                            {/* CONTROLES DE NAVEGACIÓN DEL WIZARD */}
-                            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between rounded-b-3xl shrink-0 relative z-10">
-                                <button type="button" onClick={() => currentStep === 1 ? intentarCerrarModal() : intentarIrAtras()} className="px-5 py-2.5 rounded-xl text-[12px] font-bold text-slate-500 hover:bg-slate-100 transition-colors">
+                            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between rounded-b-3xl shrink-0 relative z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
+                                <button type="button" onClick={() => currentStep === 1 ? intentarCerrarModal() : intentarIrAtras()} className="px-5 py-2.5 rounded-xl text-[12px] font-bold text-slate-500 hover:bg-slate-200 transition-colors">
                                     {currentStep === 1 ? 'Cancelar' : 'Atrás'}
                                 </button>
                                 {currentStep < 3 ? (
@@ -527,16 +544,14 @@ export default function BandejaSolicitudes({ triggerToast }) {
                     </div>
                 )}
 
-                {/* MODAL INTERNO: Alerta preventiva de confirmación de descarte de liquidaciones */}
+                {/* MODAL INTERNO EXIT */}
                 {showConfirmExitModal && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
                         <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100 overflow-hidden transform scale-100 transition-all">
                             <div className="h-2 w-full bg-[#FFC107]"></div>
                             <div className="p-8 text-center">
                                 <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-5 shadow-inner">
-                                    <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
+                                    <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                                 </div>
                                 <h3 className="text-lg font-black text-slate-800 mb-2 tracking-tight">¿Seguro que deseas salir?</h3>
                                 <p className="text-[13px] text-slate-500 px-2 leading-relaxed font-medium">Tienes datos rellenados en la liquidación de este trámite. Si sales ahora, perderás todos los cambios realizados.</p>
@@ -548,7 +563,6 @@ export default function BandejaSolicitudes({ triggerToast }) {
                         </div>
                     </div>
                 )}
-
             </div>
         </div>
     );

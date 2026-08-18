@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useExpedientes } from '../../context/useExpedientes';
 import CustomDropdown from '../../components/CustomDropdown';
 import { Chart } from 'chart.js/auto';
+import api from '../../services/api'; // Inyectado para la exportación
 
 export default function ReportesScreen() {
   // Consumo del estado global de expedientes mediante el contexto centralizado
@@ -146,6 +147,41 @@ export default function ReportesScreen() {
     setMes('Todos');
     setAreaFiltro('Todas');
     setCurrentPage(1);
+  };
+
+  // ==========================================================================
+  // LÓGICA DE EXPORTACIÓN
+  // ==========================================================================
+  const handleExportacion = async (formato) => {
+    const tiposMap = {
+      0: 'registrados',
+      1: 'digitalizacion',
+      2: 'tipologia'
+    };
+    const tipoReporte = tiposMap[tipoRep];
+
+    const queryParams = `?formato=${formato}&tipo=${tipoReporte}&anio=${anio}&mes=${mes}&area=${encodeURIComponent(areaFiltro)}`;
+
+    try {
+      const response = await api.get(`/reportes/documental/exportar${queryParams}`, {
+        responseType: 'blob' // Recibimos el archivo como binario
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+
+      const extension = formato === 'excel' ? 'csv' : 'pdf';
+      link.setAttribute('download', `Reporte_Documental_${tipoReporte}_${anio}.${extension}`);
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+    } catch (error) {
+      console.error("Error al exportar el documento:", error);
+      alert("Hubo un problema al generar el archivo. Por favor, intenta de nuevo.");
+    }
   };
 
   // ==========================================================================
@@ -400,16 +436,48 @@ export default function ReportesScreen() {
           })}
         </div>
 
-        {/* --- SECCIÓN DE FILTROS --- */}
+        {/* --- SECCIÓN DE FILTROS Y EXPORTACIÓN --- */}
         <div className="space-y-8 w-full">
           <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative z-30">
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-              </svg>
-              <span className="text-[12px] font-extrabold text-slate-700 uppercase tracking-widest">Filtros</span>
+
+            {/* CABECERA DE FILTROS CON BOTONES DE EXPORTACIÓN */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                </svg>
+                <span className="text-[12px] font-extrabold text-slate-700 uppercase tracking-widest">Filtros</span>
+              </div>
+
+              {/* BOTONES DE EXPORTACIÓN */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Botón PDF (Rojo) */}
+                <button
+                  type="button"
+                  onClick={() => handleExportacion('pdf')}
+                  className="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                  Exportar PDF
+                </button>
+
+                {/* Botón Excel (Verde) */}
+                <button
+                  type="button"
+                  onClick={() => handleExportacion('excel')}
+                  className="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-600 hover:text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.5A2.25 2.25 0 015.25 11.25h13.5A2.25 2.25 0 0121 13.5v5.25a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18.75v-5.25zM12 2.25v9m0 0l3-3m-3 3l-3-3" />
+                  </svg>
+                  Exportar Excel
+                </button>
+              </div>
             </div>
 
+            {/* CONTROLES DE FILTRADO */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-end">
               <div className="sm:col-span-2">
                 <CustomDropdown color="rose" label="Año de Consulta" placeholder="Año" options={optsAnios} selectedValue={anio} onSelect={(val) => { setAnio(val); setCurrentPage(1); }} />
