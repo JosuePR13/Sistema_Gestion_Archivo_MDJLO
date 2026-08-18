@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useCaja } from '../../context/CajaContext';
 import CustomDropdown from '../../components/CustomDropdown';
 import { Chart } from 'chart.js/auto';
+import api from '../../services/api'; // Importamos tu instancia de axios
 
 // ==========================================
 // COMPONENTES AUXILIARES Y CONFIGURACIÓN
@@ -162,6 +163,42 @@ export default function ReporteCostos() {
         });
         return mensualidades;
     }, [movimientos, tendenciaAnio]);
+
+    // ==========================================
+    // 4. LÓGICA DE EXPORTACIÓN (PREPARADA PARA BACKEND)
+    // ==========================================
+    const handleExportacion = async (formato) => {
+        try {
+            // Se arma el payload con los filtros actuales de los gráficos
+            const params = {
+                formato,
+                demanda_anio: demandaAnio,
+                demanda_mes: demandaMes,
+                tendencia_anio: tendenciaAnio
+            };
+
+            // TODO: Conectar con el endpoint del backend cuando esté listo
+            const response = await api.get('/reportes/costos/exportar', {
+                params,
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+
+            const extension = formato === 'excel' ? 'csv' : 'pdf';
+            link.setAttribute('download', `Reporte_Costos_Caja_${fechaHoyStr}.${extension}`);
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Error al exportar el reporte de costos:", error);
+            alert("El endpoint del backend aún no está listo. ¡Manos a la obra con Laravel!");
+        }
+    };
+
 
     // ==========================================
     // CYCLES DE RENDERIZADO AISLADO
@@ -328,6 +365,29 @@ export default function ReporteCostos() {
                                 title="Copias Mixtas" value={kpisGlobales.totalMixtoHojasKpi} theme={kpiThemes.indigo}
                                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>}
                             />
+                        </div>
+
+                        {/* --- BARRA DE ACCIONES / EXPORTACIÓN --- */}
+                        <div className="flex justify-end items-center gap-2.5 mt-6 -mb-2 relative z-20">
+                            <button
+                                onClick={() => handleExportacion('pdf')}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-[11px] uppercase tracking-wider text-[#E11D48] bg-[#FFF1F2] border border-[#FECDD3] hover:bg-[#FFE4E6] shadow-sm"
+                            >
+                                <svg className="w-3.5 h-3.5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Exportar PDF
+                            </button>
+
+                            <button
+                                onClick={() => handleExportacion('excel')}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-[11px] uppercase tracking-wider text-[#059669] bg-[#ECFDF5] border border-[#A7F3D0] hover:bg-[#D1FAE5] shadow-sm"
+                            >
+                                <svg className="w-3.5 h-3.5 text-[#059669]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Exportar Excel
+                            </button>
                         </div>
 
                         {/* --- SECCIÓN DE BLOQUES GRÁFICOS --- */}

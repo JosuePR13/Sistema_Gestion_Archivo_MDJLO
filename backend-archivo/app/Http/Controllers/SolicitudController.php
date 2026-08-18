@@ -48,6 +48,8 @@ class SolicitudController extends Controller
             'paginas_fedateadas' => 'nullable|string',
             'numero_hojas' => 'nullable|integer',
             'cantidad_copias' => 'nullable|integer',
+            'numero_voucher' => 'nullable|string|max:50',
+            'fecha_pago' => 'nullable|date',
         ]);
 
         $solicitud->update($camposValidados);

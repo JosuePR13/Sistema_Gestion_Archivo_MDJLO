@@ -151,7 +151,6 @@ export default function HistorialCaja() {
                                 <tr className="bg-slate-50/80 border-b border-slate-100">
                                     {activeTab === 'Aceptada' ? (
                                         <>
-                                            {/* Distribución exacta para APROBADAS */}
                                             <th className={`${thStyles} text-center w-64`}>Contribuyente</th>
                                             <th className={`${thStyles} text-center w-28`}>DNI</th>
                                             <th className={`${thStyles} text-center w-40`}>Formato</th>
@@ -161,7 +160,6 @@ export default function HistorialCaja() {
                                         </>
                                     ) : (
                                         <>
-                                            {/* Distribución calibrada para DENEGADAS */}
                                             <th className={`${thStyles} text-center w-[460px]`}>Contribuyente</th>
                                             <th className={`${thStyles} text-center w-28`}>DNI</th>
                                             <th className={`${thStyles} text-center w-[400px]`}>Motivo de Denegación</th>
@@ -179,21 +177,18 @@ export default function HistorialCaja() {
                                 ) : (
                                     datosPaginados.map((item, index) => (
                                         <tr key={item.id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                            {/* Celda 1: Nombre con ancho elástico adaptativo */}
                                             <td className={`py-4 px-6 ${activeTab === 'Aceptada' ? 'w-64' : 'w-[460px]'}`}>
                                                 <span className="text-[13px] font-bold text-slate-700 block truncate  text-center" title={`${item.nombres} ${item.apellidos}`}>
                                                     {item.nombres} {item.apellidos}
                                                 </span>
                                             </td>
 
-                                            {/* Celda 2: Identificador de Identidad */}
                                             <td className="py-4 px-6 text-center w-28">
                                                 <span className="text-[13px] font-bold text-slate-600 tracking-wide">
                                                     {item.dni}
                                                 </span>
                                             </td>
 
-                                            {/* Renderizado Condicional del Core de Celdas según Tab activo */}
                                             {activeTab === 'Aceptada' ? (
                                                 <>
                                                     <td className="py-4 px-6 text-center w-40">
@@ -206,7 +201,6 @@ export default function HistorialCaja() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    {/* Vista Denegadas: El texto abarca mayor recorrido horizontal eliminando espacios muertos */}
                                                     <td className="py-4 px-6 w-[400px] text-center">
                                                         <p className="text-[12px] font-semibold text-slate-500 w-full max-w-[380px] truncate italic mx-auto text-center" title={item.motivo_rechazo}>
                                                             "{item.motivo_rechazo || 'Sin detalle'}"
@@ -220,7 +214,6 @@ export default function HistorialCaja() {
                                                 </>
                                             )}
 
-                                            {/* Celda de Disparador Operativo */}
                                             <td className="py-4 px-6 text-center w-24">
                                                 <button
                                                     type="button"
@@ -245,7 +238,6 @@ export default function HistorialCaja() {
                             Pág. <span className="text-[#0F4C81] text-[14px]">{paginaActualVerificada}</span> / {totalPaginas}
                         </span>
                         <div className="flex gap-2">
-                            {/* Retroceder Página */}
                             <button
                                 type="button"
                                 disabled={paginaActualVerificada === 1}
@@ -254,7 +246,6 @@ export default function HistorialCaja() {
                             >
                                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" /></svg>
                             </button>
-                            {/* Avanzar Página */}
                             <button
                                 type="button"
                                 disabled={paginaActualVerificada === totalPaginas}
@@ -290,7 +281,6 @@ export default function HistorialCaja() {
 
                             {/* Ficha Técnica: Datos del Contribuyente */}
                             <div className="space-y-3 text-[13px] bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                {/* Cambiado a grid-cols-3 para empujar la segunda columna más a la derecha */}
                                 <div className="grid grid-cols-3 gap-2">
                                     <div className="col-span-2">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contribuyente</p>
@@ -327,7 +317,7 @@ export default function HistorialCaja() {
                             {/* Desglose de Cálculo Analítico de Copias */}
                             {selectedItem.estado === 'Aceptada' && (
                                 <div className="p-4 rounded-2xl text-[12px] space-y-3 bg-slate-50 border border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estructura del Formato Solicitado</p>
+                                    <p className="text-[10px] font-black text-sky-800 uppercase tracking-widest mb-2 border-b border-sky-200/60 pb-1">Estructura del Formato Solicitado</p>
                                     <p className="text-slate-700 font-semibold mb-2">📋 Modalidad Requerida: <strong className="font-black text-slate-800 ml-1">{selectedItem.tipo_formato_tupa || 'No Aplica'}</strong></p>
 
                                     {selectedItem.tipo_formato_tupa === 'Copia Simple A4' && selectedItem.paginas_simples && (
@@ -369,6 +359,23 @@ export default function HistorialCaja() {
                                         <div className="bg-white p-2 rounded-xl border border-slate-200/60 text-center">
                                             <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Juegos/Copias</span>
                                             <span className="text-[14px] font-black text-slate-700">{selectedItem.cantidad_copias || '0'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Datos del voucher y fecha de pago */}
+                            {selectedItem.estado === 'Aceptada' && (selectedItem.numero_voucher || selectedItem.fecha_pago) && (
+                                <div className="p-4 bg-sky-50/60 rounded-2xl border border-sky-100/80 mt-4">
+                                    <p className="text-[10px] font-black text-sky-800 uppercase tracking-widest mb-2 border-b border-sky-200/60 pb-1">Comprobante de Pago</p>
+                                    <div className="grid grid-cols-2 gap-3 text-[12px] pt-1">
+                                        <div>
+                                            <p className="text-slate-500 font-semibold">🧾 N° Voucher</p>
+                                            <p className="text-slate-800 font-bold">{selectedItem.numero_voucher || 'No registrado'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-slate-500 font-semibold">📅 Fecha de Pago</p>
+                                            <p className="text-slate-800 font-bold">{selectedItem.fecha_pago || 'No registrada'}</p>
                                         </div>
                                     </div>
                                 </div>
