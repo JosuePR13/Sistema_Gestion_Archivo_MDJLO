@@ -23,22 +23,20 @@ USE `archivo_mdjlo`;
 -- Volcando estructura para evento archivo_mdjlo.actualizar_expedientes_para_depurar_diario
 DROP EVENT IF EXISTS `actualizar_expedientes_para_depurar_diario`;
 DELIMITER //
-CREATE EVENT `actualizar_expedientes_para_depurar_diario` ON SCHEDULE EVERY 1 DAY STARTS '2026-06-10 00:00:00' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
-  -- Actualizamos a 'Para Depurar' los expedientes cuyo plazo de conservación ya venció
-  UPDATE `expedientes`
+CREATE EVENT `actualizar_expedientes_para_depurar_diario` ON SCHEDULE EVERY 1 DAY STARTS '2026-06-10 00:00:00' ON COMPLETION NOT PRESERVE ENABLE DO UPDATE `expedientes`
   SET `estado` = 'Para Depurar',
       `updated_at` = NOW()
   WHERE `estado` = 'Activo'
     AND `tiempo_conservacion` IS NOT NULL
     AND `tiempo_conservacion` NOT LIKE '%PERMANENTE%'
     AND `tiempo_conservacion` NOT LIKE '%INDEFINI%'
-    -- Matemática precisa: si los años transcurridos desde fecha_ingreso superan el tiempo_conservacion
-    AND TIMESTAMPDIFF(YEAR, `fecha_ingreso`, CURDATE()) >= 
+    AND TIMESTAMPDIFF(MONTH, `fecha_ingreso`, CURDATE()) >= 
         CASE 
-          WHEN `tiempo_conservacion` LIKE '%mes%' THEN 0.5 -- Control por si pusiste 6 meses
-          ELSE CAST(REGEXP_REPLACE(`tiempo_conservacion`, '[^0-9.]', '') AS DECIMAL(10,2))
-        END;
-END//
+          WHEN `tiempo_conservacion` LIKE '%mes%' THEN 
+            CAST(REGEXP_REPLACE(`tiempo_conservacion`, '[^0-9.]', '') AS DECIMAL(10,2))
+          ELSE 
+            CAST(REGEXP_REPLACE(`tiempo_conservacion`, '[^0-9.]', '') AS DECIMAL(10,2)) * 12
+        END//
 DELIMITER ;
 
 -- Volcando estructura para tabla archivo_mdjlo.archivos_digitales
@@ -59,9 +57,11 @@ CREATE TABLE IF NOT EXISTS `archivos_digitales` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `archivos_digitales_ibfk_1` FOREIGN KEY (`expediente_id`) REFERENCES `expedientes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `archivos_digitales_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Volcando datos para la tabla archivo_mdjlo.archivos_digitales: ~0 rows (aproximadamente)
+INSERT INTO `archivos_digitales` (`id`, `expediente_id`, `usuario_id`, `nombre_original`, `nombre_archivo`, `ruta_archivo`, `tipo_mime`, `tamano_bytes`, `uploaded_at`) VALUES
+	(2, 24, 1, 'CARTA DE PRESENTACIÓN PARA PRÁCTICAS PRE PROFESIONALES.pdf', '1787033953_CARTA_DE_PRESENTACI__N_PARA_PR__CTICAS_PRE_PROFESIONALES.pdf', 'expedientes/24/1787033953_CARTA_DE_PRESENTACI__N_PARA_PR__CTICAS_PRE_PROFESIONALES.pdf', 'application/pdf', 168590, '2026-08-18 01:19:13');
 
 -- Volcando estructura para tabla archivo_mdjlo.areas
 DROP TABLE IF EXISTS `areas`;
@@ -146,9 +146,9 @@ CREATE TABLE IF NOT EXISTS `expedientes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `numero_expediente` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `titulo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `razon_social` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `razon_social` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `monto` decimal(10,2) DEFAULT NULL,
-  `registro_siaf` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registro_siaf` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `tipo_documento_id` int NOT NULL,
   `area_origen_id` int NOT NULL,
@@ -196,7 +196,7 @@ INSERT INTO `expedientes` (`id`, `numero_expediente`, `titulo`, `razon_social`, 
 	(21, '001904', 'Comprobante 001904', 'Banco de la Nacion/Torres Rivera Mares', 344.00, '00000001719', 'Pagado', 9, 1, 1, 1, 'Activo', '2018-10-25', 'PERMANENTE', NULL, 0, '2026-07-03 22:18:42', '2026-07-04 16:07:17'),
 	(22, '001910', 'Comprobante 001910', 'Fustamante Rimarachin Walter', 7020.00, '00000001693', 'Pagado.', 9, 1, 1, 1, 'Activo', '2018-10-25', 'PERMANENTE', NULL, 0, '2026-07-04 17:07:17', '2026-07-04 17:07:17'),
 	(23, '001922', 'Comprobante 001922', 'Segundo Guillermo Segura Sernaque', 7544.78, '00000001528', 'Pagado.', 9, 1, 1, 2, 'Activo', '2018-10-26', 'PERMANENTE', NULL, 0, '2026-07-04 17:11:19', '2026-07-04 18:14:23'),
-	(24, 'Documento Acta Prueba 3', 'Documento Acta Prueba 3', NULL, NULL, NULL, 'Documento Acta Prueba 3', 15, 11, 1, 1, 'Activo', '2026-07-08', '1 año', '2027-07-08', 0, '2026-07-08 05:45:01', '2026-07-08 05:45:01');
+	(24, 'Documento Acta Prueba 3', 'Documento Acta Prueba 3', NULL, NULL, NULL, 'Documento Acta Prueba 3', 15, 11, 1, 1, 'Activo', '2026-07-08', '1 año', '2027-07-08', 1, '2026-07-08 05:45:01', '2026-08-18 01:19:13');
 
 -- Volcando estructura para tabla archivo_mdjlo.historial_ediciones
 DROP TABLE IF EXISTS `historial_ediciones`;
@@ -214,9 +214,9 @@ CREATE TABLE IF NOT EXISTS `historial_ediciones` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `historial_ediciones_ibfk_1` FOREIGN KEY (`expediente_id`) REFERENCES `expedientes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `historial_ediciones_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.historial_ediciones: ~24 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.historial_ediciones: ~25 rows (aproximadamente)
 INSERT INTO `historial_ediciones` (`id`, `expediente_id`, `campo_modificado`, `valor_anterior`, `valor_nuevo`, `usuario_id`, `fecha_cambio`, `observaciones`) VALUES
 	(1, 14, 'numero_folios', '55', '15', 1, '2026-07-02 14:44:49', NULL),
 	(2, 14, 'observaciones', '', 'Campos modificados exitosamente: Folios: 55 ➔ 15', 1, '2026-07-02 14:44:49', NULL),
@@ -241,7 +241,8 @@ INSERT INTO `historial_ediciones` (`id`, `expediente_id`, `campo_modificado`, `v
 	(21, 23, 'monto', '7544.79', '7544.78', 1, '2026-07-04 23:14:23', NULL),
 	(22, 14, 'archivo_digital', 'ARTÍCULO DE TALLER-REPORT.pdf', 'ELIMINADO por el operador (Archivo desvinculado)', 1, '2026-07-07 18:05:42', 'Archivo PDF eliminado'),
 	(23, 14, 'observaciones', '', 'Actualización general de metadatos de control archivístico.', 1, '2026-07-07 18:08:40', NULL),
-	(24, 23, 'observaciones', '', 'Actualización general de metadatos de control archivístico.', 1, '2026-07-07 18:08:50', NULL);
+	(24, 23, 'observaciones', '', 'Actualización general de metadatos de control archivístico.', 1, '2026-07-07 18:08:50', NULL),
+	(25, 24, 'archivo_digital', NULL, 'CARTA DE PRESENTACIÓN PARA PRÁCTICAS PRE PROFESIONALES.pdf', 1, '2026-08-18 06:19:13', 'Archivo PDF adjuntado');
 
 -- Volcando estructura para tabla archivo_mdjlo.historial_estados
 DROP TABLE IF EXISTS `historial_estados`;
@@ -314,9 +315,9 @@ CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
   KEY `personal_access_tokens_expires_at_index` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=220 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=232 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.personal_access_tokens: ~215 rows (aproximadamente)
+-- Volcando datos para la tabla archivo_mdjlo.personal_access_tokens: ~226 rows (aproximadamente)
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
 	(2, 'App\\Models\\User', 1, 'auth_token', 'd66d3a1059cd669b17d697cb8e26aa06f39298865ad58731614b3d155af0f904', '["*"]', '2026-05-19 02:46:04', NULL, '2026-05-19 02:40:21', '2026-05-19 02:46:04'),
 	(5, 'App\\Models\\User', 1, 'auth_token', 'e32b4f51c6298b75ff315c0e8c6ab43dee28f2e1c1df490bd23e95e2d9c87b84', '["*"]', '2026-05-21 20:58:46', NULL, '2026-05-19 18:42:59', '2026-05-21 20:58:46'),
@@ -532,7 +533,19 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 	(216, 'App\\Models\\User', 1, 'auth_token', '2c2f2fa89340bf9d87df5e91d84f51f4a4b9d53309b31d1f355904116152d894', '["*"]', '2026-07-07 20:59:20', NULL, '2026-07-07 20:36:33', '2026-07-07 20:59:20'),
 	(217, 'App\\Models\\User', 1, 'auth_token', 'c33124f127301fb98e3aec0d96c15b56833b18a9b8dd882986b2912fa6f194b2', '["*"]', '2026-07-07 21:52:00', NULL, '2026-07-07 21:51:59', '2026-07-07 21:52:00'),
 	(218, 'App\\Models\\User', 1, 'auth_token', 'e60af3480b1bdc53e8fc33733b09127383d6b39b10c77335677400870974dfdb', '["*"]', '2026-07-08 11:20:46', NULL, '2026-07-08 10:27:43', '2026-07-08 11:20:46'),
-	(219, 'App\\Models\\User', 1, 'auth_token', 'f84b57b89e6e221b040104021572f25329658019b2275dfabd10b408cb8dd926', '["*"]', '2026-07-08 11:33:17', NULL, '2026-07-08 11:20:49', '2026-07-08 11:33:17');
+	(219, 'App\\Models\\User', 1, 'auth_token', 'f84b57b89e6e221b040104021572f25329658019b2275dfabd10b408cb8dd926', '["*"]', '2026-07-08 11:33:17', NULL, '2026-07-08 11:20:49', '2026-07-08 11:33:17'),
+	(220, 'App\\Models\\User', 1, 'auth_token', 'ff785599aeaebb042fc054430ee31089c33c3e9d401d17522be6682258d3d7bd', '["*"]', '2026-07-09 06:41:08', NULL, '2026-07-09 06:41:04', '2026-07-09 06:41:08'),
+	(221, 'App\\Models\\User', 1, 'auth_token', '96547346ff02f2074f6a0499fb9ba47e09f54beba9c0e2c561a4fc034c1efb8c', '["*"]', '2026-07-09 06:57:09', NULL, '2026-07-09 06:56:57', '2026-07-09 06:57:09'),
+	(222, 'App\\Models\\User', 1, 'auth_token', 'b637d78e30174f7d1c4d522ddbfbabc479bbe09ad94a304e7d849be834bb6782', '["*"]', '2026-07-11 04:31:33', NULL, '2026-07-11 04:31:22', '2026-07-11 04:31:33'),
+	(223, 'App\\Models\\User', 1, 'auth_token', '876ba210e8cb69b3d03aa6342aeb01aa249e791eb94f00eb80bffb6ea7aaa73e', '["*"]', '2026-08-14 02:13:27', NULL, '2026-08-14 02:13:12', '2026-08-14 02:13:27'),
+	(224, 'App\\Models\\User', 1, 'auth_token', '0370c52469c77ff2e4ba782800f7f66959b3b84ddfcc267a39153332a43076fa', '["*"]', '2026-08-18 03:33:12', NULL, '2026-08-18 03:28:09', '2026-08-18 03:33:12'),
+	(225, 'App\\Models\\User', 1, 'auth_token', 'db36d697b49bbf8f67d4685b612740b9e3fb191360525e3d27abe715d195e134', '["*"]', '2026-08-18 03:50:08', NULL, '2026-08-18 03:46:50', '2026-08-18 03:50:08'),
+	(226, 'App\\Models\\User', 1, 'auth_token', 'b820c67d130f69d9d6020886d54df1aafb002cf86e589af9963b2e63e985bbb3', '["*"]', '2026-08-18 04:10:13', NULL, '2026-08-18 04:03:59', '2026-08-18 04:10:13'),
+	(227, 'App\\Models\\User', 1, 'auth_token', 'c1d1fa0c0d9932effbf561b24134a8ece2f7c4c76801aedab5fc84d4e61aa9c2', '["*"]', '2026-08-18 05:54:45', NULL, '2026-08-18 04:10:19', '2026-08-18 05:54:45'),
+	(228, 'App\\Models\\User', 1, 'auth_token', 'b2267d44b4bca6bc5d1c3729211c2b457a9418b91b326b8c875fee859cc6c8d7', '["*"]', '2026-08-18 06:34:25', NULL, '2026-08-18 06:10:58', '2026-08-18 06:34:25'),
+	(229, 'App\\Models\\User', 1, 'auth_token', 'ab275fc7ec061575bbb6ec1189c0832593dee6e4ef56a3297dde7ad7f5db1e50', '["*"]', '2026-08-18 08:49:18', NULL, '2026-08-18 06:40:07', '2026-08-18 08:49:18'),
+	(230, 'App\\Models\\User', 1, 'auth_token', '90a589aadae86d3127e05a4c56f9b3fa69f5a8d5f702e8fcf6e61bae03716c74', '["*"]', '2026-08-18 15:44:22', NULL, '2026-08-18 15:30:37', '2026-08-18 15:44:22'),
+	(231, 'App\\Models\\User', 1, 'auth_token', '9f351b91374b77d1a7a6173a4c04fd520a3514326239e2de8a4c96499e80c818', '["*"]', '2026-08-18 15:51:08', NULL, '2026-08-18 15:50:14', '2026-08-18 15:51:08');
 
 -- Volcando estructura para tabla archivo_mdjlo.solicitudes
 DROP TABLE IF EXISTS `solicitudes`;
@@ -556,54 +569,57 @@ CREATE TABLE IF NOT EXISTS `solicitudes` (
   `cantidad_copias` int DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `numero_voucher` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fecha_pago` date DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla archivo_mdjlo.solicitudes: ~43 rows (aproximadamente)
-INSERT INTO `solicitudes` (`id`, `dni`, `nombres`, `apellidos`, `telefono`, `direccion`, `expediente_solicitado`, `descripcion`, `fecha_solicitud`, `estado`, `motivo_rechazo`, `costo_tupa`, `tipo_formato_tupa`, `paginas_simples`, `paginas_fedateadas`, `numero_hojas`, `cantidad_copias`, `created_at`, `updated_at`) VALUES
-	(31, '72145689', 'Juan Carlos', 'Pérez Ramos', NULL, NULL, 'EXP-2026-001', 'Solicitud de copias de actas de sesión de consejo', '2026-01-10', 'Aceptada', NULL, 3.00, 'Copia Simple A4', '15', '0', 15, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(32, '45871236', 'María Fe', 'Ruiz Gonzales', NULL, NULL, 'EXP-2026-002', 'Copia fiel del original de resolución de alcaldía', '2026-01-15', 'Aceptada', NULL, 5.00, 'Copia Fedateada', '0', '10', 10, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(33, '10254789', 'Jorge Luis', 'Chávez Palacios', NULL, NULL, 'EXP-2026-003', 'Expediente técnico compuesto acumulado', '2026-02-05', 'Aceptada', NULL, 12.50, 'Mixto', '15', '15', 30, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(34, '09632514', 'Ana Lucía', 'Mendoza Castro', NULL, NULL, 'EXP-2026-004', 'Planos antiguos de zonificación JLO', '2026-02-20', 'Rechazada', NULL, 0.00, 'Copia Simple A4', '5', '0', 5, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(35, '41257896', 'Pedro Alcántara', 'Gómez Tello', NULL, NULL, 'EXP-2026-005', 'Copias simples de constancia de posesión', '2026-03-12', 'Aceptada', NULL, 1.60, 'Copia Simple A4', '8', '0', 8, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(36, '70214536', 'Diana Carolina', 'Sánchez Díaz', NULL, NULL, 'EXP-2026-006', 'Fedateado de partida de defunción archivo central', '2026-03-25', 'Aceptada', NULL, 10.00, 'Copia Fedateada', '0', '20', 20, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(37, '25841369', 'Carlos Augusto', 'Vargas Llosa', NULL, NULL, 'EXP-2026-007', 'Compendio mixto de licencias de edificación', '2026-04-02', 'Aceptada', NULL, 22.00, 'Mixto', '30', '20', 50, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(38, '48751296', 'Sofía Antonieta', 'Flores Torres', NULL, NULL, 'EXP-2026-008', 'Revisión de planos de catastro urbano', '2026-04-18', 'Rechazada', NULL, 0.00, 'Mixto', '6', '6', 12, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(39, '07412589', 'Miguel Ángel', 'Benites Rivas', NULL, NULL, 'EXP-2026-009', 'Acervo documentario masivo de la gerencia de rentas', '2026-05-14', 'Aceptada', NULL, 20.00, 'Copia Simple A4', '100', '0', 100, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(40, '15926348', 'Elena Beatriz', 'Sovero Marín', NULL, NULL, 'EXP-2026-010', 'Copia legalizada interna de adjudicación de lote', '2026-05-22', 'Aceptada', NULL, 2.50, 'Copia Fedateada', '0', '5', 5, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(41, '60124578', 'Roberto Carlos', 'Ganoza Vega', NULL, NULL, 'EXP-2026-011', 'Expediente administrativo integrado de transportes', '2026-06-01', 'Aceptada', NULL, 8.40, 'Mixto', '10', '8', 18, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(42, '42153698', 'Julio César', 'Tello Rojas', NULL, NULL, 'EXP-2026-012', 'Documentación sustentatoria de trámite de baja', '2026-06-10', 'Aceptada', NULL, 5.00, 'Copia Simple A4', '25', '0', 25, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(43, '33251478', 'Rosa Mercedes', 'Ayala Prado', NULL, NULL, 'EXP-2026-013', 'Copia de actas de matrimonio antiguas', '2026-06-18', 'Rechazada', NULL, 0.00, 'Copia Fedateada', '0', '4', 4, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(44, '71254836', 'Luis Fernando', 'Murrugarra Sáenz', NULL, NULL, 'EXP-2026-014', 'Resoluciones gerenciales completas año 2022', '2026-07-04', 'Aceptada', NULL, 20.00, 'Copia Fedateada', '0', '40', 40, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(45, '08521436', 'Gisela Paola', 'Ortiz Pinedo', NULL, NULL, 'EXP-2026-015', 'Reporte consolidado mixto de deudas coactivas', '2026-08-19', 'Aceptada', NULL, 6.20, 'Mixto', '7', '7', 14, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(46, '44512369', 'Humberto', 'Solis Quiroga', NULL, NULL, 'EXP-2026-016', 'Copia de Boucher y registros de caja antiguos', '2026-09-21', 'Aceptada', NULL, 2.40, 'Copia Simple A4', '12', '0', 12, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(47, '12547839', 'David Salomón', 'Vera Tudela', NULL, NULL, 'EXP-2026-017', 'Certificado de parámetros urbanísticos', '2026-10-05', 'Rechazada', NULL, 0.00, 'Copia Simple A4', '2', '0', 2, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(48, '70362514', 'Walter Alfonso', 'Guevara Arévalo', NULL, NULL, 'EXP-2026-018', 'Paquete compuesto de fiscalización tributaria', '2026-10-31', 'Aceptada', NULL, 19.50, 'Mixto', '25', '20', 45, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(49, '41526378', 'Carmen Julia', 'Delgado Neyra', NULL, NULL, 'EXP-2026-019', 'Duplicado de planos visados por obras públicas', '2026-11-12', 'Aceptada', NULL, 7.50, 'Copia Fedateada', '0', '15', 15, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(50, '80214536', 'Francisco', 'Bolognesi Cervantes', NULL, NULL, 'EXP-2026-020', 'Hojas informativas de mesa de partes', '2026-12-23', 'Aceptada', NULL, 10.00, 'Copia Simple A4', '50', '0', 50, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57'),
-	(51, '70788512', 'Josue Joal', 'Pedraza Rivadeneira', '934402822', 'Los Inkas #453', 'EXP-2026-0014', 'Requiere de la pág 20-30', '2026-06-26', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '20-30', NULL, 10, 1, '2026-06-27 00:28:40', '2026-06-27 00:29:28'),
-	(52, '56456468', 'Roxana Alejandra', 'Mendoza Castillo', NULL, NULL, 'EXP-2026-0100', 'Requiere de la 1-10 copia simple y de la 20-30 fedateada', '2026-06-26', 'Aceptada', NULL, 2.00, 'Mixto', '1-10', '20-30', 20, 1, '2026-06-27 00:30:38', '2026-06-27 00:31:51'),
-	(53, '45245345', 'José Luis', 'Rivera Castillo', NULL, NULL, 'EXP-2026-0101', 'Fedateados de la 50-80', '2026-06-26', 'Aceptada', NULL, 3.00, 'Fedateado', NULL, '50-80', 30, 1, '2026-06-27 00:38:00', '2026-06-27 00:38:36'),
-	(54, '54645645', 'Joal', 'Rivadeneira', NULL, NULL, 'EXP-2026-0017', 'Requiere folios de la 1-50', '2026-06-26', 'Rechazada', 'Este expediente EXP-2026-0017 no se registra en el sistema, por lo tanto no se le puede entregar lo que solicita', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 01:26:58', '2026-06-27 01:27:41'),
-	(55, '45645354', 'Juan Carlos Esteban', 'Chuquihuanca Flores', NULL, NULL, 'EXP-2026-0018', 'EXP-2026-0018', '2026-06-27', 'Rechazada', 'No se encuentra el expediente', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 17:23:29', '2026-06-27 17:25:05'),
-	(56, '54345345', 'Roxy Aleja', 'Condorhuamán Rivera', NULL, NULL, 'EXP-2026-0017', 'EXP-2026-0017', '2026-06-27', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '1-10', NULL, 10, 1, '2026-06-27 17:24:39', '2026-06-27 17:24:51'),
-	(57, '154', 'sada', 'd', NULL, NULL, 'asdsad', 'asdasdas', '2026-06-27', 'Rechazada', 'No se encuentra', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 18:12:57', '2026-06-29 00:34:50'),
-	(58, '45614561', 'asdas', 'sas', NULL, NULL, 'EXP-2026-0014', 'EXP-2026-0014', '2026-06-27', 'Rechazada', 'No se encuentra', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 19:25:55', '2026-06-29 00:34:39'),
-	(59, '16565416', 'Luciana', 'Ordinola', NULL, NULL, 'EXP-2026-0101', 'EXP-2026-0101', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:35:47', '2026-06-29 00:35:47'),
-	(60, '54645345', 'Dilver', 'Aguilar', NULL, NULL, 'EXP-2026-0102, EXP-2026-0103', 'EXP-2026-0102, EXP-2026-0103', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:45:15', '2026-06-29 00:45:15'),
-	(61, '54634534', 'Leo', 'Pardo', NULL, NULL, 'EXP-2026-0101', 'Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500, cuando un impresor (N. del T. persona que se dedica a la imprenta) desconocido usó una galería de textos y los mezcló de tal manera que logró hacer un libro de textos especimen.', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:49:50', '2026-06-29 00:49:50'),
-	(62, '65165168', 'José Luis Enrique', 'Valderrama Puicón', NULL, NULL, 'EXP-2026-0020', 'EXP-2026-0020', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:55:39', '2026-06-29 00:55:39'),
-	(63, '32154145', 'Lucia', 'Nombera', NULL, NULL, 'EXP-2026-002', 'Copia fiel del original de resolución de alcaldía', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:09:29', '2026-06-29 01:09:29'),
-	(64, '64516546', 'Jose', 'Rodriguez', NULL, NULL, 'EXP-2026-1111', 'EXP-2026-1111', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:38:23', '2026-06-29 01:38:23'),
-	(65, '54564165', 'aaa', 'aaa', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:41:57', '2026-06-29 01:41:57'),
-	(66, '46345654', 'eeee', 'eeee', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:10', '2026-06-29 01:42:10'),
-	(67, '54645676', 'iiii', 'iiii', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:19', '2026-06-29 01:42:19'),
-	(68, '45456645', 'oooo', 'oooo', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:41', '2026-06-29 01:42:41'),
-	(69, '45634534', 'uuuu', 'uuuu', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:43:50', '2026-06-29 01:43:50'),
-	(70, '42452453', 'hhhh', 'hhhh', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:44:09', '2026-06-29 01:44:09'),
-	(71, '45345344', 'kkkk', 'kkkk', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:44:22', '2026-06-29 01:44:22'),
-	(72, '54145615', 'Josue Joal', 'Pedraza Rivadeneira', '936465461', 'Av. Chiclayo', 'EXP-2026-3333', 'Se requiere folios del 50-55 del expediente EXP-2026-3333', '2026-06-29', 'Aceptada', NULL, 0.50, 'Copia Simple A4', '50-55', NULL, 5, 1, '2026-06-29 17:53:05', '2026-06-29 18:55:36'),
-	(73, '42453453', 'José', 'Romero', NULL, NULL, 'EXP-2026-2000', 'EXP-2026-2000', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 19:04:26', '2026-06-29 19:04:26');
+-- Volcando datos para la tabla archivo_mdjlo.solicitudes: ~44 rows (aproximadamente)
+INSERT INTO `solicitudes` (`id`, `dni`, `nombres`, `apellidos`, `telefono`, `direccion`, `expediente_solicitado`, `descripcion`, `fecha_solicitud`, `estado`, `motivo_rechazo`, `costo_tupa`, `tipo_formato_tupa`, `paginas_simples`, `paginas_fedateadas`, `numero_hojas`, `cantidad_copias`, `created_at`, `updated_at`, `numero_voucher`, `fecha_pago`) VALUES
+	(31, '72145689', 'Juan Carlos', 'Pérez Ramos', NULL, NULL, 'EXP-2026-001', 'Solicitud de copias de actas de sesión de consejo', '2026-01-10', 'Aceptada', NULL, 3.00, 'Copia Simple A4', '15', '0', 15, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(32, '45871236', 'María Fe', 'Ruiz Gonzales', NULL, NULL, 'EXP-2026-002', 'Copia fiel del original de resolución de alcaldía', '2026-01-15', 'Aceptada', NULL, 5.00, 'Copia Fedateada', '0', '10', 10, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(33, '10254789', 'Jorge Luis', 'Chávez Palacios', NULL, NULL, 'EXP-2026-003', 'Expediente técnico compuesto acumulado', '2026-02-05', 'Aceptada', NULL, 12.50, 'Mixto', '15', '15', 30, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(34, '09632514', 'Ana Lucía', 'Mendoza Castro', NULL, NULL, 'EXP-2026-004', 'Planos antiguos de zonificación JLO', '2026-02-20', 'Rechazada', NULL, 0.00, 'Copia Simple A4', '5', '0', 5, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(35, '41257896', 'Pedro Alcántara', 'Gómez Tello', NULL, NULL, 'EXP-2026-005', 'Copias simples de constancia de posesión', '2026-03-12', 'Aceptada', NULL, 1.60, 'Copia Simple A4', '8', '0', 8, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(36, '70214536', 'Diana Carolina', 'Sánchez Díaz', NULL, NULL, 'EXP-2026-006', 'Fedateado de partida de defunción archivo central', '2026-03-25', 'Aceptada', NULL, 10.00, 'Copia Fedateada', '0', '20', 20, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(37, '25841369', 'Carlos Augusto', 'Vargas Llosa', NULL, NULL, 'EXP-2026-007', 'Compendio mixto de licencias de edificación', '2026-04-02', 'Aceptada', NULL, 22.00, 'Mixto', '30', '20', 50, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(38, '48751296', 'Sofía Antonieta', 'Flores Torres', NULL, NULL, 'EXP-2026-008', 'Revisión de planos de catastro urbano', '2026-04-18', 'Rechazada', NULL, 0.00, 'Mixto', '6', '6', 12, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(39, '07412589', 'Miguel Ángel', 'Benites Rivas', NULL, NULL, 'EXP-2026-009', 'Acervo documentario masivo de la gerencia de rentas', '2026-05-14', 'Aceptada', NULL, 20.00, 'Copia Simple A4', '100', '0', 100, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(40, '15926348', 'Elena Beatriz', 'Sovero Marín', NULL, NULL, 'EXP-2026-010', 'Copia legalizada interna de adjudicación de lote', '2026-05-22', 'Aceptada', NULL, 2.50, 'Copia Fedateada', '0', '5', 5, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(41, '60124578', 'Roberto Carlos', 'Ganoza Vega', NULL, NULL, 'EXP-2026-011', 'Expediente administrativo integrado de transportes', '2026-06-01', 'Aceptada', NULL, 8.40, 'Mixto', '10', '8', 18, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(42, '42153698', 'Julio César', 'Tello Rojas', NULL, NULL, 'EXP-2026-012', 'Documentación sustentatoria de trámite de baja', '2026-06-10', 'Aceptada', NULL, 5.00, 'Copia Simple A4', '25', '0', 25, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(43, '33251478', 'Rosa Mercedes', 'Ayala Prado', NULL, NULL, 'EXP-2026-013', 'Copia de actas de matrimonio antiguas', '2026-06-18', 'Rechazada', NULL, 0.00, 'Copia Fedateada', '0', '4', 4, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(44, '71254836', 'Luis Fernando', 'Murrugarra Sáenz', NULL, NULL, 'EXP-2026-014', 'Resoluciones gerenciales completas año 2022', '2026-07-04', 'Aceptada', NULL, 20.00, 'Copia Fedateada', '0', '40', 40, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(45, '08521436', 'Gisela Paola', 'Ortiz Pinedo', NULL, NULL, 'EXP-2026-015', 'Reporte consolidado mixto de deudas coactivas', '2026-08-19', 'Aceptada', NULL, 6.20, 'Mixto', '7', '7', 14, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(46, '44512369', 'Humberto', 'Solis Quiroga', NULL, NULL, 'EXP-2026-016', 'Copia de Boucher y registros de caja antiguos', '2026-09-21', 'Aceptada', NULL, 2.40, 'Copia Simple A4', '12', '0', 12, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(47, '12547839', 'David Salomón', 'Vera Tudela', NULL, NULL, 'EXP-2026-017', 'Certificado de parámetros urbanísticos', '2026-10-05', 'Rechazada', NULL, 0.00, 'Copia Simple A4', '2', '0', 2, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(48, '70362514', 'Walter Alfonso', 'Guevara Arévalo', NULL, NULL, 'EXP-2026-018', 'Paquete compuesto de fiscalización tributaria', '2026-10-31', 'Aceptada', NULL, 19.50, 'Mixto', '25', '20', 45, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(49, '41526378', 'Carmen Julia', 'Delgado Neyra', NULL, NULL, 'EXP-2026-019', 'Duplicado de planos visados por obras públicas', '2026-11-12', 'Aceptada', NULL, 7.50, 'Copia Fedateada', '0', '15', 15, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(50, '80214536', 'Francisco', 'Bolognesi Cervantes', NULL, NULL, 'EXP-2026-020', 'Hojas informativas de mesa de partes', '2026-12-23', 'Aceptada', NULL, 10.00, 'Copia Simple A4', '50', '0', 50, 1, '2026-06-26 14:41:57', '2026-06-26 14:41:57', NULL, NULL),
+	(51, '70788512', 'Josue Joal', 'Pedraza Rivadeneira', '934402822', 'Los Inkas #453', 'EXP-2026-0014', 'Requiere de la pág 20-30', '2026-06-26', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '20-30', NULL, 10, 1, '2026-06-27 00:28:40', '2026-06-27 00:29:28', NULL, NULL),
+	(52, '56456468', 'Roxana Alejandra', 'Mendoza Castillo', NULL, NULL, 'EXP-2026-0100', 'Requiere de la 1-10 copia simple y de la 20-30 fedateada', '2026-06-26', 'Aceptada', NULL, 2.00, 'Mixto', '1-10', '20-30', 20, 1, '2026-06-27 00:30:38', '2026-06-27 00:31:51', NULL, NULL),
+	(53, '45245345', 'José Luis', 'Rivera Castillo', NULL, NULL, 'EXP-2026-0101', 'Fedateados de la 50-80', '2026-06-26', 'Aceptada', NULL, 3.00, 'Fedateado', NULL, '50-80', 30, 1, '2026-06-27 00:38:00', '2026-06-27 00:38:36', NULL, NULL),
+	(54, '54645645', 'Joal', 'Rivadeneira', NULL, NULL, 'EXP-2026-0017', 'Requiere folios de la 1-50', '2026-06-26', 'Rechazada', 'Este expediente EXP-2026-0017 no se registra en el sistema, por lo tanto no se le puede entregar lo que solicita', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 01:26:58', '2026-06-27 01:27:41', NULL, NULL),
+	(55, '45645354', 'Juan Carlos Esteban', 'Chuquihuanca Flores', NULL, NULL, 'EXP-2026-0018', 'EXP-2026-0018', '2026-06-27', 'Rechazada', 'No se encuentra el expediente', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 17:23:29', '2026-06-27 17:25:05', NULL, NULL),
+	(56, '54345345', 'Roxy Aleja', 'Condorhuamán Rivera', NULL, NULL, 'EXP-2026-0017', 'EXP-2026-0017', '2026-06-27', 'Aceptada', NULL, 1.00, 'Copia Simple A4', '1-10', NULL, 10, 1, '2026-06-27 17:24:39', '2026-06-27 17:24:51', NULL, NULL),
+	(57, '154', 'sada', 'd', NULL, NULL, 'asdsad', 'asdasdas', '2026-06-27', 'Rechazada', 'No se encuentra', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 18:12:57', '2026-06-29 00:34:50', NULL, NULL),
+	(58, '45614561', 'asdas', 'sas', NULL, NULL, 'EXP-2026-0014', 'EXP-2026-0014', '2026-06-27', 'Rechazada', 'No se encuentra', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-27 19:25:55', '2026-06-29 00:34:39', NULL, NULL),
+	(59, '16565416', 'Luciana', 'Ordinola', NULL, NULL, 'EXP-2026-0101', 'EXP-2026-0101', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:35:47', '2026-06-29 00:35:47', NULL, NULL),
+	(60, '54645345', 'Dilver', 'Aguilar', NULL, NULL, 'EXP-2026-0102, EXP-2026-0103', 'EXP-2026-0102, EXP-2026-0103', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:45:15', '2026-06-29 00:45:15', NULL, NULL),
+	(61, '54634534', 'Leo', 'Pardo', NULL, NULL, 'EXP-2026-0101', 'Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500, cuando un impresor (N. del T. persona que se dedica a la imprenta) desconocido usó una galería de textos y los mezcló de tal manera que logró hacer un libro de textos especimen.', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:49:50', '2026-06-29 00:49:50', NULL, NULL),
+	(62, '65165168', 'José Luis Enrique', 'Valderrama Puicón', NULL, NULL, 'EXP-2026-0020', 'EXP-2026-0020', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 00:55:39', '2026-06-29 00:55:39', NULL, NULL),
+	(63, '32154145', 'Lucia', 'Nombera', NULL, NULL, 'EXP-2026-002', 'Copia fiel del original de resolución de alcaldía', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:09:29', '2026-06-29 01:09:29', NULL, NULL),
+	(64, '64516546', 'Jose', 'Rodriguez', NULL, NULL, 'EXP-2026-1111', 'EXP-2026-1111', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:38:23', '2026-06-29 01:38:23', NULL, NULL),
+	(65, '54564165', 'aaa', 'aaa', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:41:57', '2026-06-29 01:41:57', NULL, NULL),
+	(66, '46345654', 'eeee', 'eeee', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:10', '2026-06-29 01:42:10', NULL, NULL),
+	(67, '54645676', 'iiii', 'iiii', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:19', '2026-06-29 01:42:19', NULL, NULL),
+	(68, '45456645', 'oooo', 'oooo', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:42:41', '2026-06-29 01:42:41', NULL, NULL),
+	(69, '45634534', 'uuuu', 'uuuu', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:43:50', '2026-06-29 01:43:50', NULL, NULL),
+	(70, '42452453', 'hhhh', 'hhhh', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-28', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:44:09', '2026-06-29 01:44:09', NULL, NULL),
+	(71, '45345344', 'kkkk', 'kkkk', NULL, NULL, 'EXP-2026-002', 'EXP-2026-002', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 01:44:22', '2026-06-29 01:44:22', NULL, NULL),
+	(72, '54145615', 'Josue Joal', 'Pedraza Rivadeneira', '936465461', 'Av. Chiclayo', 'EXP-2026-3333', 'Se requiere folios del 50-55 del expediente EXP-2026-3333', '2026-06-29', 'Aceptada', NULL, 0.50, 'Copia Simple A4', '50-55', NULL, 5, 1, '2026-06-29 17:53:05', '2026-06-29 18:55:36', NULL, NULL),
+	(73, '42453453', 'José', 'Romero', NULL, NULL, 'EXP-2026-2000', 'EXP-2026-2000', '2026-06-29', 'Pendiente', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-29 19:04:26', '2026-06-29 19:04:26', NULL, NULL),
+	(74, '99999999', 'Prueba', 'Uno', NULL, NULL, 'EXP-2026-1', 'Requiere EXP-2026-1', '2026-08-17', 'Aceptada', NULL, 1.50, 'Copia Simple A4', '1-15', NULL, 15, 1, '2026-08-18 03:48:06', '2026-08-18 03:50:08', '123', '2026-08-17');
 
 -- Volcando estructura para tabla archivo_mdjlo.tipos_documento
 DROP TABLE IF EXISTS `tipos_documento`;
